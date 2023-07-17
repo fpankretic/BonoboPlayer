@@ -15,6 +15,8 @@ class MessageCreatedHandler : Consumer<MessageCreateEvent> {
             commands["pause"] = PauseCommand()
             commands["resume"] = ResumeCommand()
             commands["clear"] = ClearCommand()
+            commands["queue"] = QueueCommand()
+            commands["leave"] = LeaveCommand()
         }
     }
 
