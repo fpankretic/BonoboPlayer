@@ -10,7 +10,7 @@ class AudioTrackScheduler(
     private val player: AudioPlayer
 ) : AudioEventAdapter() {
 
-    private val queue: MutableList<AudioTrack> = Collections.synchronizedList(mutableListOf())
+    val queue: MutableList<AudioTrack> = Collections.synchronizedList(mutableListOf())
 
     fun play(track: AudioTrack): Boolean {
         return play(track, false)

@@ -32,7 +32,7 @@ class PlayCommand : Command {
             override fun loadFailed(exception: FriendlyException?) {
                 println("load failed")
             }
-        })
+        }).get()
     }
 
 }
