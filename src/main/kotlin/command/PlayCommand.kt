@@ -7,12 +7,18 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import discord4j.core.event.domain.message.MessageCreateEvent
+import reactor.core.publisher.Mono
 
 class PlayCommand : Command {
-    override fun execute(event: MessageCreateEvent) {
-        val connection = JoinCommand().execute(event) ?: return
-        val audioManager = GuildAudioManager.of(connection.guildId)
+    override fun execute(event: MessageCreateEvent): Mono<Void> {
+        return JoinCommand().execute(event)
+            .then(Mono.justOrEmpty(event.guildId))
+            .map { GuildAudioManager.of(it) }
+            .map { play(it, event) }
+            .then()
+    }
 
+    private fun play(audioManager: GuildAudioManager, event: MessageCreateEvent) {
         val song = event.message.content.split(" ")[1]
         GlobalData.PLAYER_MANAGER.loadItem(song, object : AudioLoadResultHandler {
             override fun trackLoaded(track: AudioTrack) {
@@ -32,7 +38,7 @@ class PlayCommand : Command {
             override fun loadFailed(exception: FriendlyException?) {
                 println("load failed")
             }
-        }).get()
+        })
     }
 
 }

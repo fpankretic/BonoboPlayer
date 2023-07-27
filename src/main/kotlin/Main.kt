@@ -6,7 +6,8 @@ fun main(args: Array<String>) {
     val client = DiscordClient.create(args[0])
     val gateway = client.login().block() ?: return
 
-    gateway.on(MessageCreateEvent::class.java).subscribe(MessageCreatedHandler())
-
-    gateway.onDisconnect().block()
+    gateway.on(MessageCreateEvent::class.java)
+        .flatMap { MessageCreatedHandler().handle(it) }
+        .then(gateway.onDisconnect())
+        .block()
 }
