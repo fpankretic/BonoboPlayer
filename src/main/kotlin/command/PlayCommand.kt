@@ -48,7 +48,7 @@ class PlayCommand : Command {
                     return
                 }
                 notMatched = true
-                GlobalData.PLAYER_MANAGER.loadItem(getYoutubeVideoLink(song), this)
+                GlobalData.PLAYER_MANAGER.loadItem(getVideoLink(song), this)
             }
 
             override fun loadFailed(exception: FriendlyException?) {
@@ -59,7 +59,7 @@ class PlayCommand : Command {
         GlobalData.PLAYER_MANAGER.loadItem(song, audioLoadResultHandler)
     }
 
-    fun getYoutubeVideoLink(query: String): String {
+    fun getVideoLink(query: String): String {
         val (_, _, result) = URL.httpGet(listOf("q" to query)).responseString()
         return result.get().substringAfter("\"url\":\"").substringBefore("\"")
     }
