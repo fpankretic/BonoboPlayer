@@ -1,6 +1,7 @@
 package handler
 
 import command.*
+import discord4j.core.event.domain.Event
 import discord4j.core.event.domain.message.MessageCreateEvent
 import reactor.core.publisher.Mono
 import java.util.function.Consumer
@@ -24,7 +25,6 @@ class MessageCreatedHandler {
     fun handle(event: MessageCreateEvent): Mono<Void> {
         val content = event.message.content
         if (content.length < 2) return Mono.empty()
-        println(content)
 
         val first = content.split(" ")[0]
         val prefix = first[0]
@@ -34,4 +34,5 @@ class MessageCreatedHandler {
             return commands[command]!!.execute(event)
         return Mono.empty()
     }
+
 }
