@@ -4,26 +4,44 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason
+import discord4j.common.util.Snowflake
+import discord4j.core.`object`.entity.channel.MessageChannel
 import java.util.*
 
-class AudioTrackScheduler(
-    private val player: AudioPlayer
-) : AudioEventAdapter() {
+class AudioTrackScheduler private constructor() : AudioEventAdapter() {
 
-    val queue: MutableList<AudioTrack> = Collections.synchronizedList(mutableListOf())
+    private val queue: MutableList<AudioTrack> = Collections.synchronizedList(mutableListOf())
+    private lateinit var player: AudioPlayer
+    private lateinit var guildId: Snowflake
+
+    lateinit var messageChannel: MessageChannel
+
+    constructor(player: AudioPlayer, guildId: Snowflake, messageChannel: MessageChannel) : this() {
+        this.player = player
+        this.guildId = guildId;
+        this.messageChannel = messageChannel
+    }
+
+    fun getQueue(): List<AudioTrack> {
+        return Collections.unmodifiableList(queue)
+    }
 
     fun play(track: AudioTrack): Boolean {
         return play(track, false)
     }
 
-    fun play(track: AudioTrack, force: Boolean): Boolean {
+    private fun play(track: AudioTrack, force: Boolean): Boolean {
         val playing = player.startTrack(track, !force)
-        if (!playing) queue.add(track)
+        if (playing) {
+            messageChannel.createMessage("Now playing: ${track.info.title}").block()
+        } else {
+            queue.add(track)
+        }
         return playing
     }
 
     fun skip(): Boolean {
-        if (queue.isEmpty() && player.playingTrack != null) {
+        if (queue.isEmpty() && isPlaying()) {
             player.playTrack(null)
             return false
         }
@@ -36,9 +54,21 @@ class AudioTrackScheduler(
         player.playTrack(null)
     }
 
+    fun isPlaying(): Boolean {
+        return player.playingTrack != null
+    }
+
+    fun currentSong(): Optional<AudioTrack> {
+        return Optional.ofNullable(player.playingTrack)
+    }
+
     override fun onTrackEnd(player: AudioPlayer?, track: AudioTrack?, endReason: AudioTrackEndReason?) {
-        if (endReason != null) {
-            if (endReason.mayStartNext) {
+        if (endReason != null && endReason.mayStartNext) {
+            if (queue.isEmpty()) {
+                messageChannel.client.voiceConnectionRegistry.getVoiceConnection(guildId)
+                    .flatMap { it.disconnect() }
+                    .block()
+            } else {
                 skip()
             }
         }

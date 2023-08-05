@@ -1,8 +1,6 @@
 package handler
 
 import discord4j.core.event.domain.VoiceStateUpdateEvent
-import discord4j.core.`object`.VoiceState
-import discord4j.voice.VoiceConnection
 import reactor.core.publisher.Mono
 
 class VoiceStateUpdatedHandler {

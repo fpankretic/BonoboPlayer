@@ -1,10 +1,8 @@
 package handler
 
 import command.*
-import discord4j.core.event.domain.Event
 import discord4j.core.event.domain.message.MessageCreateEvent
 import reactor.core.publisher.Mono
-import java.util.function.Consumer
 
 class MessageCreatedHandler {
     companion object {
@@ -19,6 +17,7 @@ class MessageCreatedHandler {
             commands["clear"] = ClearCommand()
             commands["queue"] = QueueCommand()
             commands["leave"] = LeaveCommand()
+            commands["np"] = NowPlayingCommand()
         }
     }
 
