@@ -18,7 +18,7 @@ fun main(args: Array<String>) {
     // subscribe
     gateway.on(Event::class.java) { allEventHandler.handle(it) }.subscribe()
     gateway.on(MessageCreateEvent::class.java) { messageCreatedHandler.handle(it) }.subscribe()
-    //gateway.on(VoiceStateUpdateEvent::class.java) { voiceStateUpdatedHandler.handle(it) }.subscribe()
+    gateway.on(VoiceStateUpdateEvent::class.java) { voiceStateUpdatedHandler.handle(it) }.subscribe()
 
     gateway.onDisconnect().block()
 }
