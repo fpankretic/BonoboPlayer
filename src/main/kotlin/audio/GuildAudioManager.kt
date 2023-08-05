@@ -3,6 +3,7 @@ package audio
 import GlobalData
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
 import discord4j.common.util.Snowflake
+import discord4j.core.`object`.entity.channel.MessageChannel
 import java.util.concurrent.ConcurrentHashMap
 
 class GuildAudioManager private constructor() {
@@ -10,16 +11,25 @@ class GuildAudioManager private constructor() {
         private val MANAGERS: MutableMap<Snowflake, GuildAudioManager> = ConcurrentHashMap()
 
         @JvmStatic
+        fun of(id: Snowflake, messageChannel: MessageChannel): GuildAudioManager {
+            val manager = MANAGERS.computeIfAbsent(id) { GuildAudioManager(id, messageChannel) }
+            manager.scheduler.messageChannel = messageChannel
+            return manager
+        }
+
+        @JvmStatic
         fun of(id: Snowflake): GuildAudioManager {
-            return MANAGERS.computeIfAbsent(id) { GuildAudioManager() }
+            return MANAGERS[id]!!
         }
     }
 
     val player: AudioPlayer = GlobalData.PLAYER_MANAGER.createPlayer()
-    val scheduler: AudioTrackScheduler = AudioTrackScheduler(player)
-    val provider: LavaPlayerAudioProvider = LavaPlayerAudioProvider(player)
+    lateinit var scheduler: AudioTrackScheduler
+    lateinit var provider: LavaPlayerAudioProvider
 
-    init {
+    private constructor(guildId: Snowflake, messageChannel: MessageChannel) : this() {
+        this.scheduler = AudioTrackScheduler(player, guildId, messageChannel)
+        this.provider = LavaPlayerAudioProvider(player)
         player.addListener(scheduler)
     }
 

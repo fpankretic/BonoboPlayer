@@ -14,7 +14,7 @@ class QueueCommand : Command {
     }
 
     private fun createList(guildId: Snowflake): String {
-        return GuildAudioManager.of(guildId).scheduler.queue
+        return GuildAudioManager.of(guildId).scheduler.getQueue()
             .take(10)
             .joinToString("\n") { it.info.title }
     }
