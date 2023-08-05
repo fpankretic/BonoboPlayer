@@ -1,10 +1,12 @@
 package handler
 
 import command.*
+import discord4j.core.event.domain.Event
 import discord4j.core.event.domain.message.MessageCreateEvent
+import reactor.core.publisher.Mono
 import java.util.function.Consumer
 
-class MessageCreatedHandler : Consumer<MessageCreateEvent> {
+class MessageCreatedHandler {
     companion object {
         private val commands: MutableMap<String, Command> = mutableMapOf()
 
@@ -20,15 +22,17 @@ class MessageCreatedHandler : Consumer<MessageCreateEvent> {
         }
     }
 
-    override fun accept(event: MessageCreateEvent) {
+    fun handle(event: MessageCreateEvent): Mono<Void> {
         val content = event.message.content
-        if (content.length < 2) return
-        println(content)
+        if (content.length < 2) return Mono.empty()
 
         val first = content.split(" ")[0]
         val prefix = first[0]
         val command = first.substring(1)
 
-        if (prefix == '&' && commands.containsKey(command)) commands[command]?.execute(event)
+        if (prefix == '&' && commands.containsKey(command))
+            return commands[command]!!.execute(event)
+        return Mono.empty()
     }
+
 }
