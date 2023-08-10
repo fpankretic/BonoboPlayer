@@ -65,13 +65,15 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
 
     override fun onTrackEnd(player: AudioPlayer?, track: AudioTrack?, endReason: AudioTrackEndReason?) {
         println("onTrackEndCalled with endReason $endReason")
-        if (endReason == AudioTrackEndReason.LOAD_FAILED) {
-             player.startTrack(track, true)
-        } else if (endReason != null && endReason.mayStartNext) {
+        /*if (endReason == AudioTrackEndReason.LOAD_FAILED) {
+            player!!.startTrack(track, true)
+        } else*/ if (endReason != null && endReason.mayStartNext) {
             if (queue.isEmpty()) {
                 println("leaving...")
-                messageChannel.client.voiceConnectionRegistry.getVoiceConnection(guildId).flatMap { it.disconnect() }
+                messageChannel.client.voiceConnectionRegistry.getVoiceConnection(guildId)
+                    .flatMap { it.disconnect() }
                     .block()
+                GuildAudioManager.destroy(guildId)
             } else {
                 skip()
             }
