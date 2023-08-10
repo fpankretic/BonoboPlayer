@@ -17,8 +17,16 @@ class PlayCommand : Command {
     }
 
     private fun play(audioManager: GuildAudioManager, event: MessageCreateEvent) {
-        val song = event.message.content.substringAfter(" ")
-        GlobalData.PLAYER_MANAGER.loadItem(song, DefaultAudioLoadResultHandler(audioManager, song, event))
+        val query = event.message.content.substringAfter(" ")
+        val track = getTrack(query)
+        GlobalData.PLAYER_MANAGER.loadItem(track, DefaultAudioLoadResultHandler(audioManager, event))
+    }
+
+    private fun getTrack(query: String): String {
+        if (query.startsWith("http") || query.startsWith("www") || query.startsWith("youtube")) {
+            return query
+        }
+        return GlobalData.SEARCH_CLIENT.getTracksForSearch(query)[0].url
     }
 
 }

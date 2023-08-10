@@ -64,6 +64,12 @@
             <version>2.3.1</version>
         </dependency>
 
+        <dependency>
+            <groupId>io.sfrei</groupId>
+            <artifactId>tracksearch</artifactId>
+            <version>0.8.1</version>
+        </dependency>
+
         <!-- Kotlin -->
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
