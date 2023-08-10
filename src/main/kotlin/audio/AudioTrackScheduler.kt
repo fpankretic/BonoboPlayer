@@ -67,6 +67,7 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
         println("onTrackEndCalled with endReason $endReason")
         if (endReason != null && endReason.mayStartNext) {
             if (queue.isEmpty()) {
+                println("leaving...")
                 messageChannel.client.voiceConnectionRegistry.getVoiceConnection(guildId)
                     .flatMap { it.disconnect() }
                     .block()
