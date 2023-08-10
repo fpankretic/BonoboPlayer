@@ -21,6 +21,11 @@ class GuildAudioManager private constructor() {
         fun of(id: Snowflake): GuildAudioManager {
             return MANAGERS[id]!!
         }
+
+        @JvmStatic
+        fun destroy(id: Snowflake) {
+            MANAGERS.remove(id)
+        }
     }
 
     val player: AudioPlayer = GlobalData.PLAYER_MANAGER.createPlayer()
