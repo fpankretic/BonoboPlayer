@@ -33,6 +33,7 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
     private fun play(track: AudioTrack, force: Boolean): Boolean {
         val playing = player.startTrack(track, !force)
         if (playing) {
+            println("Now playing ${track.info.title}")
             messageChannel.createMessage("Now playing: ${track.info.title}").block()
         } else {
             queue.add(track)
@@ -63,6 +64,7 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
     }
 
     override fun onTrackEnd(player: AudioPlayer?, track: AudioTrack?, endReason: AudioTrackEndReason?) {
+        println("onTrackEndCalled with endReason $endReason")
         if (endReason != null && endReason.mayStartNext) {
             if (queue.isEmpty()) {
                 messageChannel.client.voiceConnectionRegistry.getVoiceConnection(guildId)
