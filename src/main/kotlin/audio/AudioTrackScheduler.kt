@@ -33,7 +33,7 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
     private fun play(track: AudioTrack, force: Boolean): Boolean {
         val playing = player.startTrack(track, !force)
         if (playing) {
-            println("Now playing ${track.info.title}")
+            println("Now playing ${track.info.title} from ${track.info.uri}")
             messageChannel.createMessage("Now playing: ${track.info.title}").block()
         } else {
             queue.add(track)
