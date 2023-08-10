@@ -14,7 +14,8 @@ class PlayCommand : Command {
     override fun execute(event: MessageCreateEvent): Mono<Void> {
         return JoinCommand().execute(event)
             .then(Mono.justOrEmpty(event.guildId))
-            .map { GuildAudioManager.of(it) }
+            .zipWith(event.message.channel)
+            .map { GuildAudioManager.of(it.t1, it.t2) }
             .map { play(it, event) }
             .then()
     }
@@ -41,7 +42,7 @@ class PlayCommand : Command {
                 println("trackLoaded")
                 audioManager.scheduler.play(track)
                 event.message.channel
-                    .flatMap { it.createMessage("Track added: ${track.info.title}") }
+                    .flatMap { it.createMessage("Track added to queue: ${track.info.title}") }
                     .block()
             }
 

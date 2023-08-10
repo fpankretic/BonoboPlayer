@@ -31,14 +31,11 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
     }
 
     private fun play(track: AudioTrack, force: Boolean): Boolean {
-        val playing = player.startTrack(track, !force)
-        if (playing) {
-            println("Now playing ${track.info.title} from ${track.info.uri}")
-            messageChannel.createMessage("Now playing: ${track.info.title}").block()
-        } else {
+        val started = player.startTrack(track.makeClone(), !force)
+        if (!started) {
             queue.add(track)
         }
-        return playing
+        return started
     }
 
     fun skip(): Boolean {
@@ -63,11 +60,14 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
         return Optional.ofNullable(player.playingTrack)
     }
 
+    override fun onTrackStart(player: AudioPlayer?, track: AudioTrack?) {
+        println("Now playing ${track!!.info.title} from ${track.info.uri}")
+        messageChannel.createMessage("Now playing: ${track.info.title}").block()
+    }
+
     override fun onTrackEnd(player: AudioPlayer?, track: AudioTrack?, endReason: AudioTrackEndReason?) {
         println("onTrackEndCalled with endReason $endReason")
-        /*if (endReason == AudioTrackEndReason.LOAD_FAILED) {
-            player!!.startTrack(track, true)
-        } else*/ if (endReason != null && endReason.mayStartNext) {
+        if (endReason != null && endReason.mayStartNext) {
             if (queue.isEmpty()) {
                 println("leaving...")
                 messageChannel.client.voiceConnectionRegistry.getVoiceConnection(guildId)
