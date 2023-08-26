@@ -2,8 +2,6 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers
 import com.sedmelluq.discord.lavaplayer.track.playback.NonAllocatingAudioFrameBuffer
-import io.sfrei.tracksearch.clients.MultiSearchClient
-import io.sfrei.tracksearch.clients.setup.Client
 import io.sfrei.tracksearch.clients.youtube.YouTubeClient
 
 class GlobalData {
