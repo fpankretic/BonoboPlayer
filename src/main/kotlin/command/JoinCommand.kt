@@ -1,6 +1,7 @@
 package command
 
-import audio.GuildAudioManager
+import audio.GuildManager
+import audio.LavaPlayerAudioProvider
 import discord4j.core.event.domain.message.MessageCreateEvent
 import discord4j.core.`object`.entity.channel.MessageChannel
 import discord4j.core.`object`.entity.channel.VoiceChannel
@@ -18,8 +19,8 @@ class JoinCommand : Command {
     }
 
     private fun joinVoiceChannel(channel: VoiceChannel, messageChannel: MessageChannel): Mono<Void> {
-        val provider = GuildAudioManager.of(channel.guildId, messageChannel).provider
-        val spec = VoiceChannelJoinSpec.builder().provider(provider).build();
+        val player = GuildManager.getAudio(channel.guildId, messageChannel).player
+        val spec = VoiceChannelJoinSpec.builder().provider(LavaPlayerAudioProvider(player)).build();
         return channel.join(spec).then()
     }
 

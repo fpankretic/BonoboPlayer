@@ -1,7 +1,8 @@
 package command
 
 import GlobalData
-import audio.GuildAudioManager
+import audio.GuildAudio
+import audio.GuildManager
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist
@@ -15,15 +16,15 @@ class PlayCommand : Command {
         return JoinCommand().execute(event)
             .then(Mono.justOrEmpty(event.guildId))
             .zipWith(event.message.channel)
-            .map { GuildAudioManager.of(it.t1, it.t2) }
+            .map { GuildManager.getAudio(it.t1, it.t2) }
             .map { play(it, event) }
             .then()
     }
 
-    private fun play(audioManager: GuildAudioManager, event: MessageCreateEvent) {
+    private fun play(guildAudio: GuildAudio, event: MessageCreateEvent) {
         val query = event.message.content.substringAfter(" ")
         val track = getTrack(query)
-        GlobalData.PLAYER_MANAGER.loadItem(track, defaultAudioLoadResultHandler(audioManager, event))
+        GlobalData.PLAYER_MANAGER.loadItem(track, defaultAudioLoadResultHandler(guildAudio, event))
     }
 
     private fun getTrack(query: String): String {
@@ -34,13 +35,13 @@ class PlayCommand : Command {
     }
 
     private fun defaultAudioLoadResultHandler(
-        audioManager: GuildAudioManager,
+        guildAudio: GuildAudio,
         event: MessageCreateEvent
     ): AudioLoadResultHandler {
         return object : AudioLoadResultHandler {
             override fun trackLoaded(track: AudioTrack) {
                 println("trackLoaded")
-                audioManager.scheduler.play(track)
+                guildAudio.scheduler.play(track)
                 event.message.channel
                     .flatMap { it.createMessage("Track added to queue: ${track.info.title}") }
                     .block()
@@ -48,7 +49,7 @@ class PlayCommand : Command {
 
             override fun playlistLoaded(playlist: AudioPlaylist) {
                 println("playlistLoaded")
-                playlist.tracks.forEach { audioManager.scheduler.play(it) }
+                playlist.tracks.forEach { guildAudio.scheduler.play(it) }
                 event.message.channel
                     .flatMap { it.createMessage("Playlist ${playlist.name} added with ${playlist.tracks.size} tracks") }
                     .block()

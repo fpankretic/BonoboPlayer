@@ -16,6 +16,7 @@ class MessageCreatedHandler {
             commands["resume"] = ResumeCommand()
             commands["clear"] = ClearCommand()
             commands["queue"] = QueueCommand()
+            commands["q"] = QueueCommand()
             commands["leave"] = LeaveCommand()
             commands["np"] = NowPlayingCommand()
         }
@@ -27,7 +28,7 @@ class MessageCreatedHandler {
 
         val first = content.split(" ")[0]
         val prefix = first[0]
-        val command = first.substring(1)
+        val command = first.substring(1).toLowerCase()
 
         if (prefix == '&' && commands.containsKey(command))
             return commands[command]!!.execute(event)

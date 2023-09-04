@@ -60,6 +60,11 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
         return Optional.ofNullable(player.playingTrack)
     }
 
+    fun destroy() {
+        player.destroy()
+        clear()
+    }
+
     override fun onTrackStart(player: AudioPlayer?, track: AudioTrack?) {
         println("Now playing ${track!!.info.title} from ${track.info.uri}")
         messageChannel.createMessage("Now playing: ${track.info.title}").block()
@@ -68,15 +73,7 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
     override fun onTrackEnd(player: AudioPlayer?, track: AudioTrack?, endReason: AudioTrackEndReason?) {
         println("onTrackEndCalled with endReason $endReason")
         if (endReason != null && endReason.mayStartNext) {
-            if (queue.isEmpty()) {
-                println("leaving...")
-                messageChannel.client.voiceConnectionRegistry.getVoiceConnection(guildId)
-                    .flatMap { it.disconnect() }
-                    .block()
-                GuildAudioManager.destroy(guildId)
-            } else {
-                skip()
-            }
+            skip()
         }
     }
 }
