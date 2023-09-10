@@ -1,11 +1,12 @@
 package audio
 
+import GlobalData
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter
+import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason
 import discord4j.common.util.Snowflake
-import discord4j.core.`object`.entity.channel.MessageChannel
 import java.util.*
 
 class AudioTrackScheduler private constructor() : AudioEventAdapter() {
@@ -14,16 +15,17 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
     private lateinit var player: AudioPlayer
     private lateinit var guildId: Snowflake
 
-    lateinit var messageChannel: MessageChannel
-
-    constructor(player: AudioPlayer, guildId: Snowflake, messageChannel: MessageChannel) : this() {
+    constructor(player: AudioPlayer, guildId: Snowflake) : this() {
         this.player = player
         this.guildId = guildId;
-        this.messageChannel = messageChannel
     }
 
     fun getQueue(): List<AudioTrack> {
         return Collections.unmodifiableList(queue)
+    }
+
+    fun replay(track: AudioTrack) {
+         player.playTrack(track.makeClone())
     }
 
     fun play(track: AudioTrack): Boolean {
@@ -70,7 +72,10 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
 
     override fun onTrackStart(player: AudioPlayer?, track: AudioTrack?) {
         println("Now playing ${track!!.info.title} from ${track.info.uri}")
-        messageChannel.createMessage("Now playing: ${track.info.title}").block()
+        GuildManager.getAudio(guildId)
+            .getMessageChannel()
+            .flatMap { it.createMessage("Started playing: ${track.info.title}") }
+            .block()
     }
 
     override fun onTrackEnd(player: AudioPlayer?, track: AudioTrack?, endReason: AudioTrackEndReason?) {
@@ -81,4 +86,12 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
             }
         }
     }
+
+    override fun onTrackException(player: AudioPlayer?, track: AudioTrack?, exception: FriendlyException?) {
+       GuildManager.getAudio(guildId)
+           .getMessageChannel()
+           .flatMap { it.createMessage("Error while trying to play ${track!!.info.title}") }
+           .block()
+    }
+
 }

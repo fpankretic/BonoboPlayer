@@ -9,21 +9,21 @@ import reactor.core.Disposable
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
 import java.time.Duration
+import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 
 class GuildAudio(
-    private val client: GatewayDiscordClient,
+    val client: GatewayDiscordClient,
     private val guildId: Snowflake,
-    messageChannel: MessageChannel
 ) {
-    private val LEAVE_DELAY: Duration = Duration.ofMinutes(3)
+    private val LEAVE_DELAY = Duration.ofMinutes(3)
 
-    private val leavingTask: AtomicReference<Disposable> = AtomicReference()
     val player: AudioPlayer = GlobalData.PLAYER_MANAGER.createPlayer()
-    val scheduler: AudioTrackScheduler
+    val scheduler: AudioTrackScheduler = AudioTrackScheduler(player, guildId)
+    private var messageChannelId: AtomicLong = AtomicLong()
+    private val leavingTask: AtomicReference<Disposable> = AtomicReference()
 
     init {
-        this.scheduler = AudioTrackScheduler(player, guildId, messageChannel)
         player.addListener(scheduler)
     }
 
@@ -52,6 +52,19 @@ class GuildAudio(
     fun destroy() {
         cancelLeave()
         scheduler.destroy()
+    }
+
+    fun getMessageChannelId(): Snowflake {
+        return Snowflake.of(messageChannelId.get())
+    }
+
+    fun getMessageChannel(): Mono<MessageChannel> {
+        return client.getChannelById(getMessageChannelId())
+            .cast(MessageChannel::class.java)
+    }
+
+    fun setMessageChannelId(messageChannelId: Snowflake) {
+        this.messageChannelId.set(messageChannelId.asLong())
     }
 
 }

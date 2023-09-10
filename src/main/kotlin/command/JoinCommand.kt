@@ -19,7 +19,7 @@ class JoinCommand : Command {
     }
 
     private fun joinVoiceChannel(channel: VoiceChannel, messageChannel: MessageChannel): Mono<Void> {
-        val player = GuildManager.getAudio(channel.guildId, messageChannel).player
+        val player = GuildManager.getAudio(channel.client, channel.guildId, messageChannel.id).player
         val spec = VoiceChannelJoinSpec.builder().provider(LavaPlayerAudioProvider(player)).build();
         return channel.join(spec).then()
     }

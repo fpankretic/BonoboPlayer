@@ -9,7 +9,6 @@ import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import discord4j.core.event.domain.message.MessageCreateEvent
 import reactor.core.publisher.Mono
-import java.lang.Exception
 
 class PlayCommand : Command {
 
@@ -17,7 +16,7 @@ class PlayCommand : Command {
         return JoinCommand().execute(event)
             .then(Mono.justOrEmpty(event.guildId))
             .zipWith(event.message.channel)
-            .map { GuildManager.getAudio(it.t1, it.t2) }
+            .map { GuildManager.getAudio(event.client, it.t1, it.t2.id) }
             .map { play(it, event) }
             .then()
     }
@@ -50,15 +49,15 @@ class PlayCommand : Command {
         return object : AudioLoadResultHandler {
             override fun trackLoaded(track: AudioTrack) {
                 println("trackLoaded")
-                guildAudio.scheduler.play(track)
                 event.message.channel
-                    .flatMap { it.createMessage("Track added to queue: ${track.info.title}") }
+                    .flatMap { it.createMessage("Adding track to queue: ${track.info.title}") }
                     .block()
+                guildAudio.scheduler.play(track.makeClone())
             }
 
             override fun playlistLoaded(playlist: AudioPlaylist) {
                 println("playlistLoaded")
-                playlist.tracks.forEach { guildAudio.scheduler.play(it) }
+                playlist.tracks.forEach { guildAudio.scheduler.play(it.makeClone()) }
                 event.message.channel
                     .flatMap { it.createMessage("Playlist ${playlist.name} added with ${playlist.tracks.size} tracks") }
                     .block()
