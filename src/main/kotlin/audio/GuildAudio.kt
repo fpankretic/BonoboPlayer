@@ -16,7 +16,7 @@ class GuildAudio(
     private val guildId: Snowflake,
     messageChannel: MessageChannel
 ) {
-    private val LEAVE_DELAY: Duration = Duration.ofMinutes(1)
+    private val LEAVE_DELAY: Duration = Duration.ofMinutes(3)
 
     private val leavingTask: AtomicReference<Disposable> = AtomicReference()
     val player: AudioPlayer = GlobalData.PLAYER_MANAGER.createPlayer()
