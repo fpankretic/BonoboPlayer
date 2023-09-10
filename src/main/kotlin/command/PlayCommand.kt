@@ -57,10 +57,10 @@ class PlayCommand : Command {
 
             override fun playlistLoaded(playlist: AudioPlaylist) {
                 println("playlistLoaded")
-                playlist.tracks.forEach { guildAudio.scheduler.play(it.makeClone()) }
                 event.message.channel
-                    .flatMap { it.createMessage("Playlist ${playlist.name} added with ${playlist.tracks.size} tracks") }
+                    .flatMap { it.createMessage("Adding playlist ${playlist.name} to queue with ${playlist.tracks.size} tracks") }
                     .block()
+                playlist.tracks.forEach { guildAudio.scheduler.play(it.makeClone()) }
             }
 
             override fun noMatches() {
