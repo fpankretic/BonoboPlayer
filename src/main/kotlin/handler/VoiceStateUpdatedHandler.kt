@@ -8,9 +8,7 @@ class VoiceStateUpdatedHandler {
 
     fun handle(event: VoiceStateUpdateEvent): Mono<Void> {
         val guildId = event.current.guildId
-        val botConnectionMono = event.client.voiceConnectionRegistry.getVoiceConnection(guildId)
 
-        // TODO: Scheduled leave
         return Mono.defer { Mono.justOrEmpty(GuildManager.getAudio(guildId)) }
             .flatMap { guildAudio ->
                 event.client.getSelfMember(guildId)

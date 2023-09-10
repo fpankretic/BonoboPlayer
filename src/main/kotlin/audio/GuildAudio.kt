@@ -11,14 +11,15 @@ import reactor.core.scheduler.Schedulers
 import java.time.Duration
 import java.util.concurrent.atomic.AtomicReference
 
-class GuildAudio(client: GatewayDiscordClient, guildId: Snowflake, messageChannel: MessageChannel) {
+class GuildAudio(
+    private val client: GatewayDiscordClient,
+    private val guildId: Snowflake,
+    messageChannel: MessageChannel
+) {
+    private val LEAVE_DELAY: Duration = Duration.ofMinutes(1)
 
-    val LEAVE_DELAY: Duration = Duration.ofMinutes(1)
-
+    private val leavingTask: AtomicReference<Disposable> = AtomicReference()
     val player: AudioPlayer = GlobalData.PLAYER_MANAGER.createPlayer()
-    val leavingTask: AtomicReference<Disposable> = AtomicReference()
-    val client: GatewayDiscordClient = client
-    val guildId: Snowflake = guildId
     val scheduler: AudioTrackScheduler
 
     init {
@@ -27,6 +28,7 @@ class GuildAudio(client: GatewayDiscordClient, guildId: Snowflake, messageChanne
     }
 
     fun scheduleLeave() {
+        println("Bot leave scheduled")
         leavingTask.set(
             Mono.delay(LEAVE_DELAY, Schedulers.boundedElastic())
                 .filter { isLeavingScheduled() }
@@ -38,6 +40,7 @@ class GuildAudio(client: GatewayDiscordClient, guildId: Snowflake, messageChanne
     }
 
     fun cancelLeave() {
+        println("Bot leave canceled")
         if (!isLeavingScheduled()) return
         this.leavingTask.get().dispose()
     }

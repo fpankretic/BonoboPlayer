@@ -5,6 +5,7 @@ import discord4j.core.event.domain.message.MessageCreateEvent
 import handler.AllEventHandler
 import handler.MessageCreatedHandler
 import handler.VoiceStateUpdatedHandler
+import io.sfrei.tracksearch.clients.youtube.YouTubeClient
 
 fun main(args: Array<String>) {
     val client = DiscordClient.create(args[0])

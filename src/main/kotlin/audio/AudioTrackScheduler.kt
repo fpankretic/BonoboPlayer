@@ -35,6 +35,9 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
         if (!started) {
             queue.add(track)
         }
+        if (started) {
+            GuildManager.getAudio(guildId).cancelLeave()
+        }
         return started
     }
 
@@ -73,7 +76,9 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
     override fun onTrackEnd(player: AudioPlayer?, track: AudioTrack?, endReason: AudioTrackEndReason?) {
         println("onTrackEndCalled with endReason $endReason")
         if (endReason != null && endReason.mayStartNext) {
-            skip()
+            if (skip().not()) {
+                GuildManager.getAudio(guildId).scheduleLeave()
+            }
         }
     }
 }

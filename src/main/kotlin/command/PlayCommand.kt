@@ -9,6 +9,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import discord4j.core.event.domain.message.MessageCreateEvent
 import reactor.core.publisher.Mono
+import java.lang.Exception
 
 class PlayCommand : Command {
 
@@ -24,6 +25,7 @@ class PlayCommand : Command {
     private fun play(guildAudio: GuildAudio, event: MessageCreateEvent) {
         val query = event.message.content.substringAfter(" ")
         val track = getTrack(query)
+        println("Found track url: $track")
         GlobalData.PLAYER_MANAGER.loadItem(track, defaultAudioLoadResultHandler(guildAudio, event))
     }
 
@@ -31,7 +33,14 @@ class PlayCommand : Command {
         if (query.startsWith("http") || query.startsWith("www") || query.startsWith("youtube")) {
             return query
         }
-        return GlobalData.SEARCH_CLIENT.getTracksForSearch(query)[0].url
+        for (i in 1..2) {
+            try {
+                return GlobalData.SEARCH_CLIENT.getTracksForSearch(query).get(0).url
+            } catch (e: Exception) {
+                println("Failed to fetch URL for $query. Retrying...")
+            }
+        }
+        return GlobalData.SEARCH_CLIENT.getTracksForSearch(query).get(0).url
     }
 
     private fun defaultAudioLoadResultHandler(
