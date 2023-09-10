@@ -75,7 +75,7 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
         GuildManager.getAudio(guildId)
             .getMessageChannel()
             .flatMap { it.createMessage("Started playing: ${track.info.title}") }
-            .block()
+            .subscribe()
     }
 
     override fun onTrackEnd(player: AudioPlayer?, track: AudioTrack?, endReason: AudioTrackEndReason?) {
@@ -91,7 +91,7 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
        GuildManager.getAudio(guildId)
            .getMessageChannel()
            .flatMap { it.createMessage("Error while trying to play ${track!!.info.title}") }
-           .block()
+           .subscribe()
     }
 
 }
