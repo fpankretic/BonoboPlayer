@@ -1,6 +1,6 @@
 package command
 
-import audio.GuildAudioManager
+import audio.GuildManager
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import discord4j.core.event.domain.message.MessageCreateEvent
 import reactor.core.publisher.Mono
@@ -9,7 +9,7 @@ import java.util.*
 class NowPlayingCommand : Command {
 
     override fun execute(event: MessageCreateEvent): Mono<Void> {
-        val song = GuildAudioManager.of(event.guildId.get()).scheduler.currentSong()
+        val song = GuildManager.getAudio(event.guildId.get()).scheduler.currentSong()
         return event.message.channel.flatMap { it.createMessage(getMessage(song)) }.then()
     }
 

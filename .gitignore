@@ -2,6 +2,9 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+bin/
+./start.sh
+start.sh
 
 ### IntelliJ IDEA ###
 .idea
@@ -59,6 +62,3 @@ build/
 hs_err_pid*
 replay_pid*
 
-
-# start script
-start.sh

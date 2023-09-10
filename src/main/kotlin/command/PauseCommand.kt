@@ -1,6 +1,6 @@
 package command
 
-import audio.GuildAudioManager
+import audio.GuildManager
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
 import discord4j.core.event.domain.message.MessageCreateEvent
 import reactor.core.publisher.Mono
@@ -8,7 +8,7 @@ import reactor.core.publisher.Mono
 class PauseCommand : Command {
     override fun execute(event: MessageCreateEvent): Mono<Void> {
         return Mono.justOrEmpty(event.guildId)
-            .map { GuildAudioManager.of(it).player }
+            .map { GuildManager.getAudio(it).player }
             .flatMap { pauseOrResume(it, event) }
             .then()
     }

@@ -1,5 +1,6 @@
 package command
 
+import audio.GuildManager
 import discord4j.core.event.domain.message.MessageCreateEvent
 import reactor.core.publisher.Mono
 
@@ -9,6 +10,7 @@ class LeaveCommand : Command {
             .flatMap { it.voiceState }
             .flatMap { event.client.voiceConnectionRegistry.getVoiceConnection(it.guildId) }
             .flatMap { it.disconnect() }
+            .then(Mono.fromCallable { GuildManager.destroyAudio(event.guildId.get()) })
             .then()
     }
 }

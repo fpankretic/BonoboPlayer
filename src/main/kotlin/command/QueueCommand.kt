@@ -1,6 +1,6 @@
 package command
 
-import audio.GuildAudioManager
+import audio.GuildManager
 import discord4j.common.util.Snowflake
 import discord4j.core.event.domain.message.MessageCreateEvent
 import reactor.core.publisher.Mono
@@ -14,7 +14,7 @@ class QueueCommand : Command {
     }
 
     private fun createList(guildId: Snowflake): String {
-        return GuildAudioManager.of(guildId).scheduler.getQueue()
+        return GuildManager.getAudio(guildId).scheduler.getQueue()
             .take(10)
             .joinToString("\n") { it.info.title }
     }

@@ -1,11 +1,12 @@
 package audio
 
+import GlobalData
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter
+import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason
 import discord4j.common.util.Snowflake
-import discord4j.core.`object`.entity.channel.MessageChannel
 import java.util.*
 
 class AudioTrackScheduler private constructor() : AudioEventAdapter() {
@@ -14,16 +15,17 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
     private lateinit var player: AudioPlayer
     private lateinit var guildId: Snowflake
 
-    lateinit var messageChannel: MessageChannel
-
-    constructor(player: AudioPlayer, guildId: Snowflake, messageChannel: MessageChannel) : this() {
+    constructor(player: AudioPlayer, guildId: Snowflake) : this() {
         this.player = player
         this.guildId = guildId;
-        this.messageChannel = messageChannel
     }
 
     fun getQueue(): List<AudioTrack> {
         return Collections.unmodifiableList(queue)
+    }
+
+    fun replay(track: AudioTrack) {
+         player.playTrack(track.makeClone())
     }
 
     fun play(track: AudioTrack): Boolean {
@@ -31,13 +33,14 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
     }
 
     private fun play(track: AudioTrack, force: Boolean): Boolean {
-        val playing = player.startTrack(track, !force)
-        if (playing) {
-            messageChannel.createMessage("Now playing: ${track.info.title}").block()
-        } else {
+        val started = player.startTrack(track.makeClone(), !force)
+        if (!started) {
             queue.add(track)
         }
-        return playing
+        if (started) {
+            GuildManager.getAudio(guildId).cancelLeave()
+        }
+        return started
     }
 
     fun skip(): Boolean {
@@ -62,15 +65,33 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
         return Optional.ofNullable(player.playingTrack)
     }
 
+    fun destroy() {
+        player.destroy()
+        clear()
+    }
+
+    override fun onTrackStart(player: AudioPlayer?, track: AudioTrack?) {
+        println("Now playing ${track!!.info.title} from ${track.info.uri}")
+        GuildManager.getAudio(guildId)
+            .getMessageChannel()
+            .flatMap { it.createMessage("Started playing: ${track.info.title}") }
+            .block()
+    }
+
     override fun onTrackEnd(player: AudioPlayer?, track: AudioTrack?, endReason: AudioTrackEndReason?) {
+        println("onTrackEndCalled with endReason $endReason")
         if (endReason != null && endReason.mayStartNext) {
-            if (queue.isEmpty()) {
-                messageChannel.client.voiceConnectionRegistry.getVoiceConnection(guildId)
-                    .flatMap { it.disconnect() }
-                    .block()
-            } else {
-                skip()
+            if (skip().not()) {
+                GuildManager.getAudio(guildId).scheduleLeave()
             }
         }
     }
+
+    override fun onTrackException(player: AudioPlayer?, track: AudioTrack?, exception: FriendlyException?) {
+       GuildManager.getAudio(guildId)
+           .getMessageChannel()
+           .flatMap { it.createMessage("Error while trying to play ${track!!.info.title}") }
+           .block()
+    }
+
 }
