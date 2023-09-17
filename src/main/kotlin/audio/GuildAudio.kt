@@ -5,6 +5,7 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
 import discord4j.common.util.Snowflake
 import discord4j.core.GatewayDiscordClient
 import discord4j.core.`object`.entity.channel.MessageChannel
+import mu.KotlinLogging
 import reactor.core.Disposable
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
@@ -16,6 +17,7 @@ class GuildAudio(
     val client: GatewayDiscordClient,
     private val guildId: Snowflake,
 ) {
+    private val logger = KotlinLogging.logger {}
     private val LEAVE_DELAY = Duration.ofMinutes(3)
 
     val player: AudioPlayer = GlobalData.PLAYER_MANAGER.createPlayer()
@@ -28,7 +30,7 @@ class GuildAudio(
     }
 
     fun scheduleLeave() {
-        println("Bot leave scheduled")
+        logger.info { "Scheduling bot leave." }
         leavingTask.set(
             Mono.delay(LEAVE_DELAY, Schedulers.boundedElastic())
                 .filter { isLeavingScheduled() }
@@ -40,8 +42,9 @@ class GuildAudio(
     }
 
     fun cancelLeave() {
-        println("Bot leave canceled")
+        logger.info { "Trying to cancel bot leave if leaving." }
         if (!isLeavingScheduled()) return
+        logger.info { "Bot leave canceled." }
         this.leavingTask.get().dispose()
     }
 

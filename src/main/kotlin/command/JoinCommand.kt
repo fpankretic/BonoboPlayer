@@ -9,8 +9,10 @@ import discord4j.core.spec.VoiceChannelJoinSpec
 import reactor.core.publisher.Mono
 
 class JoinCommand : Command {
+
     override fun execute(event: MessageCreateEvent): Mono<Void> {
         return Mono.justOrEmpty(event.member)
+            // TODO: Check if already joined
             .flatMap { it.voiceState }
             .flatMap { it.channel }
             .zipWith(event.message.channel)

@@ -19,6 +19,7 @@ class VoiceStateUpdatedHandler {
                     .filter { !it.isBot }
                     .count()
                     // Everyone left or somebody joined
+                    // TODO: Check
                     .filter { (it == 0L) != guildAudio.isLeavingScheduled() }
                     .map {
                         val memberCount = it

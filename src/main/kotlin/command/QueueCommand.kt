@@ -6,6 +6,7 @@ import discord4j.core.event.domain.message.MessageCreateEvent
 import reactor.core.publisher.Mono
 
 class QueueCommand : Command {
+
     override fun execute(event: MessageCreateEvent): Mono<Void> {
         if (event.guildId.isEmpty) return Mono.empty()
         return event.message.channel

@@ -8,9 +8,12 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import discord4j.core.event.domain.message.MessageCreateEvent
+import mu.KotlinLogging
 import reactor.core.publisher.Mono
 
 class PlayCommand : Command {
+
+    private val logger = KotlinLogging.logger {}
 
     override fun execute(event: MessageCreateEvent): Mono<Void> {
         return JoinCommand().execute(event)
@@ -24,7 +27,7 @@ class PlayCommand : Command {
     private fun play(guildAudio: GuildAudio, event: MessageCreateEvent) {
         val query = event.message.content.substringAfter(" ")
         val track = getTrack(query)
-        println("Found track url: $track")
+        logger.info { "Found track url: $track" }
         GlobalData.PLAYER_MANAGER.loadItem(track, defaultAudioLoadResultHandler(guildAudio, event))
     }
 
@@ -36,10 +39,11 @@ class PlayCommand : Command {
             try {
                 return GlobalData.SEARCH_CLIENT.getTracksForSearch(query).get(0).url
             } catch (e: Exception) {
-                println("Failed to fetch URL for $query. Retrying...")
+                logger.info { "Failed to fetch URL for $query. Retrying..." }
             }
         }
-        return GlobalData.SEARCH_CLIENT.getTracksForSearch(query).get(0).url
+        logger.info { "Failed to fetch URL for $query. Will not retry." }
+        throw RuntimeException()
     }
 
     private fun defaultAudioLoadResultHandler(
@@ -48,7 +52,7 @@ class PlayCommand : Command {
     ): AudioLoadResultHandler {
         return object : AudioLoadResultHandler {
             override fun trackLoaded(track: AudioTrack) {
-                println("trackLoaded")
+                logger.info { "Loading track." }
                 event.message.channel
                     .flatMap { it.createMessage("Adding track to queue: ${track.info.title}") }
                     .block()
@@ -56,7 +60,7 @@ class PlayCommand : Command {
             }
 
             override fun playlistLoaded(playlist: AudioPlaylist) {
-                println("playlistLoaded")
+                logger.info { "Loading playlist." }
                 event.message.channel
                     .flatMap { it.createMessage("Adding playlist ${playlist.name} to queue with ${playlist.tracks.size} tracks") }
                     .block()
@@ -64,11 +68,11 @@ class PlayCommand : Command {
             }
 
             override fun noMatches() {
-                println("no matches")
+                logger.info { "Found no matches." }
             }
 
             override fun loadFailed(exception: FriendlyException?) {
-                println("load failed")
+                logger.info { "Load failed." }
             }
         }
     }

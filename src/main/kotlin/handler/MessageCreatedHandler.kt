@@ -5,6 +5,7 @@ import discord4j.core.event.domain.message.MessageCreateEvent
 import reactor.core.publisher.Mono
 
 class MessageCreatedHandler {
+
     companion object {
         private val commands: MutableMap<String, Command> = mutableMapOf()
 

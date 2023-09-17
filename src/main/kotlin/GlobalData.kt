@@ -5,6 +5,7 @@ import com.sedmelluq.discord.lavaplayer.track.playback.NonAllocatingAudioFrameBu
 import io.sfrei.tracksearch.clients.youtube.YouTubeClient
 
 class GlobalData {
+
     companion object {
         @JvmField val PLAYER_MANAGER: AudioPlayerManager
         @JvmField val SEARCH_CLIENT: YouTubeClient
@@ -21,4 +22,5 @@ class GlobalData {
             AudioSourceManagers.registerLocalSource(PLAYER_MANAGER)
         }
     }
+
 }

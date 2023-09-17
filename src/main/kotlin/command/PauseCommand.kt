@@ -6,6 +6,7 @@ import discord4j.core.event.domain.message.MessageCreateEvent
 import reactor.core.publisher.Mono
 
 class PauseCommand : Command {
+
     override fun execute(event: MessageCreateEvent): Mono<Void> {
         return Mono.justOrEmpty(event.guildId)
             .map { GuildManager.getAudio(it).player }
@@ -23,4 +24,5 @@ class PauseCommand : Command {
             Mono.empty()
         }
     }
+
 }

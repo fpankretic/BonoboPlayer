@@ -19,4 +19,5 @@ class SkipCommand : Command {
     private fun isSkipped(guildAudio: GuildAudio): Boolean {
         return guildAudio.scheduler.skip().not()
     }
+
 }

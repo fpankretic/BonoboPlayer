@@ -5,6 +5,7 @@ import discord4j.core.event.domain.message.MessageCreateEvent
 import reactor.core.publisher.Mono
 
 class LeaveCommand : Command {
+
     override fun execute(event: MessageCreateEvent): Mono<Void> {
         return Mono.justOrEmpty(event.member)
             .flatMap { it.voiceState }
@@ -13,4 +14,5 @@ class LeaveCommand : Command {
             .then(Mono.fromCallable { GuildManager.destroyAudio(event.guildId.get()) })
             .then()
     }
+
 }

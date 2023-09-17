@@ -1,16 +1,17 @@
 package audio
 
-import GlobalData
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason
 import discord4j.common.util.Snowflake
+import mu.KotlinLogging
 import java.util.*
 
 class AudioTrackScheduler private constructor() : AudioEventAdapter() {
 
+    private val logger = KotlinLogging.logger {}
     private val queue: MutableList<AudioTrack> = Collections.synchronizedList(mutableListOf())
     private lateinit var player: AudioPlayer
     private lateinit var guildId: Snowflake
@@ -25,7 +26,7 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
     }
 
     fun replay(track: AudioTrack) {
-         player.playTrack(track.makeClone())
+        player.playTrack(track.makeClone())
     }
 
     fun play(track: AudioTrack): Boolean {
@@ -71,15 +72,15 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
     }
 
     override fun onTrackStart(player: AudioPlayer?, track: AudioTrack?) {
-        println("Now playing ${track!!.info.title} from ${track.info.uri}")
+        logger.info { "Now playing ${track!!.info.title} from ${track.info.uri}" }
         GuildManager.getAudio(guildId)
             .getMessageChannel()
-            .flatMap { it.createMessage("Started playing: ${track.info.title}") }
+            .flatMap { it.createMessage("Started playing: ${track!!.info.title}") }
             .subscribe()
     }
 
     override fun onTrackEnd(player: AudioPlayer?, track: AudioTrack?, endReason: AudioTrackEndReason?) {
-        println("onTrackEndCalled with endReason $endReason")
+        logger.info { "onTrackEndCalled with endReason $endReason" }
         if (endReason != null && endReason.mayStartNext) {
             if (skip().not()) {
                 GuildManager.getAudio(guildId).scheduleLeave()
@@ -88,10 +89,15 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
     }
 
     override fun onTrackException(player: AudioPlayer?, track: AudioTrack?, exception: FriendlyException?) {
-       GuildManager.getAudio(guildId)
-           .getMessageChannel()
-           .flatMap { it.createMessage("Error while trying to play ${track!!.info.title}") }
-           .subscribe()
+        logger.info { "Track exception for ${track!!.info.title}" }
+        GuildManager.getAudio(guildId)
+            .getMessageChannel()
+            .flatMap { it.createMessage("Error while trying to play ${track!!.info.title}") }
+            .subscribe()
+    }
+
+    override fun onTrackStuck(player: AudioPlayer?, track: AudioTrack?, thresholdMs: Long) {
+        logger.info { "Track ${track!!.info.title} got stuck, skipping." }
     }
 
 }

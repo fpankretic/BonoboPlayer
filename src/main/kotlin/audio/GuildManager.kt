@@ -2,12 +2,14 @@ package audio
 
 import discord4j.common.util.Snowflake
 import discord4j.core.GatewayDiscordClient
-import discord4j.core.`object`.entity.channel.MessageChannel
+import mu.KotlinLogging
 import java.util.concurrent.ConcurrentHashMap
 
 class GuildManager private constructor() {
 
     companion object {
+
+        private val logger = KotlinLogging.logger {}
         private val MANAGERS: MutableMap<Snowflake, GuildAudio> = ConcurrentHashMap()
 
         @JvmStatic
@@ -24,8 +26,10 @@ class GuildManager private constructor() {
 
         @JvmStatic
         fun destroyAudio(id: Snowflake) {
+            logger.info { "Destroying audio." }
             MANAGERS[id]!!.destroy()
             MANAGERS.remove(id)
+            logger.info { "Audio destroyed." }
         }
     }
 
