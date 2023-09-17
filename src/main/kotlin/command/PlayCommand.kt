@@ -8,8 +8,10 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import discord4j.core.event.domain.message.MessageCreateEvent
+import discord4j.core.spec.EmbedCreateSpec
 import mu.KotlinLogging
 import reactor.core.publisher.Mono
+import util.EmbedUtils
 
 class PlayCommand : Command {
 
@@ -53,18 +55,14 @@ class PlayCommand : Command {
         return object : AudioLoadResultHandler {
             override fun trackLoaded(track: AudioTrack) {
                 logger.info { "Loading track." }
-                event.message.channel
-                    .flatMap { it.createMessage("Adding track to queue: ${track.info.title}") }
-                    .block()
-                guildAudio.scheduler.play(track.makeClone())
+                guildAudio.sendMessage(getTrackLoadedMessage(track))
+                guildAudio.play(track)
             }
 
             override fun playlistLoaded(playlist: AudioPlaylist) {
                 logger.info { "Loading playlist." }
-                event.message.channel
-                    .flatMap { it.createMessage("Adding playlist ${playlist.name} to queue with ${playlist.tracks.size} tracks") }
-                    .block()
-                playlist.tracks.forEach { guildAudio.scheduler.play(it.makeClone()) }
+                guildAudio.sendMessage(getPlaylistLoadedMessage(playlist))
+                playlist.tracks.forEach { guildAudio.play(it) }
             }
 
             override fun noMatches() {
@@ -75,6 +73,19 @@ class PlayCommand : Command {
                 logger.info { "Load failed." }
             }
         }
+    }
+
+    private fun getTrackLoadedMessage(track: AudioTrack): EmbedCreateSpec {
+        return EmbedUtils.getSimpleMessageEmbed(
+            "Added to queue: ${EmbedUtils.getTextAsHyperLink(track.info.title, track.info.uri)}"
+        )
+    }
+
+    private fun getPlaylistLoadedMessage(playlist: AudioPlaylist): EmbedCreateSpec {
+        return EmbedUtils.getSimpleMessageEmbed(
+            "Added playlist ${EmbedUtils.getTrackAsHyperLink(playlist)} with ${playlist.tracks.size} tracks"
+        )
+
     }
 
 }

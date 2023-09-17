@@ -6,7 +6,9 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason
 import discord4j.common.util.Snowflake
+import discord4j.core.spec.EmbedCreateSpec
 import mu.KotlinLogging
+import util.EmbedUtils
 import java.util.*
 
 class AudioTrackScheduler private constructor() : AudioEventAdapter() {
@@ -46,7 +48,7 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
 
     fun skip(): Boolean {
         if (queue.isEmpty() && isPlaying()) {
-            player.playTrack(null)
+            clear()
             return false
         }
 
@@ -73,10 +75,7 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
 
     override fun onTrackStart(player: AudioPlayer?, track: AudioTrack?) {
         logger.info { "Now playing ${track!!.info.title} from ${track.info.uri}" }
-        GuildManager.getAudio(guildId)
-            .getMessageChannel()
-            .flatMap { it.createMessage("Started playing: ${track!!.info.title}") }
-            .subscribe()
+        GuildManager.getAudio(guildId).sendMessage(getOnTrackStartMessage(track!!))
     }
 
     override fun onTrackEnd(player: AudioPlayer?, track: AudioTrack?, endReason: AudioTrackEndReason?) {
@@ -90,14 +89,16 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
 
     override fun onTrackException(player: AudioPlayer?, track: AudioTrack?, exception: FriendlyException?) {
         logger.info { "Track exception for ${track!!.info.title}" }
-        GuildManager.getAudio(guildId)
-            .getMessageChannel()
-            .flatMap { it.createMessage("Error while trying to play ${track!!.info.title}") }
-            .subscribe()
     }
 
     override fun onTrackStuck(player: AudioPlayer?, track: AudioTrack?, thresholdMs: Long) {
         logger.info { "Track ${track!!.info.title} got stuck, skipping." }
+    }
+
+    private fun getOnTrackStartMessage(track: AudioTrack): EmbedCreateSpec {
+        return EmbedUtils.getSimpleMessageEmbed(
+            "Started playing: ${EmbedUtils.getTrackAsHyperLink(track)}"
+        )
     }
 
 }
