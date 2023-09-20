@@ -14,21 +14,15 @@ import java.util.*
 class AudioTrackScheduler private constructor() : AudioEventAdapter() {
 
     private val logger = KotlinLogging.logger {}
-    private val queue: MutableList<AudioTrack> = Collections.synchronizedList(mutableListOf())
+
     private lateinit var player: AudioPlayer
     private lateinit var guildId: Snowflake
+
+    val queue: MutableList<AudioTrack> = Collections.synchronizedList(mutableListOf())
 
     constructor(player: AudioPlayer, guildId: Snowflake) : this() {
         this.player = player
         this.guildId = guildId;
-    }
-
-    fun getQueue(): List<AudioTrack> {
-        return Collections.unmodifiableList(queue)
-    }
-
-    fun replay(track: AudioTrack) {
-        player.playTrack(track.makeClone())
     }
 
     fun play(track: AudioTrack): Boolean {
@@ -46,6 +40,10 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
         return started
     }
 
+    fun getQueue(): List<AudioTrack> {
+        return Collections.unmodifiableList(queue)
+    }
+
     fun skip(): Boolean {
         if (queue.isEmpty() && isPlaying()) {
             clear()
@@ -60,10 +58,6 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
         player.playTrack(null)
     }
 
-    fun isPlaying(): Boolean {
-        return player.playingTrack != null
-    }
-
     fun currentSong(): Optional<AudioTrack> {
         return Optional.ofNullable(player.playingTrack)
     }
@@ -71,6 +65,10 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
     fun destroy() {
         player.destroy()
         clear()
+    }
+
+    private fun isPlaying(): Boolean {
+        return player.playingTrack != null
     }
 
     override fun onTrackStart(player: AudioPlayer?, track: AudioTrack?) {
