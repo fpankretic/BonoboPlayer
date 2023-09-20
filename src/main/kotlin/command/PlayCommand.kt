@@ -38,7 +38,7 @@ class PlayCommand : Command {
     }
 
     private fun getTrack(query: String): String {
-        logger.info { "Fetching URL for query $query." }
+        logger.info { "Fetching URL for query: $query." }
         if (query.startsWith("http") || query.startsWith("www") || query.startsWith("youtube")) {
             return query
         }

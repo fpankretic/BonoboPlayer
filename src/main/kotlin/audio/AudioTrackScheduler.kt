@@ -71,12 +71,12 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
     }
 
     override fun onTrackStart(player: AudioPlayer?, track: AudioTrack?) {
-        logger.info { "Now playing ${track!!.info.title} from ${track.info.uri}" }
+        logger.info { "Now playing ${track!!.info.title} from ${track.info.uri}." }
         GuildManager.getAudio(guildId).sendMessage(getOnTrackStartMessage(track!!))
     }
 
     override fun onTrackEnd(player: AudioPlayer?, track: AudioTrack?, endReason: AudioTrackEndReason?) {
-        logger.info { "onTrackEndCalled with endReason $endReason" }
+        logger.info { "onTrackEndCalled with endReason $endReason." }
         if (endReason != null && endReason.mayStartNext) {
             if (skip().not()) {
                 GuildManager.getAudio(guildId).scheduleLeave()
@@ -85,7 +85,7 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
     }
 
     override fun onTrackException(player: AudioPlayer?, track: AudioTrack?, exception: FriendlyException?) {
-        logger.info { "Track exception for ${track!!.info.title}" }
+        logger.info { "Track exception for ${track!!.info.title}." }
     }
 
     override fun onTrackStuck(player: AudioPlayer?, track: AudioTrack?, thresholdMs: Long) {
