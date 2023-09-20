@@ -15,10 +15,9 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
 
     private val logger = KotlinLogging.logger {}
 
+    private val queue: MutableList<AudioTrack> = Collections.synchronizedList(mutableListOf())
     private lateinit var player: AudioPlayer
     private lateinit var guildId: Snowflake
-
-    val queue: MutableList<AudioTrack> = Collections.synchronizedList(mutableListOf())
 
     constructor(player: AudioPlayer, guildId: Snowflake) : this() {
         this.player = player
