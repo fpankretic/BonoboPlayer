@@ -12,6 +12,7 @@ import discord4j.core.spec.EmbedCreateSpec
 import mu.KotlinLogging
 import reactor.core.publisher.Mono
 import util.EmbedUtils
+import kotlin.math.log
 
 class PlayCommand : Command {
 
@@ -23,29 +24,30 @@ class PlayCommand : Command {
             .zipWith(event.message.channel)
             .map { GuildManager.getAudio(event.client, it.t1, it.t2.id) }
             .map { play(it, event) }
+            .doOnError { logger.error { it.message } }
+            .retry(2)
+            .onErrorComplete()
             .then()
     }
 
     private fun play(guildAudio: GuildAudio, event: MessageCreateEvent) {
-        val query = event.message.content.substringAfter(" ")
+        val query = event.message.content.substringAfter(" ").trim()
         val track = getTrack(query)
         logger.info { "Found track url: $track" }
         GlobalData.PLAYER_MANAGER.loadItem(track, defaultAudioLoadResultHandler(guildAudio, event))
     }
 
     private fun getTrack(query: String): String {
+        logger.info { "Fetching URL for query $query." }
         if (query.startsWith("http") || query.startsWith("www") || query.startsWith("youtube")) {
             return query
         }
-        for (i in 1..2) {
-            try {
-                return GlobalData.SEARCH_CLIENT.getTracksForSearch(query).get(0).url
-            } catch (e: Exception) {
-                logger.info { "Failed to fetch URL for $query. Retrying..." }
-            }
+
+        return try {
+            GlobalData.SEARCH_CLIENT.getTracksForSearch(query).get(0).url
+        } catch (e: Exception) {
+            throw RuntimeException("Failed to fetch URL for $query.")
         }
-        logger.info { "Failed to fetch URL for $query. Will not retry." }
-        throw RuntimeException()
     }
 
     private fun defaultAudioLoadResultHandler(

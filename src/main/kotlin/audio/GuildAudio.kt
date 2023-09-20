@@ -77,7 +77,7 @@ class GuildAudio(
     }
 
     fun getQueue(): List<AudioTrack> {
-        return scheduler.getQueue()
+        return scheduler.queue
     }
 
     fun play(track: AudioTrack) {
