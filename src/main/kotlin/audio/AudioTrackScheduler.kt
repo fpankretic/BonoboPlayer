@@ -19,7 +19,6 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
     private lateinit var guildId: Snowflake
 
     val queue: MutableList<AudioTrack> = Collections.synchronizedList(mutableListOf())
-        get() = Collections.unmodifiableList(field)
 
     constructor(player: AudioPlayer, guildId: Snowflake) : this() {
         this.player = player
@@ -39,6 +38,10 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
             GuildManager.getAudio(guildId).cancelLeave()
         }
         return started
+    }
+
+    fun getQueue(): List<AudioTrack> {
+        return Collections.unmodifiableList(queue)
     }
 
     fun skip(): Boolean {
