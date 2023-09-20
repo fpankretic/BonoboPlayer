@@ -7,7 +7,8 @@ import handler.MessageCreatedHandler
 import handler.VoiceStateUpdatedHandler
 
 fun main(args: Array<String>) {
-    val client = DiscordClient.create(args[0])
+    println(System.getProperty("java.version"))
+    /*val client = DiscordClient.create(args[0])
     val gateway = client.login().block() ?: return
 
     // handlers
@@ -20,5 +21,5 @@ fun main(args: Array<String>) {
     gateway.on(MessageCreateEvent::class.java) { messageCreatedHandler.handle(it) }.subscribe()
     gateway.on(VoiceStateUpdateEvent::class.java) { voiceStateUpdatedHandler.handle(it) }.subscribe()
 
-    gateway.onDisconnect().block()
+    gateway.onDisconnect().block()*/
 }
