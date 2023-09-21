@@ -1,6 +1,7 @@
 package audio
 
 import GlobalData
+import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import discord4j.common.util.Snowflake
@@ -14,6 +15,8 @@ import reactor.core.scheduler.Schedulers
 import util.EmbedUtils
 import java.time.Duration
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.Future
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 
@@ -28,6 +31,7 @@ class GuildAudio(
     private val scheduler: AudioTrackScheduler = AudioTrackScheduler(player, guildId)
     private var messageChannelId: AtomicLong = AtomicLong()
     private val leavingTask: AtomicReference<Disposable> = AtomicReference()
+    private val loadResultHandlers: ConcurrentHashMap<AudioLoadResultHandler, Future<Void>> = ConcurrentHashMap()
 
     init {
         player.addListener(scheduler)
@@ -63,11 +67,6 @@ class GuildAudio(
         return leavingTask.get() != null && !leavingTask.get().isDisposed
     }
 
-    fun destroy() {
-        cancelLeave()
-        scheduler.destroy()
-    }
-
     fun setMessageChannelId(messageChannelId: Snowflake) {
         this.messageChannelId.set(messageChannelId.asLong())
     }
@@ -94,6 +93,32 @@ class GuildAudio(
 
     fun skip(): Boolean {
         return scheduler.skip()
+    }
+
+    fun skipInQueue(position: Int): Boolean {
+        if (position == 0) {
+            return skip()
+        } else if (position < 0 || position > scheduler.getQueue().size) {
+            return false
+        }
+
+        return scheduler.skipInQueue(position)
+    }
+
+    fun addHandler(loadResultHandler: DefaultAudioLoadResultHandler) {
+        logger.info { "GuildId: ${guildId.asLong()} Adding audio load result handler: ${loadResultHandler.hashCode()}" }
+        loadResultHandlers[loadResultHandler] =
+            GlobalData.PLAYER_MANAGER.loadItemOrdered(guildId.asLong(), loadResultHandler.track, loadResultHandler)
+    }
+
+    fun removeHandler(loadResultHandler: DefaultAudioLoadResultHandler) {
+        logger.info { "GuildId: ${guildId.asLong()} Removing audio load result handler: ${loadResultHandler.hashCode()}" }
+        loadResultHandlers.remove(loadResultHandler)
+    }
+
+    fun destroy() {
+        cancelLeave()
+        scheduler.destroy()
     }
 
     private fun getMessageChannelId(): Snowflake {

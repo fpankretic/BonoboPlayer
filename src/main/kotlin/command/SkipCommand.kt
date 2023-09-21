@@ -13,13 +13,15 @@ class SkipCommand : Command {
     override fun execute(event: MessageCreateEvent): Mono<Void> {
         return Mono.justOrEmpty(event.guildId)
             .map { GuildManager.getAudio(it) }
-            .filter { filterChain(it) }
+            .filter { filterChain(it, event) }
             .map { it.scheduleLeave() }
+            .onErrorComplete()
             .then()
     }
 
-    private fun filterChain(guildAudio: GuildAudio): Boolean {
-        return guildAudio.skip().not() &&
+    private fun filterChain(guildAudio: GuildAudio, event: MessageCreateEvent): Boolean {
+        val position = event.message.content.split(" ").getOrElse(1) { "0" }.toInt()
+        return guildAudio.skipInQueue(position).not() &&
                 guildAudio.isLeavingScheduled().not()
     }
 
