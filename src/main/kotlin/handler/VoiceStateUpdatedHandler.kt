@@ -2,9 +2,12 @@ package handler
 
 import audio.GuildManager
 import discord4j.core.event.domain.VoiceStateUpdateEvent
+import mu.KotlinLogging
 import reactor.core.publisher.Mono
 
 class VoiceStateUpdatedHandler {
+
+    private val logger = KotlinLogging.logger {}
 
     fun handle(event: VoiceStateUpdateEvent): Mono<Void> {
         val guildId = event.current.guildId
@@ -31,6 +34,8 @@ class VoiceStateUpdatedHandler {
                             guildAudio.scheduleLeave()
                         }
                     }
+                    .doOnError { logger.error { "Error occurred with message ${it.message}" } }
+                    .onErrorComplete()
                     .then()
             }
     }
