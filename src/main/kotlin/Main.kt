@@ -1,5 +1,4 @@
 import discord4j.core.DiscordClient
-import discord4j.core.event.domain.Event
 import discord4j.core.event.domain.VoiceStateUpdateEvent
 import discord4j.core.event.domain.message.MessageCreateEvent
 import handler.MessageCreatedHandler

@@ -1,18 +1,12 @@
 package command
 
 import GlobalData
+import audio.DefaultAudioLoadResultHandler
 import audio.GuildAudio
 import audio.GuildManager
-import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler
-import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
-import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import discord4j.core.event.domain.message.MessageCreateEvent
-import discord4j.core.spec.EmbedCreateSpec
 import mu.KotlinLogging
 import reactor.core.publisher.Mono
-import util.EmbedUtils
-import kotlin.math.log
 
 class PlayCommand : Command {
 
@@ -34,7 +28,7 @@ class PlayCommand : Command {
         val query = event.message.content.substringAfter(" ").trim()
         val track = getTrack(query)
         logger.info { "Found track url: $track" }
-        GlobalData.PLAYER_MANAGER.loadItem(track, defaultAudioLoadResultHandler(guildAudio, event))
+        guildAudio.addHandler(DefaultAudioLoadResultHandler(event.guildId.get(), track))
     }
 
     private fun getTrack(query: String): String {
@@ -48,48 +42,6 @@ class PlayCommand : Command {
         } catch (e: Exception) {
             throw RuntimeException("Failed to fetch URL for $query.")
         }
-    }
-
-    private fun defaultAudioLoadResultHandler(
-        guildAudio: GuildAudio,
-        event: MessageCreateEvent
-    ): AudioLoadResultHandler {
-        return object : AudioLoadResultHandler {
-            override fun trackLoaded(track: AudioTrack) {
-                logger.info { "Started loading track ${track.info.title}." }
-                guildAudio.sendMessage(getTrackLoadedMessage(track))
-                guildAudio.play(track)
-                logger.info { "Finished loading track ${track.info.title}." }
-            }
-
-            override fun playlistLoaded(playlist: AudioPlaylist) {
-                logger.info { "Started loading playlist ${playlist.name}." }
-                guildAudio.sendMessage(getPlaylistLoadedMessage(playlist))
-                playlist.tracks.forEach { guildAudio.play(it) }
-                logger.info { "Finished loading playlist ${playlist.name}." }
-            }
-
-            override fun noMatches() {
-                logger.info { "Found no matches." }
-            }
-
-            override fun loadFailed(exception: FriendlyException?) {
-                logger.info { "Load failed." }
-            }
-        }
-    }
-
-    private fun getTrackLoadedMessage(track: AudioTrack): EmbedCreateSpec {
-        return EmbedUtils.getSimpleMessageEmbed(
-            "Added to queue: ${EmbedUtils.getTextAsHyperLink(track.info.title, track.info.uri)}"
-        )
-    }
-
-    private fun getPlaylistLoadedMessage(playlist: AudioPlaylist): EmbedCreateSpec {
-        return EmbedUtils.getSimpleMessageEmbed(
-            "Added playlist ${EmbedUtils.getTrackAsHyperLink(playlist)} with ${playlist.tracks.size} tracks"
-        )
-
     }
 
 }

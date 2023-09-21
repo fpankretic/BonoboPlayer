@@ -10,6 +10,7 @@ import discord4j.core.spec.EmbedCreateSpec
 import mu.KotlinLogging
 import util.EmbedUtils
 import java.util.*
+import kotlin.math.log
 
 class AudioTrackScheduler private constructor() : AudioEventAdapter() {
 
@@ -52,6 +53,18 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
         }
 
         return queue.isNotEmpty() && play(queue.removeAt(0), true)
+    }
+
+    fun skipInQueue(position: Int): Boolean {
+        if (queue.size < position) {
+            return false
+        }
+
+        val track = queue.removeAt(position - 1)
+        logger.info { "Removed ${track.info.title} from queue." }
+
+        GuildManager.getAudio(guildId).sendMessage(getTrackSkippedMessage(track))
+        return true
     }
 
     fun clear() {
@@ -97,6 +110,12 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
     private fun getOnTrackStartMessage(track: AudioTrack): EmbedCreateSpec {
         return EmbedUtils.getSimpleMessageEmbed(
             "Started playing: ${EmbedUtils.getTrackAsHyperLink(track)}"
+        )
+    }
+
+    private fun getTrackSkippedMessage(track: AudioTrack): EmbedCreateSpec {
+        return EmbedUtils.getSimpleMessageEmbed(
+            "Skipped ${EmbedUtils.getTrackAsHyperLink(track)}"
         )
     }
 
