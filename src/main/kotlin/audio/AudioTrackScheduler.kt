@@ -33,6 +33,8 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
         if (!started) {
             queue.add(track)
         }
+        player.playingTrack.info
+
         if (started) {
             GuildManager.getAudio(guildId).cancelLeave()
         }

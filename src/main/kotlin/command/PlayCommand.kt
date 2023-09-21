@@ -56,15 +56,17 @@ class PlayCommand : Command {
     ): AudioLoadResultHandler {
         return object : AudioLoadResultHandler {
             override fun trackLoaded(track: AudioTrack) {
-                logger.info { "Loading track." }
+                logger.info { "Started loading track ${track.info.title}." }
                 guildAudio.sendMessage(getTrackLoadedMessage(track))
                 guildAudio.play(track)
+                logger.info { "Finished loading track ${track.info.title}." }
             }
 
             override fun playlistLoaded(playlist: AudioPlaylist) {
-                logger.info { "Loading playlist." }
+                logger.info { "Started loading playlist ${playlist.name}." }
                 guildAudio.sendMessage(getPlaylistLoadedMessage(playlist))
                 playlist.tracks.forEach { guildAudio.play(it) }
+                logger.info { "Finished loading playlist ${playlist.name}." }
             }
 
             override fun noMatches() {
