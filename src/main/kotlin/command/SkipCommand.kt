@@ -23,7 +23,7 @@ class SkipCommand : Command {
         val position = event.message.content.split(" ").getOrElse(1) { "0" }.toInt()
         return guildAudio.skipInQueue(position).not() &&
                 guildAudio.isLeavingScheduled().not() &&
-                position > 0
+                position == 0
     }
 
 }
