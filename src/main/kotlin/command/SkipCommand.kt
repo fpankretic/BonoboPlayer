@@ -22,7 +22,8 @@ class SkipCommand : Command {
     private fun filterChain(guildAudio: GuildAudio, event: MessageCreateEvent): Boolean {
         val position = event.message.content.split(" ").getOrElse(1) { "0" }.toInt()
         return guildAudio.skipInQueue(position).not() &&
-                guildAudio.isLeavingScheduled().not()
+                guildAudio.isLeavingScheduled().not() &&
+                position > 0
     }
 
 }
