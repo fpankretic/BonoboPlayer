@@ -44,10 +44,8 @@ class GuildAudio(
                 .filter { isLeavingScheduled().not() }
                 .map { client.voiceConnectionRegistry }
                 .flatMap { it.getVoiceConnection(guildId) }
-                .map {
-                    sendMessage(getLeaveMessage())
-                    it.disconnect()
-                }
+                .flatMap { it.disconnect() }
+                .then(Mono.fromCallable { sendMessage(getLeaveMessage()) })
                 .map { GuildManager.destroyAudio(guildId) }
                 .subscribe()
         )
