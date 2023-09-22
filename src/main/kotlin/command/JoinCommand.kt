@@ -12,9 +12,9 @@ class JoinCommand : Command {
 
     override fun execute(event: MessageCreateEvent): Mono<Void> {
         return Mono.justOrEmpty(event.member)
-            // TODO: Check if already joined
             .flatMap { it.voiceState }
             .flatMap { it.channel }
+            .filter { GuildManager.checkAudioExists(it.guildId).not() }
             .zipWith(event.message.channel)
             .flatMap { joinVoiceChannel(it.t1, it.t2) }
             .then()

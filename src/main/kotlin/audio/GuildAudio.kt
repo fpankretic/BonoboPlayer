@@ -41,18 +41,14 @@ class GuildAudio(
         logger.info { "Scheduling bot leave." }
         leavingTask.set(
             Mono.delay(leaveDelay, Schedulers.boundedElastic())
-                .filter { isLeavingScheduled() }
+                .filter { isLeavingScheduled().not() }
                 .map { client.voiceConnectionRegistry }
                 .flatMap { it.getVoiceConnection(guildId) }
                 .map {
                     sendMessage(getLeaveMessage())
-                    it
+                    it.disconnect()
                 }
-                .map {
-                    scheduler.destroy()
-                    it
-                }
-                .flatMap { it.disconnect() }
+                .map { GuildManager.destroyAudio(guildId) }
                 .subscribe()
         )
     }
