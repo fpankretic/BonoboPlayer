@@ -110,6 +110,16 @@ class GuildAudio(
         loadResultHandlers.remove(loadResultHandler)
     }
 
+    fun logBotVoiceStatus() {
+        client.getSelfMember(guildId)
+            .flatMap { it.voiceState }
+            .flatMap { it.channel }
+            .flatMap { it.voiceConnection }
+            .flatMapMany { it.stateEvents() }
+            .doOnNext { logger.info { "Bot VoiceState is $it." } }
+            .subscribe()
+    }
+
     fun destroy() {
         cancelLeave()
         scheduler.destroy()

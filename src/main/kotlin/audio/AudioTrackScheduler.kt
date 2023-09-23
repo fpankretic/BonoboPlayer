@@ -87,6 +87,7 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
 
     override fun onTrackStart(player: AudioPlayer?, track: AudioTrack?) {
         logger.info { "Now playing ${track!!.info.title} from ${track.info.uri}." }
+        GuildManager.getAudio(guildId).logBotVoiceStatus()
         GuildManager.getAudio(guildId).sendMessage(getOnTrackStartMessage(track!!))
     }
 
