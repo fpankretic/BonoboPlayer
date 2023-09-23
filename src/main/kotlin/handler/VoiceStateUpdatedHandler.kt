@@ -43,11 +43,10 @@ class VoiceStateUpdatedHandler {
     }
 
     private fun destroyBot(guildId: Snowflake, event: VoiceStateUpdateEvent): Mono<VoiceState> {
-        if (event.isLeaveEvent) {
-            logger.info { "Destroy audio in VoiceStateUpdateEvent called." }
-            GuildManager.destroyAudio(guildId)
-        }
-        return Mono.empty<VoiceState?>().mapNotNull { null }
+        return Mono.just(event.isLeaveEvent)
+            .filter { it }
+            .map { GuildManager.destroyAudio(guildId) }
+            .mapNotNull { null }
     }
 
 }
