@@ -44,15 +44,9 @@ class GuildAudio(
                 .filter { isLeavingScheduled() }
                 .map { client.voiceConnectionRegistry }
                 .flatMap { it.getVoiceConnection(guildId) }
-                .map {
-                    sendMessage(getLeaveMessage())
-                    it
-                }
-                .map {
-                    scheduler.destroy()
-                    it
-                }
                 .flatMap { it.disconnect() }
+                .then(Mono.fromCallable { sendMessage(getLeaveMessage()) })
+                .map { GuildManager.destroyAudio(guildId) }
                 .subscribe()
         )
     }
@@ -60,11 +54,11 @@ class GuildAudio(
     fun cancelLeave() {
         if (!isLeavingScheduled()) return
         logger.info { "Bot leave canceled." }
-        this.leavingTask.get().dispose()
+        leavingTask.get().dispose()
     }
 
     fun isLeavingScheduled(): Boolean {
-        return leavingTask.get() != null && !leavingTask.get().isDisposed
+        return leavingTask.get()?.isDisposed?.not() ?: false
     }
 
     fun setMessageChannelId(messageChannelId: Snowflake) {
@@ -116,8 +110,19 @@ class GuildAudio(
         loadResultHandlers.remove(loadResultHandler)
     }
 
+    fun logBotVoiceStatus() {
+        client.getSelfMember(guildId)
+            .flatMap { it.voiceState }
+            .flatMap { it.channel }
+            .flatMap { it.voiceConnection }
+            .flatMapMany { it.stateEvents() }
+            .doOnNext { logger.info { "Bot VoiceState is $it." } }
+            .subscribe()
+    }
+
     fun destroy() {
         cancelLeave()
+        loadResultHandlers.forEach { it.value.cancel(true) }
         scheduler.destroy()
     }
 

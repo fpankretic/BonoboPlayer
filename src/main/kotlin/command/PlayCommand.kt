@@ -13,10 +13,14 @@ class PlayCommand : Command {
     private val logger = KotlinLogging.logger {}
 
     override fun execute(event: MessageCreateEvent): Mono<Void> {
-        return JoinCommand().execute(event)
-            .then(Mono.justOrEmpty(event.guildId))
-            .zipWith(event.message.channel)
-            .map { GuildManager.getAudio(event.client, it.t1, it.t2.id) }
+        if (event.guildId.isEmpty) {
+            return Mono.empty()
+        }
+        val guildId = event.guildId.get()
+
+        return executeJoinCommand(event)
+            .then(event.message.channel)
+            .map { GuildManager.getAudio(event.client, guildId, it.id) }
             .map { play(it, event) }
             .doOnError { logger.error { it.message } }
             .retry(2)
@@ -42,6 +46,10 @@ class PlayCommand : Command {
         } catch (e: Exception) {
             throw RuntimeException("Failed to fetch URL for $query.")
         }
+    }
+
+    private fun executeJoinCommand(event: MessageCreateEvent): Mono<Void> {
+        return JoinCommand().execute(event)
     }
 
 }
