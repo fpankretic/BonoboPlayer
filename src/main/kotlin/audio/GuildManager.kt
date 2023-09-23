@@ -26,7 +26,9 @@ class GuildManager private constructor() {
 
         @JvmStatic
         fun destroyAudio(id: Snowflake) {
-            logger.info { "Destroying audio." }
+            MANAGERS[id] ?: return
+
+            logger.info { "Trying to destroy audio." }
             MANAGERS[id]?.destroy()
             MANAGERS.remove(id)
             logger.info { "Audio destroyed." }

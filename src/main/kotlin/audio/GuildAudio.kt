@@ -54,11 +54,11 @@ class GuildAudio(
     fun cancelLeave() {
         if (!isLeavingScheduled()) return
         logger.info { "Bot leave canceled." }
-        this.leavingTask.get().dispose()
+        leavingTask.get().dispose()
     }
 
     fun isLeavingScheduled(): Boolean {
-        return leavingTask.get() != null && !leavingTask.get().isDisposed
+        return leavingTask.get()?.isDisposed?.not() ?: false
     }
 
     fun setMessageChannelId(messageChannelId: Snowflake) {
@@ -122,6 +122,7 @@ class GuildAudio(
 
     fun destroy() {
         cancelLeave()
+        loadResultHandlers.forEach { it.value.cancel(true) }
         scheduler.destroy()
     }
 

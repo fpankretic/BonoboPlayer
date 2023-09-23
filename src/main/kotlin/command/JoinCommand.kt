@@ -8,22 +8,34 @@ import discord4j.core.`object`.entity.channel.MessageChannel
 import discord4j.core.`object`.entity.channel.VoiceChannel
 import discord4j.core.spec.VoiceChannelJoinSpec
 import discord4j.voice.VoiceConnection
+import mu.KotlinLogging
 import reactor.core.publisher.Mono
 
 class JoinCommand : Command {
 
+    val logger = KotlinLogging.logger {}
+
     override fun execute(event: MessageCreateEvent): Mono<Void> {
-        return Mono.justOrEmpty(event.guildId)
-            .flatMap { event.client.getSelfMember(it) }
-            .flatMap { it.voiceState }
-            .filter { it.channelId.isEmpty } // bot is not connected
-            .flatMap { joinVoiceChannel(it.guildId, event) }
-            .onErrorComplete()
+        if (event.guildId.isEmpty) {
+            return Mono.empty()
+        }
+        val guildId = event.guildId.get()
+
+
+        return event.client.voiceConnectionRegistry.getVoiceConnection(guildId)
+            .switchIfEmpty(destroyAudioAndJoin(event, guildId))
+            .then(joinVoiceChannel(event, guildId))
             .then()
     }
 
-    private fun joinVoiceChannel(guildId: Snowflake, event: MessageCreateEvent): Mono<VoiceConnection> {
-        GuildManager.destroyAudio(guildId)
+    private fun destroyAudioAndJoin(event: MessageCreateEvent, guildId: Snowflake): Mono<VoiceConnection> {
+        return Mono.fromCallable {
+            logger.info { "Function destroyAudioAndJoin called." }
+            GuildManager.destroyAudio(guildId)
+        }.then(joinVoiceChannel(event, guildId))
+    }
+
+    private fun joinVoiceChannel(event: MessageCreateEvent, guildId: Snowflake): Mono<VoiceConnection> {
         return Mono.justOrEmpty(event.member)
             .flatMap { it.voiceState }
             .flatMap { it.channel }

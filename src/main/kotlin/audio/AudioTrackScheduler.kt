@@ -10,7 +10,6 @@ import discord4j.core.spec.EmbedCreateSpec
 import mu.KotlinLogging
 import util.EmbedUtils
 import java.util.*
-import kotlin.math.log
 
 class AudioTrackScheduler private constructor() : AudioEventAdapter() {
 
@@ -23,6 +22,29 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
     constructor(player: AudioPlayer, guildId: Snowflake) : this() {
         this.player = player
         this.guildId = guildId;
+    }
+
+    override fun onTrackStart(player: AudioPlayer?, track: AudioTrack?) {
+        logger.info { "Now playing ${track!!.info.title} from ${track.info.uri}." }
+        GuildManager.getAudio(guildId).logBotVoiceStatus()
+        GuildManager.getAudio(guildId).sendMessage(getOnTrackStartMessage(track!!))
+    }
+
+    override fun onTrackEnd(player: AudioPlayer?, track: AudioTrack?, endReason: AudioTrackEndReason?) {
+        logger.info { "onTrackEndCalled with endReason $endReason." }
+        if (endReason != null && endReason.mayStartNext) {
+            if (skip().not()) {
+                GuildManager.getAudio(guildId).scheduleLeave()
+            }
+        }
+    }
+
+    override fun onTrackException(player: AudioPlayer?, track: AudioTrack?, exception: FriendlyException?) {
+        logger.info { "Track exception for ${track!!.info.title}." }
+    }
+
+    override fun onTrackStuck(player: AudioPlayer?, track: AudioTrack?, thresholdMs: Long) {
+        logger.info { "Track ${track!!.info.title} got stuck, skipping." }
     }
 
     fun play(track: AudioTrack): Boolean {
@@ -83,29 +105,6 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
 
     private fun isPlaying(): Boolean {
         return player.playingTrack != null
-    }
-
-    override fun onTrackStart(player: AudioPlayer?, track: AudioTrack?) {
-        logger.info { "Now playing ${track!!.info.title} from ${track.info.uri}." }
-        GuildManager.getAudio(guildId).logBotVoiceStatus()
-        GuildManager.getAudio(guildId).sendMessage(getOnTrackStartMessage(track!!))
-    }
-
-    override fun onTrackEnd(player: AudioPlayer?, track: AudioTrack?, endReason: AudioTrackEndReason?) {
-        logger.info { "onTrackEndCalled with endReason $endReason." }
-        if (endReason != null && endReason.mayStartNext) {
-            if (skip().not()) {
-                GuildManager.getAudio(guildId).scheduleLeave()
-            }
-        }
-    }
-
-    override fun onTrackException(player: AudioPlayer?, track: AudioTrack?, exception: FriendlyException?) {
-        logger.info { "Track exception for ${track!!.info.title}." }
-    }
-
-    override fun onTrackStuck(player: AudioPlayer?, track: AudioTrack?, thresholdMs: Long) {
-        logger.info { "Track ${track!!.info.title} got stuck, skipping." }
     }
 
     private fun getOnTrackStartMessage(track: AudioTrack): EmbedCreateSpec {
