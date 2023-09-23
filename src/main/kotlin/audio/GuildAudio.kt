@@ -28,6 +28,7 @@ class GuildAudio(
     private val leaveDelay = Duration.ofMinutes(3)
 
     val player: AudioPlayer = GlobalData.PLAYER_MANAGER.createPlayer()
+    private var destroyed: Boolean = false
     private val scheduler: AudioTrackScheduler = AudioTrackScheduler(player, guildId)
     private var messageChannelId: AtomicLong = AtomicLong()
     private val leavingTask: AtomicReference<Disposable> = AtomicReference()
@@ -38,6 +39,9 @@ class GuildAudio(
     }
 
     fun scheduleLeave() {
+        if (destroyed) {
+            return
+        }
         logger.info { "Scheduling bot leave." }
         leavingTask.set(
             Mono.delay(leaveDelay, Schedulers.boundedElastic())
@@ -121,6 +125,7 @@ class GuildAudio(
     }
 
     fun destroy() {
+        destroyed = true
         cancelLeave()
         loadResultHandlers.forEach { it.value.cancel(true) }
         scheduler.destroy()
