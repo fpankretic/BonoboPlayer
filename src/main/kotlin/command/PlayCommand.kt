@@ -4,6 +4,7 @@ import audio.DefaultAudioLoadResultHandler
 import audio.GuildAudio
 import audio.GuildManager
 import discord4j.core.event.domain.message.MessageCreateEvent
+import kotlinx.coroutines.reactor.mono
 import mu.KotlinLogging
 import reactor.core.publisher.Mono
 import java.net.URI
@@ -15,7 +16,7 @@ class PlayCommand : Command {
 
     override fun execute(event: MessageCreateEvent): Mono<Void> {
         if (event.guildId.isEmpty) {
-            return Mono.empty()
+            return mono { null }
         }
         val guildId = event.guildId.get()
 
@@ -25,7 +26,7 @@ class PlayCommand : Command {
             .map { play(it, event) }
             .doOnError { logger.error { it.message } }
             .retry(2)
-            .onErrorComplete()
+            .onErrorStop()
             .then()
     }
 

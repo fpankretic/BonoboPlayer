@@ -5,13 +5,17 @@ import discord4j.common.util.Snowflake
 import discord4j.core.event.domain.message.MessageCreateEvent
 import discord4j.core.spec.EmbedCreateFields
 import discord4j.core.spec.EmbedCreateSpec
+import kotlinx.coroutines.reactor.mono
 import reactor.core.publisher.Mono
 import util.EmbedUtils
 
 class QueueCommand : Command {
 
     override fun execute(event: MessageCreateEvent): Mono<Void> {
-        if (event.guildId.isEmpty) return Mono.empty()
+        if (event.guildId.isEmpty) {
+            return mono { null }
+        }
+        
         return event.message.channel
             .flatMap { it.createMessage(createList(event.guildId.get())) }
             .then()

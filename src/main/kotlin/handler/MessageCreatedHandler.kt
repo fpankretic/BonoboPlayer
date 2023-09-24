@@ -2,6 +2,7 @@ package handler
 
 import command.*
 import discord4j.core.event.domain.message.MessageCreateEvent
+import kotlinx.coroutines.reactor.mono
 import mu.KotlinLogging
 import reactor.core.publisher.Mono
 
@@ -34,14 +35,14 @@ class MessageCreatedHandler {
 
         val first = content.split(" ")[0]
         val prefix = first[0]
-        val commandName = first.substring(1).toLowerCase()
+        val commandName = first.substring(1).lowercase()
 
         if (prefix == '&' && commands.containsKey(commandName)){
             logger.info { "Executing $commandName command." }
             return commands[commandName]!!.execute(event)
         }
 
-        return Mono.empty()
+        return mono { null }
     }
 
 }
