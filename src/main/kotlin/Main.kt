@@ -3,9 +3,11 @@ import discord4j.core.event.domain.VoiceStateUpdateEvent
 import discord4j.core.event.domain.message.MessageCreateEvent
 import handler.MessageCreatedHandler
 import handler.VoiceStateUpdatedHandler
+import secret.Credential
+import secret.CredentialManager
 
 fun main(args: Array<String>) {
-    val client = DiscordClient.create(args[0])
+    val client = DiscordClient.create(CredentialManager.get(Credential.DISCORD_API_TOKEN))
     val gateway = client.login().block() ?: return
 
     // handlers

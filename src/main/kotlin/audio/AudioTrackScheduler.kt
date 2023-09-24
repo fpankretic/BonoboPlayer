@@ -8,7 +8,10 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason
 import discord4j.common.util.Snowflake
 import discord4j.core.spec.EmbedCreateSpec
 import mu.KotlinLogging
-import util.EmbedUtils
+import util.EmbedUtils.Companion.bold
+import util.EmbedUtils.Companion.defaultEmbed
+import util.EmbedUtils.Companion.simpleMessageEmbed
+import util.EmbedUtils.Companion.trackAsHyperLink
 import java.util.*
 
 class AudioTrackScheduler private constructor() : AudioEventAdapter() {
@@ -27,11 +30,11 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
     override fun onTrackStart(player: AudioPlayer?, track: AudioTrack?) {
         logger.info { "Now playing ${track!!.info.title} from ${track.info.uri}." }
         GuildManager.getAudio(guildId).logBotVoiceStatus()
-        GuildManager.getAudio(guildId).sendMessage(getOnTrackStartMessage(track!!))
+        GuildManager.getAudio(guildId).sendMessage(onTrackStartMessage(track!!))
     }
 
     override fun onTrackEnd(player: AudioPlayer?, track: AudioTrack?, endReason: AudioTrackEndReason?) {
-        logger.info { "onTrackEndCalled with endReason $endReason." }
+        logger.info { "OnTrackEndCalled with endReason $endReason." }
         if (endReason != null && endReason.mayStartNext) {
             if (skip().not()) {
                 GuildManager.getAudio(guildId).scheduleLeave()
@@ -85,7 +88,7 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
         val track = queue.removeAt(position - 1)
         logger.info { "Removed ${track.info.title} from queue." }
 
-        GuildManager.getAudio(guildId).sendMessage(getTrackSkippedMessage(track))
+        GuildManager.getAudio(guildId).sendMessage(trackSkippedMessage(track))
         return true
     }
 
@@ -107,16 +110,16 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
         return player.playingTrack != null
     }
 
-    private fun getOnTrackStartMessage(track: AudioTrack): EmbedCreateSpec {
-        return EmbedUtils.getSimpleMessageEmbed(
-            "Started playing: ${EmbedUtils.getTrackAsHyperLink(track)}"
-        )
+    private fun onTrackStartMessage(track: AudioTrack): EmbedCreateSpec {
+        return simpleMessageEmbed("Started playing: ${trackAsHyperLink(track)}").build()
     }
 
-    private fun getTrackSkippedMessage(track: AudioTrack): EmbedCreateSpec {
-        return EmbedUtils.getSimpleMessageEmbed(
-            "Skipped ${EmbedUtils.getTrackAsHyperLink(track)}"
-        )
+    private fun trackSkippedMessage(track: AudioTrack): EmbedCreateSpec {
+        return defaultEmbed()
+            .title("Skipped")
+            .description(bold(trackAsHyperLink(track)))
+            .thumbnail(track.info.artworkUrl)
+            .build()
     }
 
 }

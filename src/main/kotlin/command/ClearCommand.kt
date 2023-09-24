@@ -10,6 +10,8 @@ class ClearCommand : Command {
     override fun execute(event: MessageCreateEvent): Mono<Void> {
         return monoOptional(event.guildId)
             .map { GuildManager.getAudio(it).clearQueue() }
+            .flatMap { monoOptional(event.guildId) }
+            .map { GuildManager.getAudio(it).scheduleLeave() }
             .then()
     }
 

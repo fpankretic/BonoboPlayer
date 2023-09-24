@@ -25,6 +25,11 @@ class GuildManager private constructor() {
         }
 
         @JvmStatic
+        fun audioExists(id: Snowflake): Boolean {
+            return MANAGERS[id] != null
+        }
+
+        @JvmStatic
         fun destroyAudio(id: Snowflake) {
             MANAGERS[id] ?: return
 

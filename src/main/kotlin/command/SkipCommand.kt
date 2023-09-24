@@ -2,21 +2,28 @@ package command
 
 import audio.GuildAudio
 import audio.GuildManager
+import discord4j.common.util.Snowflake
 import discord4j.core.event.domain.message.MessageCreateEvent
-import mu.KotlinLogging
+import discord4j.core.spec.EmbedCreateSpec
+import kotlinx.coroutines.reactor.mono
 import reactor.core.publisher.Mono
-import util.ReactorUtil.Companion.monoOptional
+import util.EmbedUtils
 
 class SkipCommand : Command {
 
-    private val logger = KotlinLogging.logger {}
-
     override fun execute(event: MessageCreateEvent): Mono<Void> {
-        return monoOptional(event.guildId)
-            .map { GuildManager.getAudio(it) }
+        if (event.guildId.isEmpty) {
+            return mono { null }
+        }
+        val guildId = event.guildId.get()
+
+        return mono { GuildManager.audioExists(guildId) }
+            .filter { it && GuildManager.getAudio(guildId).getQueue().isEmpty().not() }
+            .switchIfEmpty(sendQueueEmptyMessage(guildId, event))
+            .map { GuildManager.getAudio(guildId) }
             .filter { filterChain(it, event) }
             .map { it.scheduleLeave() }
-            .onErrorStop()
+            .onErrorComplete()
             .then()
     }
 
@@ -25,6 +32,16 @@ class SkipCommand : Command {
         return guildAudio.skipInQueue(position).not() &&
                 guildAudio.isLeavingScheduled().not() &&
                 position == 0
+    }
+
+    private fun sendQueueEmptyMessage(guild: Snowflake, event: MessageCreateEvent): Mono<Boolean> {
+        return event.message.channel
+            .flatMap { it.createMessage(queueEmptyMessage()) }
+            .mapNotNull { null }
+    }
+
+    private fun queueEmptyMessage(): EmbedCreateSpec {
+        return EmbedUtils.simpleMessageEmbed("Queue is empty.").build()
     }
 
 }

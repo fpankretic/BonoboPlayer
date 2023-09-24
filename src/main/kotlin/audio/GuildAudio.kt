@@ -52,7 +52,7 @@ class GuildAudio(
                 .map { client.voiceConnectionRegistry }
                 .flatMap { it.getVoiceConnection(guildId) }
                 .flatMap { it.disconnect() }
-                .then(Mono.fromCallable { sendMessage(getLeaveMessage()) })
+                .then(Mono.fromCallable { sendMessage(leaveMessage()) })
                 .map { GuildManager.destroyAudio(guildId) }
                 .subscribe()
         )
@@ -84,7 +84,7 @@ class GuildAudio(
         scheduler.play(track.makeClone())
     }
 
-    fun getCurrentSong(): Optional<AudioTrack> {
+    fun currentSong(): Optional<AudioTrack> {
         return scheduler.currentSong()
     }
 
@@ -92,13 +92,13 @@ class GuildAudio(
         scheduler.clear()
     }
 
-    fun skip(): Boolean {
-        return scheduler.skip()
-    }
-
     fun skipInQueue(position: Int): Boolean {
         if (position == 0) {
-            return skip()
+            val skipped = skip()
+            if (skipped) {
+                GuildManager.getAudio(guildId).sendMessage(trackSkippedMessage())
+            }
+            return skipped
         } else if (position < 0 || position > scheduler.getQueue().size) {
             return false
         }
@@ -135,6 +135,10 @@ class GuildAudio(
         scheduler.destroy()
     }
 
+    private fun skip(): Boolean {
+        return scheduler.skip()
+    }
+
     private fun getMessageChannelId(): Snowflake {
         return Snowflake.of(messageChannelId.get())
     }
@@ -144,9 +148,15 @@ class GuildAudio(
             .cast(MessageChannel::class.java)
     }
 
-    private fun getLeaveMessage(): EmbedCreateSpec {
-        return EmbedUtils.getDefaultEmbed()
+    private fun leaveMessage(): EmbedCreateSpec {
+        return EmbedUtils.defaultEmbed()
             .description("Left the voice channel due to inactivity.")
+            .build()
+    }
+
+    private fun trackSkippedMessage(): EmbedCreateSpec {
+        return EmbedUtils.defaultEmbed()
+            .description("Track skipped.")
             .build()
     }
 
