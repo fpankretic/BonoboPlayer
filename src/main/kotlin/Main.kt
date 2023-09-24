@@ -6,7 +6,7 @@ import handler.VoiceStateUpdatedHandler
 import secret.Credential
 import secret.CredentialManager
 
-fun main(args: Array<String>) {
+fun main() {
     val client = DiscordClient.create(CredentialManager.get(Credential.DISCORD_API_TOKEN))
     val gateway = client.login().block() ?: return
 
