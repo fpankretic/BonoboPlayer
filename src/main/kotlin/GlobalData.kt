@@ -14,6 +14,7 @@ class GlobalData {
             PLAYER_MANAGER.configuration.setFrameBufferFactory { bufferDuration, format, stopping ->
                 NonAllocatingAudioFrameBuffer(bufferDuration, format, stopping)
             }
+            PLAYER_MANAGER.configuration.isFilterHotSwapEnabled = true
 
             AudioSourceManagers.registerRemoteSources(PLAYER_MANAGER)
             AudioSourceManagers.registerLocalSource(PLAYER_MANAGER)

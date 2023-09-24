@@ -1,6 +1,7 @@
 package audio
 
 import GlobalData
+import com.sedmelluq.discord.lavaplayer.filter.equalizer.EqualizerFactory
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
@@ -33,9 +34,11 @@ class GuildAudio(
     private var messageChannelId: AtomicLong = AtomicLong()
     private val leavingTask: AtomicReference<Disposable> = AtomicReference()
     private val loadResultHandlers: ConcurrentHashMap<AudioLoadResultHandler, Future<Void>> = ConcurrentHashMap()
+    private val equalizer: EqualizerFactory = EqualizerFactory()
 
     init {
         player.addListener(scheduler)
+        player.setFilterFactory(equalizer)
     }
 
     fun scheduleLeave() {
@@ -128,6 +131,7 @@ class GuildAudio(
         destroyed = true
         cancelLeave()
         loadResultHandlers.forEach { it.value.cancel(true) }
+        loadResultHandlers.clear()
         scheduler.destroy()
     }
 
