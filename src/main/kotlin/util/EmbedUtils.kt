@@ -22,7 +22,7 @@ class EmbedUtils {
         }
 
         fun getTrackAsHyperLink(playlist: AudioPlaylist): String {
-            return getTextAsHyperLink(playlist.selectedTrack.info.title, playlist.selectedTrack.info.uri)
+            return getTextAsHyperLink(playlist.tracks[0].info.title, playlist.tracks[0].info.uri)
         }
 
         fun getTrackAsHyperLink(track: AudioTrack): String {

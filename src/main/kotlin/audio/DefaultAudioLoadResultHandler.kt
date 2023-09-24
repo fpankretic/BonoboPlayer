@@ -30,6 +30,11 @@ class DefaultAudioLoadResultHandler(
     override fun playlistLoaded(playlist: AudioPlaylist) {
         logger.info { "Started loading playlist ${playlist.name}." }
 
+        if (playlist.isSearchResult) {
+            trackLoaded(playlist.tracks[0])
+            return
+        }
+
         guildAudio.sendMessage(getPlaylistLoadedMessage(playlist))
         playlist.tracks.forEach { guildAudio.play(it) }
         guildAudio.removeHandler(this)
