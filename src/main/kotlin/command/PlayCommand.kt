@@ -1,12 +1,13 @@
 package command
 
-import GlobalData
 import audio.DefaultAudioLoadResultHandler
 import audio.GuildAudio
 import audio.GuildManager
 import discord4j.core.event.domain.message.MessageCreateEvent
 import mu.KotlinLogging
 import reactor.core.publisher.Mono
+import java.net.URI
+import java.net.URISyntaxException
 
 class PlayCommand : Command {
 
@@ -30,21 +31,16 @@ class PlayCommand : Command {
 
     private fun play(guildAudio: GuildAudio, event: MessageCreateEvent) {
         val query = event.message.content.substringAfter(" ").trim()
-        val track = getTrack(query)
-        logger.info { "Found track url: $track" }
+        val track = loadTrack(query)
+        logger.info { "Parsed query: $track." }
         guildAudio.addHandler(DefaultAudioLoadResultHandler(event.guildId.get(), track))
     }
 
-    private fun getTrack(query: String): String {
-        logger.info { "Fetching URL for query: $query." }
-        if (query.startsWith("http") || query.startsWith("www") || query.startsWith("youtube")) {
-            return query
-        }
-
+    private fun loadTrack(query: String): String {
         return try {
-            GlobalData.SEARCH_CLIENT.getTracksForSearch(query).get(0).url
-        } catch (e: Exception) {
-            throw RuntimeException("Failed to fetch URL for $query.")
+            URI(query).toString()
+        } catch (exception: URISyntaxException) {
+            "ytsearch: $query"
         }
     }
 
