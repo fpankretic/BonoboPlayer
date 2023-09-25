@@ -60,9 +60,8 @@ class DefaultAudioLoadResultHandler(
     }
 
     private fun getTrackLoadedMessage(track: AudioTrack): EmbedCreateSpec {
-        val message = "Added to queue: ${EmbedUtils.textAsHyperLink(track.info.title, track.info.uri)}"
         return defaultEmbed()
-            .title("Added to queue")
+            .title("Added to the queue")
             .description(bold(trackAsHyperLink(track)))
             .thumbnail(track.info.artworkUrl)
             .footer("Requested by ${author.globalName.orElse(author.username)}", author.avatarUrl)
@@ -71,9 +70,8 @@ class DefaultAudioLoadResultHandler(
     }
 
     private fun getPlaylistLoadedMessage(playlist: AudioPlaylist): EmbedCreateSpec {
-        val message = "Added playlist ${trackAsHyperLink(playlist)} with ${playlist.tracks.size} tracks"
         return defaultEmbed()
-            .title("Added playlist to queue")
+            .title("Added playlist to the queue")
             .description(bold(trackAsHyperLink(playlist)))
             .thumbnail(playlist.tracks[0].info.artworkUrl)
             .addField("Songs in playlist: ${playlist.tracks.size}", "", true)

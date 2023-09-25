@@ -2,10 +2,8 @@ package util
 
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
-import discord4j.core.`object`.entity.User
 import discord4j.core.spec.EmbedCreateSpec
 import discord4j.rest.util.Color
-import java.time.Instant
 
 class EmbedUtils {
 
@@ -22,14 +20,6 @@ class EmbedUtils {
                 .description(text)
         }
 
-        fun simpleMessageEmbedWithAuthor(text: String, author: User): EmbedCreateSpec.Builder {
-            return EmbedCreateSpec.builder()
-                .color(Color.PINK)
-                .description(text)
-                .footer("Requested by ${author.globalName.orElse(author.username)}", author.avatarUrl)
-                .timestamp(Instant.now())
-        }
-
         fun trackAsHyperLink(playlist: AudioPlaylist): String {
             return textAsHyperLink(playlist.tracks[0].info.title, playlist.tracks[0].info.uri)
         }
@@ -38,12 +28,12 @@ class EmbedUtils {
             return textAsHyperLink(track.info.title, track.info.uri)
         }
 
-        fun textAsHyperLink(text: String, url: String): String {
-            return "[$text]($url)"
-        }
-
         fun bold(string: String): String {
             return "**$string**"
+        }
+
+        private fun textAsHyperLink(text: String, url: String): String {
+            return "[$text]($url)"
         }
 
     }
