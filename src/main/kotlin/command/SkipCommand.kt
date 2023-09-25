@@ -2,7 +2,6 @@ package command
 
 import audio.GuildAudio
 import audio.GuildManager
-import discord4j.common.util.Snowflake
 import discord4j.core.event.domain.message.MessageCreateEvent
 import discord4j.core.spec.EmbedCreateSpec
 import kotlinx.coroutines.reactor.mono
@@ -18,8 +17,8 @@ class SkipCommand : Command {
         val guildId = event.guildId.get()
 
         return mono { GuildManager.audioExists(guildId) }
-            .filter { it && GuildManager.getAudio(guildId).getQueue().isEmpty().not() }
-            .switchIfEmpty(sendQueueEmptyMessage(guildId, event))
+            .filter { it }
+            .switchIfEmpty(sendQueueEmptyMessage(event))
             .map { GuildManager.getAudio(guildId) }
             .filter { filterChain(it, event) }
             .map { it.scheduleLeave() }
@@ -34,7 +33,7 @@ class SkipCommand : Command {
                 position == 0
     }
 
-    private fun sendQueueEmptyMessage(guild: Snowflake, event: MessageCreateEvent): Mono<Boolean> {
+    private fun sendQueueEmptyMessage(event: MessageCreateEvent): Mono<Boolean> {
         return event.message.channel
             .flatMap { it.createMessage(queueEmptyMessage()) }
             .mapNotNull { null }

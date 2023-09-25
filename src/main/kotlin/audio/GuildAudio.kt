@@ -14,6 +14,7 @@ import reactor.core.Disposable
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
 import util.EmbedUtils
+import util.EmbedUtils.Companion.simpleMessageEmbed
 import java.time.Duration
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -97,6 +98,8 @@ class GuildAudio(
             val skipped = skip()
             if (skipped) {
                 GuildManager.getAudio(guildId).sendMessage(trackSkippedMessage())
+            } else {
+                GuildManager.getAudio(guildId).sendMessage(simpleMessageEmbed("Queue is empty.").build())
             }
             return skipped
         } else if (position < 0 || position > scheduler.getQueue().size) {
