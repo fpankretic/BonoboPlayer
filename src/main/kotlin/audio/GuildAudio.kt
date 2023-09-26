@@ -9,6 +9,7 @@ import discord4j.common.util.Snowflake
 import discord4j.core.GatewayDiscordClient
 import discord4j.core.`object`.entity.channel.MessageChannel
 import discord4j.core.spec.EmbedCreateSpec
+import kotlinx.coroutines.reactor.mono
 import mu.KotlinLogging
 import reactor.core.Disposable
 import reactor.core.publisher.Mono
@@ -53,7 +54,7 @@ class GuildAudio(
                 .map { client.voiceConnectionRegistry }
                 .flatMap { it.getVoiceConnection(guildId) }
                 .flatMap { it.disconnect() }
-                .then(Mono.fromCallable { sendMessage(leaveMessage()) })
+                .then( mono { sendMessage(leaveMessage()) })
                 .map { GuildManager.destroyAudio(guildId) }
                 .subscribe()
         )
