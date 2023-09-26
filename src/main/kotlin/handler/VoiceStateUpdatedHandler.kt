@@ -15,6 +15,18 @@ class VoiceStateUpdatedHandler {
 
     fun handle(event: VoiceStateUpdateEvent): Mono<Void> {
         val guildId = event.current.guildId
+        val userId = event.current.userId
+
+        if (userId.equals(event.client.selfId)) {
+            if (event.isLeaveEvent) {
+                GuildManager.destroyAudio(guildId)
+                return mono { event.client.voiceConnectionRegistry }
+                    .flatMap { it.getVoiceConnection(guildId) }
+                    .flatMap { it.disconnect() }
+                    .onErrorComplete()
+            }
+            return mono { null }
+        }
 
         return mono { GuildManager.getAudio(guildId) }
             .flatMap { updateBot(it, guildId, event) }
@@ -50,7 +62,9 @@ class VoiceStateUpdatedHandler {
             guildAudio.scheduleLeave()
         } else if (memberCount != 0L && guildAudio.isLeavingScheduled()) {
             guildAudio.player.isPaused = false
-            guildAudio.cancelLeave()
+            if (guildAudio.currentSong().isPresent) {
+                guildAudio.cancelLeave()
+            }
         }
     }
 
