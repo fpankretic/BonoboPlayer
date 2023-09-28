@@ -29,7 +29,6 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
 
     override fun onTrackStart(player: AudioPlayer?, track: AudioTrack?) {
         logger.info { "Now playing ${track!!.info.title} from ${track.info.uri}." }
-        GuildManager.getAudio(guildId).logBotVoiceStatus()
         GuildManager.getAudio(guildId).sendMessage(onTrackStartMessage(track!!))
     }
 
@@ -116,7 +115,7 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
 
     private fun trackSkippedMessage(track: AudioTrack): EmbedCreateSpec {
         return defaultEmbed()
-            .title("Skipped")
+            .title("Removed from the queue")
             .description(bold(trackAsHyperLink(track)))
             .thumbnail(track.info.artworkUrl)
             .build()
