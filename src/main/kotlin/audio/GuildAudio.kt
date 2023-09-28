@@ -23,12 +23,10 @@ import java.util.concurrent.Future
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 
-class GuildAudio(
-    private val client: GatewayDiscordClient,
-    private val guildId: Snowflake,
-) {
+class GuildAudio(private val client: GatewayDiscordClient, private val guildId: Snowflake) {
+
     private val logger = KotlinLogging.logger {}
-    private val leaveDelay = Duration.ofMinutes(3)
+    private val leaveDelay = Duration.ofMinutes(5)
 
     val player: AudioPlayer = GlobalData.PLAYER_MANAGER.createPlayer()
     private var destroyed: Boolean = false
@@ -54,7 +52,7 @@ class GuildAudio(
                 .map { client.voiceConnectionRegistry }
                 .flatMap { it.getVoiceConnection(guildId) }
                 .flatMap { it.disconnect() }
-                .then( mono { sendMessage(leaveMessage()) })
+                .then(mono { sendMessage(leaveMessage()) })
                 .map { GuildManager.destroyAudio(guildId) }
                 .subscribe()
         )
@@ -97,9 +95,7 @@ class GuildAudio(
     fun skipInQueue(position: Int): Boolean {
         if (position == 0) {
             val skipped = skip()
-            if (skipped) {
-                GuildManager.getAudio(guildId).sendMessage(trackSkippedMessage())
-            } else {
+            if (!skipped) {
                 GuildManager.getAudio(guildId).sendMessage(simpleMessageEmbed("Queue is empty.").build())
             }
             return skipped
@@ -119,16 +115,6 @@ class GuildAudio(
     fun removeHandler(loadResultHandler: DefaultAudioLoadResultHandler) {
         logger.info { "GuildId: ${guildId.asLong()} Removing audio load result handler: ${loadResultHandler.hashCode()}" }
         loadResultHandlers.remove(loadResultHandler)
-    }
-
-    fun logBotVoiceStatus() {
-        client.getSelfMember(guildId)
-            .flatMap { it.voiceState }
-            .flatMap { it.channel }
-            .flatMap { it.voiceConnection }
-            .flatMapMany { it.stateEvents() }
-            .doOnNext { logger.info { "Bot VoiceState is $it." } }
-            .subscribe()
     }
 
     fun destroy() {
@@ -155,12 +141,6 @@ class GuildAudio(
     private fun leaveMessage(): EmbedCreateSpec {
         return EmbedUtils.defaultEmbed()
             .description("Left the voice channel due to inactivity.")
-            .build()
-    }
-
-    private fun trackSkippedMessage(): EmbedCreateSpec {
-        return EmbedUtils.defaultEmbed()
-            .description("Track skipped.")
             .build()
     }
 
