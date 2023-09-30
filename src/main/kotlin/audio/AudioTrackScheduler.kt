@@ -110,7 +110,7 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
     }
 
     private fun onTrackStartMessage(track: AudioTrack): EmbedCreateSpec {
-        return simpleMessageEmbed("Started playing: ${trackAsHyperLink(track)}").build()
+        return simpleMessageEmbed("Now playing: ${trackAsHyperLink(track)}").build()
     }
 
     private fun trackSkippedMessage(track: AudioTrack): EmbedCreateSpec {
