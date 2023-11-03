@@ -15,4 +15,8 @@ class ClearCommand : Command {
             .then()
     }
 
+    override fun help(): String {
+        return "Clears the queue."
+    }
+
 }

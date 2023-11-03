@@ -17,4 +17,8 @@ class LeaveCommand : Command {
             .then()
     }
 
+    override fun help(): String {
+        return "Leaves the voice channel."
+    }
+
 }

@@ -14,6 +14,10 @@ class ResumeCommand : Command {
             .then()
     }
 
+    override fun help(): String {
+        return "Resumes the current song."
+    }
+
     private fun pause(player: AudioPlayer) {
         if (player.playingTrack != null && player.isPaused) {
             player.isPaused = false

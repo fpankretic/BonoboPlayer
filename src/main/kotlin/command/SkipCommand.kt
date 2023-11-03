@@ -26,6 +26,10 @@ class SkipCommand : Command {
             .then()
     }
 
+    override fun help(): String {
+        return "Skips the current song or any song in the queue."
+    }
+
     private fun filterChain(guildAudio: GuildAudio, event: MessageCreateEvent): Boolean {
         val position = event.message.content.split(" ").getOrElse(1) { "0" }.toInt()
         return guildAudio.skipInQueue(position).not() &&
