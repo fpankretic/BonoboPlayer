@@ -1,5 +1,6 @@
 package command
 
+import audio.GuildAudio
 import audio.GuildManager
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
 import discord4j.core.event.domain.message.MessageCreateEvent
@@ -10,7 +11,8 @@ class ResumeCommand : Command {
 
     override fun execute(event: MessageCreateEvent): Mono<Void> {
         return monoOptional(event.guildId)
-            .map { pause(GuildManager.getAudio(it).player) }
+            .map { GuildManager.getAudio(it) }
+            .map { resume(it) }
             .then()
     }
 
@@ -18,8 +20,10 @@ class ResumeCommand : Command {
         return "Resumes the current song."
     }
 
-    private fun pause(player: AudioPlayer) {
+    private fun resume(guildAudio: GuildAudio) {
+        val player = guildAudio.player
         if (player.playingTrack != null && player.isPaused) {
+            guildAudio.cancelLeave()
             player.isPaused = false
         }
     }
