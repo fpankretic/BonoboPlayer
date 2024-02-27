@@ -91,6 +91,11 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
         return true
     }
 
+    fun clearQueue() {
+        queue.clear()
+        player.playTrack(null)
+    }
+
     fun clear() {
         queue.clear()
         player.playTrack(null)

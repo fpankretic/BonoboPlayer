@@ -89,7 +89,7 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
     }
 
     fun clearQueue() {
-        scheduler.clear()
+        scheduler.clearQueue()
     }
 
     fun skipInQueue(position: Int): Boolean {
