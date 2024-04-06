@@ -28,6 +28,10 @@ class JoinCommand : Command {
             .then()
     }
 
+    override fun help(): String {
+        return "Joins the voice channel the user is in."
+    }
+
     private fun destroyAudioAndJoin(event: MessageCreateEvent, guildId: Snowflake): Mono<VoiceConnection> {
         return mono {
             logger.info { "Function destroyAudioAndJoin called." }

@@ -30,6 +30,10 @@ class PlayCommand : Command {
             .then()
     }
 
+    override fun help(): String {
+        return "Plays a song."
+    }
+
     private fun play(guildAudio: GuildAudio, event: MessageCreateEvent) {
         val query = event.message.content.substringAfter(" ").trim()
         val track = loadTrack(query)

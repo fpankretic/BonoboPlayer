@@ -28,6 +28,10 @@ class NowPlayingCommand : Command {
         return event.message.channel.flatMap { it.createMessage(responseMessage(song(guildId), event)) }.then()
     }
 
+    override fun help(): String {
+        return "Shows the currently playing song."
+    }
+
     private fun song(guildId: Snowflake): Optional<AudioTrack> {
         return if (GuildManager.audioExists(guildId)) {
             GuildManager.getAudio(guildId).currentSong()

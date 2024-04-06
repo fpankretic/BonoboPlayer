@@ -26,6 +26,10 @@ class QueueCommand : Command {
             .then()
     }
 
+    override fun help(): String {
+        return "Shows the current queue."
+    }
+
     private fun createList(guildId: Snowflake, author: User): EmbedCreateSpec {
         if (GuildManager.audioExists(guildId).not() || GuildManager.getAudio(guildId).getQueue().isEmpty()) {
             return simpleMessageEmbed("Queue is empty.").build()
