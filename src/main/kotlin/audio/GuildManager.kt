@@ -13,7 +13,7 @@ class GuildManager private constructor() {
         private val MANAGERS: MutableMap<Snowflake, GuildAudio> = ConcurrentHashMap()
 
         @JvmStatic
-        fun getAudio(client: GatewayDiscordClient, id: Snowflake, messageChannelId: Snowflake): GuildAudio {
+        fun createAudio(client: GatewayDiscordClient, id: Snowflake, messageChannelId: Snowflake): GuildAudio {
             val guildAudio = MANAGERS.computeIfAbsent(id) { GuildAudio(client, id) }
             guildAudio.setMessageChannelId(messageChannelId)
             return guildAudio

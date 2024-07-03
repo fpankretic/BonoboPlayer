@@ -54,7 +54,7 @@ class JoinCommand : Command {
         messageChannel: MessageChannel,
         guildId: Snowflake
     ): Mono<VoiceConnection> {
-        val player = GuildManager.getAudio(voiceChannel.client, guildId, messageChannel.id).player
+        val player = GuildManager.createAudio(voiceChannel.client, guildId, messageChannel.id).player
         val spec = VoiceChannelJoinSpec.builder().provider(LavaPlayerAudioProvider(player)).build();
         return voiceChannel.join(spec)
     }

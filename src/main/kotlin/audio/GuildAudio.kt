@@ -1,6 +1,7 @@
 package audio
 
 import GlobalData
+import audio.handler.DefaultAudioLoadResultHandler
 import com.sedmelluq.discord.lavaplayer.filter.equalizer.EqualizerFactory
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
@@ -17,6 +18,7 @@ import reactor.core.scheduler.Schedulers
 import util.EmbedUtils
 import util.EmbedUtils.Companion.simpleMessageEmbed
 import java.time.Duration
+import java.time.temporal.TemporalQuery
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Future
@@ -106,10 +108,10 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
         return scheduler.skipInQueue(position)
     }
 
-    fun addHandler(loadResultHandler: DefaultAudioLoadResultHandler) {
+    fun addHandler(loadResultHandler: AudioLoadResultHandler, query: String) {
         logger.info { "GuildId: ${guildId.asLong()} Adding audio load result handler: ${loadResultHandler.hashCode()}" }
         loadResultHandlers[loadResultHandler] =
-            GlobalData.PLAYER_MANAGER.loadItemOrdered(guildId.asLong(), loadResultHandler.track, loadResultHandler)
+            GlobalData.PLAYER_MANAGER.loadItemOrdered(guildId.asLong(), query, loadResultHandler)
     }
 
     fun removeHandler(loadResultHandler: DefaultAudioLoadResultHandler) {
