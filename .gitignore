@@ -64,3 +64,5 @@ build/
 hs_err_pid*
 replay_pid*
 
+# Random
+nohup.out
