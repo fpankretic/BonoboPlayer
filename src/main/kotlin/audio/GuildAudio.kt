@@ -6,10 +6,14 @@ import com.sedmelluq.discord.lavaplayer.filter.equalizer.EqualizerFactory
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
+import command.JoinCommand
 import discord4j.common.util.Snowflake
 import discord4j.core.GatewayDiscordClient
+import discord4j.core.event.domain.interaction.SelectMenuInteractionEvent
+import discord4j.core.`object`.component.ActionRow
 import discord4j.core.`object`.entity.channel.MessageChannel
 import discord4j.core.spec.EmbedCreateSpec
+import discord4j.core.spec.MessageCreateSpec
 import kotlinx.coroutines.reactor.mono
 import mu.KotlinLogging
 import reactor.core.Disposable
@@ -18,10 +22,10 @@ import reactor.core.scheduler.Schedulers
 import util.EmbedUtils
 import util.EmbedUtils.Companion.simpleMessageEmbed
 import java.time.Duration
-import java.time.temporal.TemporalQuery
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Future
+import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 
@@ -76,6 +80,34 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
 
     fun sendMessage(embedCreateSpec: EmbedCreateSpec) {
         getMessageChannel().flatMap { it.createMessage(embedCreateSpec) }.subscribe()
+    }
+
+    fun sendMessageWithComponentAndTimeout(embedCreateSpec: EmbedCreateSpec, actionRow: ActionRow) {
+        getMessageChannel().flatMap { channel ->
+            val createMessageMono = channel.createMessage(
+                MessageCreateSpec.builder()
+                    .addEmbed(embedCreateSpec)
+                    .addComponent(actionRow)
+                    .build()
+            )
+
+            val tempListener = client.on(SelectMenuInteractionEvent::class.java) {
+                if (it.customId.equals("choose-song")) {
+                    val value = it.values.toString().replace("[", "").replace("]", "")
+                    println("ytsearch: $value")
+                    addHandler(
+                        DefaultAudioLoadResultHandler(guildId, "ytsearch: $value", it.message.get().author.get()),
+                        value
+                    )
+                }
+                return@on mono { it }
+            }.flatMap { JoinCommand().executeManual(it) }
+                .timeout(Duration.ofMinutes(1))
+                .onErrorResume(TimeoutException::class.java) { mono { null } }
+                .then()
+
+            return@flatMap createMessageMono.then(tempListener)
+        }.subscribe()
     }
 
     fun getQueue(): List<AudioTrack> {

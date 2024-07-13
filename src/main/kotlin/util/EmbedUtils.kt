@@ -2,8 +2,12 @@ package util
 
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
+import discord4j.core.`object`.component.ActionRow
+import discord4j.core.`object`.component.SelectMenu
+import discord4j.core.`object`.component.SelectMenu.Option
 import discord4j.core.spec.EmbedCreateSpec
 import discord4j.rest.util.Color
+import java.util.*
 
 class EmbedUtils {
 
@@ -30,6 +34,14 @@ class EmbedUtils {
 
         fun bold(string: String): String {
             return "**$string**"
+        }
+
+        fun chooseSongSelect(tracks: List<AudioTrack>): ActionRow {
+            val select = SelectMenu.of(
+                "choose-song",
+                tracks.mapIndexed { index, audioTrack -> Option.of((index + 1).toString(), audioTrack.info.title) }
+            )
+            return ActionRow.of(select)
         }
 
         private fun textAsHyperLink(text: String, url: String): String {

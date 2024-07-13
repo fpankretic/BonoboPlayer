@@ -3,6 +3,7 @@ package command
 import audio.GuildManager
 import audio.LavaPlayerAudioProvider
 import discord4j.common.util.Snowflake
+import discord4j.core.event.domain.interaction.SelectMenuInteractionEvent
 import discord4j.core.event.domain.message.MessageCreateEvent
 import discord4j.core.`object`.entity.channel.MessageChannel
 import discord4j.core.`object`.entity.channel.VoiceChannel
@@ -28,11 +29,31 @@ class JoinCommand : Command {
             .then()
     }
 
+    fun executeManual(event: SelectMenuInteractionEvent): Mono<Void> {
+        if (event.message.get().guildId.isEmpty) {
+            return mono { null }
+        }
+        val guildId = event.message.get().guildId.get()
+
+        println("execute called.")
+        return event.client.voiceConnectionRegistry.getVoiceConnection(guildId)
+            .switchIfEmpty(destroyAudioAndJoin(event, guildId))
+            .then(joinVoiceChannel(event, guildId))
+            .then()
+    }
+
     override fun help(): String {
         return "Joins the voice channel the user is in."
     }
 
     private fun destroyAudioAndJoin(event: MessageCreateEvent, guildId: Snowflake): Mono<VoiceConnection> {
+        return mono {
+            logger.info { "Function destroyAudioAndJoin called." }
+            GuildManager.destroyAudio(guildId)
+        }.then(joinVoiceChannel(event, guildId))
+    }
+
+    private fun destroyAudioAndJoin(event: SelectMenuInteractionEvent, guildId: Snowflake): Mono<VoiceConnection> {
         return mono {
             logger.info { "Function destroyAudioAndJoin called." }
             GuildManager.destroyAudio(guildId)
@@ -46,6 +67,17 @@ class JoinCommand : Command {
             .flatMap { it.voiceState }
             .flatMap { it.channel }
             .zipWith(event.message.channel)
+            .flatMap { createVoiceConnection(it.t1, it.t2, guildId) }
+    }
+
+    private fun joinVoiceChannel(event: SelectMenuInteractionEvent, guildId: Snowflake): Mono<VoiceConnection> {
+        println("joinVoiceChannel called.")
+        return mono { event.interaction.member }
+            .filter { it.isPresent }
+            .map { it.get() }
+            .flatMap { it.voiceState }
+            .flatMap { it.channel }
+            .zipWith(event.interaction.channel)
             .flatMap { createVoiceConnection(it.t1, it.t2, guildId) }
     }
 

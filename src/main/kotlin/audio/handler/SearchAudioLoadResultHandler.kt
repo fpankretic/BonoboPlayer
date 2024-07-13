@@ -9,6 +9,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import discord4j.common.util.Snowflake
 import mu.KotlinLogging
 import util.EmbedUtils
+import kotlin.math.min
 
 class SearchAudioLoadResultHandler(
     guildId: Snowflake
@@ -32,11 +33,13 @@ class SearchAudioLoadResultHandler(
             .take(10)
             .joinToString("\n")
 
-        guildAudio.sendMessage(
+        val numberOfElements = min(10, playlist.tracks.size)
+        guildAudio.sendMessageWithComponentAndTimeout(
             EmbedUtils.defaultEmbed()
                 .title(playlist.name)
                 .description(results)
-                .build()
+                .build(),
+            EmbedUtils.chooseSongSelect(playlist.tracks.subList(0, numberOfElements))
         )
     }
 
