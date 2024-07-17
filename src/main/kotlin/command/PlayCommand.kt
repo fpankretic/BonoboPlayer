@@ -1,8 +1,8 @@
 package command
 
-import audio.DefaultAudioLoadResultHandler
 import audio.GuildAudio
 import audio.GuildManager
+import audio.load.DefaultAudioLoadResultHandler
 import discord4j.core.event.domain.message.MessageCreateEvent
 import kotlinx.coroutines.reactor.mono
 import mu.KotlinLogging
@@ -22,7 +22,7 @@ class PlayCommand : Command {
 
         return executeJoinCommand(event)
             .then(event.message.channel)
-            .map { GuildManager.getAudio(event.client, guildId, it.id) }
+            .map { GuildManager.createAudio(event.client, guildId, it.id) }
             .map { play(it, event) }
             .doOnError { logger.error { it.message } }
             .retry(2)
@@ -38,7 +38,10 @@ class PlayCommand : Command {
         val query = event.message.content.substringAfter(" ").trim()
         val track = loadTrack(query)
         logger.info { "Parsed query: $track." }
-        guildAudio.addHandler(DefaultAudioLoadResultHandler(event.guildId.get(), track, event.message.author.get()))
+        guildAudio.addHandler(
+            DefaultAudioLoadResultHandler(event.guildId.get(), track, event.message.author.get()),
+            track
+        )
     }
 
     private fun loadTrack(query: String): String {

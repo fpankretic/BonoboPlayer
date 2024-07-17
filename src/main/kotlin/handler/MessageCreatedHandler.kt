@@ -5,10 +5,7 @@ import discord4j.core.event.domain.message.MessageCreateEvent
 import kotlinx.coroutines.reactor.mono
 import mu.KotlinLogging
 import reactor.core.publisher.Mono
-import util.EmbedUtils
-import util.EmbedUtils.Companion.bold
 import util.EmbedUtils.Companion.defaultEmbed
-import java.time.Instant
 
 class MessageCreatedHandler {
 
@@ -30,6 +27,9 @@ class MessageCreatedHandler {
             commands["q"] = QueueCommand()
             commands["leave"] = LeaveCommand()
             commands["np"] = NowPlayingCommand()
+            commands["h"] = HelpCommand(commands)
+            commands["help"] = HelpCommand(commands)
+            commands["search"] = SearchCommand()
         }
     }
 
@@ -43,29 +43,19 @@ class MessageCreatedHandler {
 
         if (prefix == '!' && (commands.containsKey(commandName) || commandName == "help" || commandName == "h")) {
             logger.info { "Executing $commandName command." }
-            return if (commandName == "help" || commandName == "h")
-                helpCommand(event)
-            else
-                commands[commandName]!!.execute(event)
+
+//            val poruka = "Trenutno radim na unaprijeđenju mogućnosti bota pa može biti poteškoća u radu. Hvala na strpljenju!"
+//            val embed = defaultEmbed()
+//                .title("Obavijest!")
+//                .description(poruka)
+//                .build()
+//            return event.message.channel.flatMap { it.createMessage(embed) }
+//                .then(commands[commandName]!!.execute(event))
+
+             return commands[commandName]!!.execute(event)
         }
 
         return mono { null }
-    }
-
-    private fun helpCommand(event: MessageCreateEvent): Mono<Void> {
-        val author = event.member.get()
-
-        val messages = commands.map { "${bold(it.key)} - ${it.value.help()}" }.toList()
-        val message = (1..commands.size).map { "${it}. ${messages[it - 1]}" }.joinToString("\n")
-
-        val embed = defaultEmbed()
-            .title("All commands")
-            .description(message)
-            .footer("Requested by ${author.globalName.orElse(author.username)}", author.avatarUrl)
-            .timestamp(Instant.now())
-            .build()
-
-        return event.message.channel.flatMap { it.createMessage(embed) }.then()
     }
 
 }

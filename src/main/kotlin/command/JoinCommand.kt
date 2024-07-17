@@ -3,6 +3,7 @@ package command
 import audio.GuildManager
 import audio.LavaPlayerAudioProvider
 import discord4j.common.util.Snowflake
+import discord4j.core.event.domain.interaction.SelectMenuInteractionEvent
 import discord4j.core.event.domain.message.MessageCreateEvent
 import discord4j.core.`object`.entity.channel.MessageChannel
 import discord4j.core.`object`.entity.channel.VoiceChannel
@@ -25,6 +26,17 @@ class JoinCommand : Command {
         return event.client.voiceConnectionRegistry.getVoiceConnection(guildId)
             .switchIfEmpty(destroyAudioAndJoin(event, guildId))
             .then(joinVoiceChannel(event, guildId))
+            .then()
+    }
+
+    fun executeManual(event: SelectMenuInteractionEvent, guildId: Snowflake): Mono<Void> {
+        return mono { event.interaction.member }
+            .filter { it.isPresent }
+            .map { it.get() }
+            .flatMap { it.voiceState }
+            .flatMap { it.channel }
+            .zipWith(event.interaction.channel)
+            .flatMap { createVoiceConnection(it.t1, it.t2, guildId) }
             .then()
     }
 
@@ -54,7 +66,7 @@ class JoinCommand : Command {
         messageChannel: MessageChannel,
         guildId: Snowflake
     ): Mono<VoiceConnection> {
-        val player = GuildManager.getAudio(voiceChannel.client, guildId, messageChannel.id).player
+        val player = GuildManager.createAudio(voiceChannel.client, guildId, messageChannel.id).player
         val spec = VoiceChannelJoinSpec.builder().provider(LavaPlayerAudioProvider(player)).build();
         return voiceChannel.join(spec)
     }

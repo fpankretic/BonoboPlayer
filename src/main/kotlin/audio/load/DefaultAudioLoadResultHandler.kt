@@ -1,5 +1,7 @@
-package audio
+package audio.load
 
+import audio.GuildAudio
+import audio.GuildManager
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist
