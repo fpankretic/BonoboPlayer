@@ -2,7 +2,7 @@ package command
 
 import audio.GuildAudio
 import audio.GuildManager
-import audio.handler.DefaultAudioLoadResultHandler
+import audio.load.DefaultAudioLoadResultHandler
 import discord4j.core.event.domain.message.MessageCreateEvent
 import kotlinx.coroutines.reactor.mono
 import mu.KotlinLogging

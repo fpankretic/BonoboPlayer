@@ -1,7 +1,7 @@
 package audio
 
 import GlobalData
-import audio.handler.DefaultAudioLoadResultHandler
+import audio.load.DefaultAudioLoadResultHandler
 import com.sedmelluq.discord.lavaplayer.filter.equalizer.EqualizerFactory
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
@@ -28,8 +28,6 @@ import java.util.concurrent.Future
 import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
-import kotlin.collections.HashMap
-import kotlin.math.log
 
 class GuildAudio(private val client: GatewayDiscordClient, private val guildId: Snowflake) {
 
@@ -118,8 +116,8 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
                     })
             }
             return@on mono { null }
-        }.timeout(Duration.ofMinutes(1))
-            .onErrorResume(TimeoutException::class.java) { mono { null } }
+        }.timeout(menuDelay)
+            .onErrorResume(TimeoutException::class.java) { mono { logger.info { "Menu item timed out." } } }
             .map {
                 if (menusTasks[customId] != null)
                     menusTasks[customId]?.get()?.dispose()
