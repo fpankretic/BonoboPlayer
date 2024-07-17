@@ -44,15 +44,15 @@ class MessageCreatedHandler {
         if (prefix == '!' && (commands.containsKey(commandName) || commandName == "help" || commandName == "h")) {
             logger.info { "Executing $commandName command." }
 
-            val poruka = "Trenutno radim na unaprijeđenju mogućnosti bota pa može biti poteškoća u radu. Hvala na strpljenju!"
-            val embed = defaultEmbed()
-                .title("Obavijest!")
-                .description(poruka)
-                .build()
-            return event.message.channel.flatMap { it.createMessage(embed) }
-                .then(commands[commandName]!!.execute(event))
+//            val poruka = "Trenutno radim na unaprijeđenju mogućnosti bota pa može biti poteškoća u radu. Hvala na strpljenju!"
+//            val embed = defaultEmbed()
+//                .title("Obavijest!")
+//                .description(poruka)
+//                .build()
+//            return event.message.channel.flatMap { it.createMessage(embed) }
+//                .then(commands[commandName]!!.execute(event))
 
-            // return commands[commandName]!!.execute(event)
+             return commands[commandName]!!.execute(event)
         }
 
         return mono { null }

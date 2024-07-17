@@ -36,9 +36,9 @@ class EmbedUtils {
             return "**$string**"
         }
 
-        fun chooseSongSelect(tracks: List<AudioTrack>): ActionRow {
+        fun chooseSongSelect(tracks: List<AudioTrack>, customId: String): ActionRow {
             val select = SelectMenu.of(
-                "choose-song",
+                customId,
                 tracks.mapIndexed { index, audioTrack -> Option.of((index + 1).toString(), audioTrack.info.title) }
             )
             return ActionRow.of(select)

@@ -28,17 +28,21 @@ import java.util.concurrent.Future
 import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
+import kotlin.collections.HashMap
+import kotlin.math.log
 
 class GuildAudio(private val client: GatewayDiscordClient, private val guildId: Snowflake) {
 
     private val logger = KotlinLogging.logger {}
     private val leaveDelay = Duration.ofMinutes(5)
+    private val menuDelay = Duration.ofMinutes(1)
 
     val player: AudioPlayer = GlobalData.PLAYER_MANAGER.createPlayer()
     private var destroyed: Boolean = false
     private val scheduler: AudioTrackScheduler = AudioTrackScheduler(player, guildId)
     private var messageChannelId: AtomicLong = AtomicLong()
     private val leavingTask: AtomicReference<Disposable> = AtomicReference()
+    private val menusTasks: HashMap<String, AtomicReference<Disposable>> = hashMapOf()
     private val loadResultHandlers: ConcurrentHashMap<AudioLoadResultHandler, Future<Void>> = ConcurrentHashMap()
     private val equalizer: EqualizerFactory = EqualizerFactory()
 
@@ -82,32 +86,46 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
         getMessageChannel().flatMap { it.createMessage(embedCreateSpec) }.subscribe()
     }
 
-    fun sendMessageWithComponentAndTimeout(embedCreateSpec: EmbedCreateSpec, actionRow: ActionRow) {
+    fun sendMessageWithComponentAndTimeout(embedCreateSpec: EmbedCreateSpec, actionRow: ActionRow, customId: String) {
+        sendMessageWithComponent(embedCreateSpec, actionRow)
+        setMenuComponentTimeout(customId)
+    }
+
+    private fun sendMessageWithComponent(embedCreateSpec: EmbedCreateSpec, actionRow: ActionRow) {
         getMessageChannel().flatMap { channel ->
-            val createMessageMono = channel.createMessage(
+            channel.createMessage(
                 MessageCreateSpec.builder()
                     .addEmbed(embedCreateSpec)
                     .addComponent(actionRow)
                     .build()
             )
-
-            val tempListener = client.on(SelectMenuInteractionEvent::class.java) {
-                if (it.customId.equals("choose-song")) {
-                    val value = it.values.toString().replace("[", "").replace("]", "")
-                    println("ytsearch: $value")
-                    addHandler(
-                        DefaultAudioLoadResultHandler(guildId, "ytsearch: $value", it.message.get().author.get()),
-                        value
-                    )
-                }
-                return@on mono { it }
-            }.flatMap { JoinCommand().executeManual(it) }
-                .timeout(Duration.ofMinutes(1))
-                .onErrorResume(TimeoutException::class.java) { mono { null } }
-                .then()
-
-            return@flatMap createMessageMono.then(tempListener)
         }.subscribe()
+    }
+
+    private fun setMenuComponentTimeout(customId: String) {
+        val task = client.on(SelectMenuInteractionEvent::class.java) {
+            if (it.customId.equals(customId)) {
+                val value = it.values.toString().replace("[", "").replace("]", "")
+                val author = it.message.get().author.get()
+                return@on it.deferEdit()
+                    .then(JoinCommand().executeManual(it, guildId))
+                    .then(mono {
+                        val track = "ytsearch: $value"
+                        addHandler(
+                            DefaultAudioLoadResultHandler(guildId, track, author),
+                            track
+                        )
+                    })
+            }
+            return@on mono { null }
+        }.timeout(Duration.ofMinutes(1))
+            .onErrorResume(TimeoutException::class.java) { mono { null } }
+            .map {
+                if (menusTasks[customId] != null)
+                    menusTasks[customId]?.get()?.dispose()
+            }
+
+        menusTasks[customId] = AtomicReference(task.subscribe())
     }
 
     fun getQueue(): List<AudioTrack> {
@@ -146,17 +164,17 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
             GlobalData.PLAYER_MANAGER.loadItemOrdered(guildId.asLong(), query, loadResultHandler)
     }
 
-    fun removeHandler(loadResultHandler: DefaultAudioLoadResultHandler) {
+    fun removeHandler(loadResultHandler: AudioLoadResultHandler) {
         logger.info { "GuildId: ${guildId.asLong()} Removing audio load result handler: ${loadResultHandler.hashCode()}" }
         loadResultHandlers.remove(loadResultHandler)
     }
 
     fun destroy() {
-        destroyed = true
         cancelLeave()
         loadResultHandlers.forEach { it.value.cancel(true) }
         loadResultHandlers.clear()
         scheduler.destroy()
+        destroyed = true
     }
 
     private fun skip(): Boolean {

@@ -29,16 +29,14 @@ class JoinCommand : Command {
             .then()
     }
 
-    fun executeManual(event: SelectMenuInteractionEvent): Mono<Void> {
-        if (event.message.get().guildId.isEmpty) {
-            return mono { null }
-        }
-        val guildId = event.message.get().guildId.get()
-
-        println("execute called.")
-        return event.client.voiceConnectionRegistry.getVoiceConnection(guildId)
-            .switchIfEmpty(destroyAudioAndJoin(event, guildId))
-            .then(joinVoiceChannel(event, guildId))
+    fun executeManual(event: SelectMenuInteractionEvent, guildId: Snowflake): Mono<Void> {
+        return mono { event.interaction.member }
+            .filter { it.isPresent }
+            .map { it.get() }
+            .flatMap { it.voiceState }
+            .flatMap { it.channel }
+            .zipWith(event.interaction.channel)
+            .flatMap { createVoiceConnection(it.t1, it.t2, guildId) }
             .then()
     }
 
@@ -53,13 +51,6 @@ class JoinCommand : Command {
         }.then(joinVoiceChannel(event, guildId))
     }
 
-    private fun destroyAudioAndJoin(event: SelectMenuInteractionEvent, guildId: Snowflake): Mono<VoiceConnection> {
-        return mono {
-            logger.info { "Function destroyAudioAndJoin called." }
-            GuildManager.destroyAudio(guildId)
-        }.then(joinVoiceChannel(event, guildId))
-    }
-
     private fun joinVoiceChannel(event: MessageCreateEvent, guildId: Snowflake): Mono<VoiceConnection> {
         return mono { event.member }
             .filter { it.isPresent }
@@ -67,17 +58,6 @@ class JoinCommand : Command {
             .flatMap { it.voiceState }
             .flatMap { it.channel }
             .zipWith(event.message.channel)
-            .flatMap { createVoiceConnection(it.t1, it.t2, guildId) }
-    }
-
-    private fun joinVoiceChannel(event: SelectMenuInteractionEvent, guildId: Snowflake): Mono<VoiceConnection> {
-        println("joinVoiceChannel called.")
-        return mono { event.interaction.member }
-            .filter { it.isPresent }
-            .map { it.get() }
-            .flatMap { it.voiceState }
-            .flatMap { it.channel }
-            .zipWith(event.interaction.channel)
             .flatMap { createVoiceConnection(it.t1, it.t2, guildId) }
     }
 

@@ -9,6 +9,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import discord4j.common.util.Snowflake
 import mu.KotlinLogging
 import util.EmbedUtils
+import java.util.UUID
 import kotlin.math.min
 
 class SearchAudioLoadResultHandler(
@@ -20,6 +21,7 @@ class SearchAudioLoadResultHandler(
 
     override fun trackLoaded(track: AudioTrack?) {
         logger.info { "Should never get to trackLoaded!" }
+        guildAudio.removeHandler(this)
     }
 
     override fun playlistLoaded(playlist: AudioPlaylist) {
@@ -34,22 +36,27 @@ class SearchAudioLoadResultHandler(
             .joinToString("\n")
 
         val numberOfElements = min(10, playlist.tracks.size)
+        val customId = UUID.randomUUID().toString().lowercase()
         guildAudio.sendMessageWithComponentAndTimeout(
             EmbedUtils.defaultEmbed()
                 .title(playlist.name)
                 .description(results)
                 .build(),
-            EmbedUtils.chooseSongSelect(playlist.tracks.subList(0, numberOfElements))
+            EmbedUtils.chooseSongSelect(playlist.tracks.subList(0, numberOfElements), customId),
+            customId
         )
+        guildAudio.removeHandler(this)
     }
 
     override fun noMatches() {
         logger.info { "Found no matches." }
         guildAudio.sendMessage(EmbedUtils.simpleMessageEmbed("Found no matches.").build())
+        guildAudio.removeHandler(this)
     }
 
     override fun loadFailed(exception: FriendlyException?) {
         logger.error { "Error while searching!" }
         guildAudio.sendMessage(EmbedUtils.simpleMessageEmbed("Error while searching!").build())
+        guildAudio.removeHandler(this)
     }
 }
