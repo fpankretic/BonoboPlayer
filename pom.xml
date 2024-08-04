@@ -57,12 +57,6 @@
 
         <dependency>
             <groupId>dev.lavalink.youtube</groupId>
-            <artifactId>common</artifactId>
-            <version>1.5.1</version>
-        </dependency>
-
-        <dependency>
-            <groupId>dev.lavalink.youtube</groupId>
             <artifactId>v2</artifactId>
             <version>1.5.1</version>
         </dependency>
