@@ -3,7 +3,12 @@ import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers
 import com.sedmelluq.discord.lavaplayer.track.playback.NonAllocatingAudioFrameBuffer
 import dev.lavalink.youtube.YoutubeAudioSourceManager
+import dev.lavalink.youtube.clients.AndroidLiteWithThumbnail
+import dev.lavalink.youtube.clients.AndroidMusicWithThumbnail
+import dev.lavalink.youtube.clients.AndroidTestsuiteWithThumbnail
 import dev.lavalink.youtube.clients.AndroidWithThumbnail
+import dev.lavalink.youtube.clients.IosWithThumbnail
+import dev.lavalink.youtube.clients.MediaConnectWithThumbnail
 import dev.lavalink.youtube.clients.MusicWithThumbnail
 import dev.lavalink.youtube.clients.TvHtml5EmbeddedWithThumbnail
 import dev.lavalink.youtube.clients.WebWithThumbnail
@@ -26,7 +31,15 @@ class GlobalData {
 
             // YoutubeAudioSourceManager is deprecated, use youtube-source instead
             val clients = arrayOf<Client>(
-                MusicWithThumbnail(), WebWithThumbnail(), AndroidWithThumbnail(), TvHtml5EmbeddedWithThumbnail()
+                MusicWithThumbnail(),
+                WebWithThumbnail(),
+                AndroidWithThumbnail(),
+                TvHtml5EmbeddedWithThumbnail(),
+                AndroidMusicWithThumbnail(),
+                AndroidTestsuiteWithThumbnail(),
+                AndroidLiteWithThumbnail(),
+                IosWithThumbnail(),
+                MediaConnectWithThumbnail()
             )
             val youtubeSource = YoutubeAudioSourceManager(*clients)
             PLAYER_MANAGER.registerSourceManagers(youtubeSource)
