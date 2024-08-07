@@ -2,6 +2,8 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers
 import com.sedmelluq.discord.lavaplayer.track.playback.NonAllocatingAudioFrameBuffer
+import com.sedmelluq.lava.extensions.youtuberotator.YoutubeIpRotatorSetup
+import com.sedmelluq.lava.extensions.youtuberotator.planner.NanoIpRoutePlanner
 import dev.lavalink.youtube.YoutubeAudioSourceManager
 import dev.lavalink.youtube.clients.AndroidLiteWithThumbnail
 import dev.lavalink.youtube.clients.AndroidMusicWithThumbnail
@@ -47,6 +49,13 @@ class GlobalData {
             AudioSourceManagers.registerRemoteSources(PLAYER_MANAGER, YoutubeAudioSourceManagerDeprecated::class.java)
             AudioSourceManagers.registerLocalSource(PLAYER_MANAGER)
 
+            // Setup IPv6 rotator
+            val routePlanner = NanoIpRoutePlanner(listOf(), true) // TODO: add list
+            val rotator = YoutubeIpRotatorSetup(routePlanner)
+
+            rotator.forConfiguration(youtubeSource.httpInterfaceManager, false)
+                .withMainDelegateFilter(null)
+                .setup()
         }
     }
 
