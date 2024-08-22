@@ -4,6 +4,7 @@ import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers
 import com.sedmelluq.discord.lavaplayer.track.playback.NonAllocatingAudioFrameBuffer
 import com.sedmelluq.lava.extensions.youtuberotator.YoutubeIpRotatorSetup
 import com.sedmelluq.lava.extensions.youtuberotator.planner.NanoIpRoutePlanner
+import com.sedmelluq.lava.extensions.youtuberotator.tools.ip.Ipv6Block
 import dev.lavalink.youtube.YoutubeAudioSourceManager
 import dev.lavalink.youtube.clients.AndroidLiteWithThumbnail
 import dev.lavalink.youtube.clients.AndroidMusicWithThumbnail
@@ -15,6 +16,7 @@ import dev.lavalink.youtube.clients.MusicWithThumbnail
 import dev.lavalink.youtube.clients.TvHtml5EmbeddedWithThumbnail
 import dev.lavalink.youtube.clients.WebWithThumbnail
 import dev.lavalink.youtube.clients.skeleton.Client
+import java.net.Inet6Address
 import com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeAudioSourceManager as YoutubeAudioSourceManagerDeprecated
 
 class GlobalData {
@@ -50,12 +52,13 @@ class GlobalData {
             AudioSourceManagers.registerLocalSource(PLAYER_MANAGER)
 
             // Setup IPv6 rotator
-            val routePlanner = NanoIpRoutePlanner(listOf(), true) // TODO: add list
-            val rotator = YoutubeIpRotatorSetup(routePlanner)
-
-            rotator.forConfiguration(youtubeSource.httpInterfaceManager, false)
-                .withMainDelegateFilter(null)
-                .setup()
+//            val ipv6Block = Ipv6Block("/48") // TODO: add proper IPv6 block, load address from config
+//            val routePlanner = NanoIpRoutePlanner(listOf(ipv6Block), true)
+//            val rotator = YoutubeIpRotatorSetup(routePlanner)
+//
+//            rotator.forConfiguration(youtubeSource.httpInterfaceManager, false)
+//                .withMainDelegateFilter(null)
+//                .setup()
         }
     }
 
