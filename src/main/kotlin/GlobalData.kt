@@ -16,6 +16,9 @@ import dev.lavalink.youtube.clients.MusicWithThumbnail
 import dev.lavalink.youtube.clients.TvHtml5EmbeddedWithThumbnail
 import dev.lavalink.youtube.clients.WebWithThumbnail
 import dev.lavalink.youtube.clients.skeleton.Client
+import secret.Credential
+import secret.Credential.IPV6_CIDR
+import secret.CredentialManager
 import java.net.Inet6Address
 import com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeAudioSourceManager as YoutubeAudioSourceManagerDeprecated
 
@@ -52,13 +55,13 @@ class GlobalData {
             AudioSourceManagers.registerLocalSource(PLAYER_MANAGER)
 
             // Setup IPv6 rotator
-//            val ipv6Block = Ipv6Block("/48") // TODO: add proper IPv6 block, load address from config
-//            val routePlanner = NanoIpRoutePlanner(listOf(ipv6Block), true)
-//            val rotator = YoutubeIpRotatorSetup(routePlanner)
-//
-//            rotator.forConfiguration(youtubeSource.httpInterfaceManager, false)
-//                .withMainDelegateFilter(null)
-//                .setup()
+            val ipv6Block = Ipv6Block(CredentialManager.get(IPV6_CIDR))
+            val routePlanner = NanoIpRoutePlanner(listOf(ipv6Block), true)
+            val rotator = YoutubeIpRotatorSetup(routePlanner)
+
+            rotator.forConfiguration(youtubeSource.httpInterfaceManager, false)
+                .withMainDelegateFilter(null)
+                .setup()
         }
     }
 

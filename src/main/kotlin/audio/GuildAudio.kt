@@ -111,10 +111,7 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
                     .timeout(removeDelay).then(it.message.get().delete())
                     .then(mono {
                         val track = "ytsearch: $value"
-                        addHandler(
-                            DefaultAudioLoadResultHandler(guildId, track, author),
-                            track
-                        )
+                        addHandler(DefaultAudioLoadResultHandler(guildId, author), track)
                     })
             }
 
