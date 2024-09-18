@@ -38,10 +38,8 @@ class PlayCommand : Command {
         val query = event.message.content.substringAfter(" ").trim()
         val track = loadTrack(query)
         logger.info { "Parsed query: $track." }
-        guildAudio.addHandler(
-            DefaultAudioLoadResultHandler(event.guildId.get(), track, event.message.author.get()),
-            track
-        )
+
+        guildAudio.addHandler(DefaultAudioLoadResultHandler(event.guildId.get(), event.message.author.get()), track)
     }
 
     private fun loadTrack(query: String): String {

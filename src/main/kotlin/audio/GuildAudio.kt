@@ -34,6 +34,7 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
     private val logger = KotlinLogging.logger {}
     private val leaveDelay = Duration.ofMinutes(5)
     private val menuDelay = Duration.ofMinutes(1)
+    private val removeDelay = Duration.ofSeconds(3)
 
     val player: AudioPlayer = GlobalData.PLAYER_MANAGER.createPlayer()
     private var destroyed: Boolean = false
@@ -104,17 +105,16 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
         val task = client.on(SelectMenuInteractionEvent::class.java) {
             if (it.customId.equals(customId)) {
                 val value = it.values.toString().replace("[", "").replace("]", "")
-                val author = it.message.get().author.get()
-                return@on it.deferEdit()
-                    .then(JoinCommand().executeManual(it, guildId))
+                val author = it.interaction.user
+
+                return@on JoinCommand().executeManual(it, guildId)
+                    .timeout(removeDelay).then(it.message.get().delete())
                     .then(mono {
                         val track = "ytsearch: $value"
-                        addHandler(
-                            DefaultAudioLoadResultHandler(guildId, track, author),
-                            track
-                        )
+                        addHandler(DefaultAudioLoadResultHandler(guildId, author), track)
                     })
             }
+
             return@on mono { null }
         }.timeout(menuDelay)
             .onErrorResume(TimeoutException::class.java) { mono { logger.info { "Menu item timed out." } } }

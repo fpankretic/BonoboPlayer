@@ -18,7 +18,6 @@ import java.time.Instant
 
 class DefaultAudioLoadResultHandler(
     guildId: Snowflake,
-    val track: String,
     private val author: User
 ) : AudioLoadResultHandler {
 

@@ -9,7 +9,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import discord4j.common.util.Snowflake
 import mu.KotlinLogging
 import util.EmbedUtils
-import java.util.UUID
+import java.util.*
 import kotlin.math.min
 
 class SearchAudioLoadResultHandler(
@@ -30,19 +30,22 @@ class SearchAudioLoadResultHandler(
             return
         }
 
-        val results = playlist.tracks
+
+        val filteredTracks = playlist.tracks.distinctBy { it.info.title }
+        val numberOfElements = min(5, filteredTracks.size)
+
+        val resultString = filteredTracks
             .mapIndexed { index, audioTrack -> "${index + 1}. ${audioTrack.info.title}" }
-            .take(10)
+            .take(numberOfElements)
             .joinToString("\n")
 
-        val numberOfElements = min(10, playlist.tracks.size)
         val customId = UUID.randomUUID().toString().lowercase()
         guildAudio.sendMessageWithComponentAndTimeout(
             EmbedUtils.defaultEmbed()
                 .title(playlist.name)
-                .description(results)
+                .description(resultString)
                 .build(),
-            EmbedUtils.chooseSongSelect(playlist.tracks.subList(0, numberOfElements), customId),
+            EmbedUtils.chooseSongSelect(filteredTracks.subList(0, numberOfElements), customId),
             customId
         )
         guildAudio.removeHandler(this)
