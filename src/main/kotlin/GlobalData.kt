@@ -11,7 +11,6 @@ import dev.lavalink.youtube.clients.skeleton.Client
 import env.EnvironmentManager
 import env.EnvironmentValue.IPV6_CIDR
 import env.EnvironmentValue.IPV6_ENABLED
-import mu.KotlinLogging
 import com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeAudioSourceManager as YoutubeAudioSourceManagerDeprecated
 
 class GlobalData {
@@ -19,8 +18,6 @@ class GlobalData {
     companion object {
         @JvmField
         val PLAYER_MANAGER: AudioPlayerManager
-
-        private val logger = KotlinLogging.logger {}
 
         init {
             PLAYER_MANAGER = DefaultAudioPlayerManager()
@@ -34,7 +31,6 @@ class GlobalData {
             val clients = arrayOf<Client>(
                 MusicWithThumbnail(),
                 WebWithThumbnail(),
-                AndroidWithThumbnail(),
                 TvHtml5EmbeddedWithThumbnail(),
                 AndroidMusicWithThumbnail(),
                 AndroidTestsuiteWithThumbnail(),
@@ -49,9 +45,7 @@ class GlobalData {
             AudioSourceManagers.registerLocalSource(PLAYER_MANAGER)
 
             // Setup IPv6 rotator
-            if (EnvironmentManager.get(IPV6_ENABLED).equals("true", ignoreCase = true)) {
-                logger.info { "Setting up IPv6 rotator" }
-
+            if (EnvironmentManager.get(IPV6_ENABLED).toBoolean()) {
                 val ipv6Block = Ipv6Block(EnvironmentManager.get(IPV6_CIDR))
                 val routePlanner = NanoIpRoutePlanner(listOf(ipv6Block), true)
                 val rotator = YoutubeIpRotatorSetup(routePlanner)
