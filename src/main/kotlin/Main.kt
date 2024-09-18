@@ -3,11 +3,19 @@ import discord4j.core.event.domain.VoiceStateUpdateEvent
 import discord4j.core.event.domain.message.MessageCreateEvent
 import handler.MessageCreatedHandler
 import handler.VoiceStateUpdatedHandler
-import secret.Credential
-import secret.CredentialManager
+import env.EnvironmentValue
+import env.EnvironmentManager
+import env.EnvironmentValue.MAINTENANCE
+import mu.KotlinLogging
 
 fun main() {
-    val client = DiscordClient.create(CredentialManager.get(Credential.DISCORD_API_TOKEN))
+    val logger = KotlinLogging.logger {}
+
+    if (EnvironmentManager.get(MAINTENANCE).toBoolean()) {
+        logger.info { "Bot is in maintenance mode" }
+    }
+
+    val client = DiscordClient.create(EnvironmentManager.get(EnvironmentValue.DISCORD_API_TOKEN))
     val gateway = client.login().block() ?: return
 
     val messageCreatedHandler = MessageCreatedHandler()
