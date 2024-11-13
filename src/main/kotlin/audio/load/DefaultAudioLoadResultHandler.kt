@@ -27,7 +27,9 @@ class DefaultAudioLoadResultHandler(
     override fun trackLoaded(track: AudioTrack) {
         logger.info { "Started loading track ${track.info.title}." }
 
-        guildAudio.sendMessage(getTrackLoadedMessage(track))
+        if (guildAudio.getQueue().isNotEmpty() || guildAudio.isSongLoaded()) {
+            guildAudio.sendMessage(getTrackLoadedMessage(track))
+        }
         guildAudio.play(track)
 
         logger.info { "Finished loading track ${track.info.title}." }

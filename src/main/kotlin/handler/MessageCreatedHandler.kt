@@ -3,7 +3,7 @@ package handler
 import command.*
 import discord4j.core.event.domain.message.MessageCreateEvent
 import env.EnvironmentManager
-import env.EnvironmentValue.MAINTENANCE
+import env.EnvironmentValue.PREFIX
 import kotlinx.coroutines.reactor.mono
 import mu.KotlinLogging
 import reactor.core.publisher.Mono
@@ -32,6 +32,10 @@ class MessageCreatedHandler {
             commands["h"] = HelpCommand(commands)
             commands["help"] = HelpCommand(commands)
             commands["search"] = SearchCommand()
+            commands["remove"] = RemoveCommand()
+            commands["r"] = RemoveCommand()
+            commands["skipto"] = SkipToCommand()
+            commands["st"] = SkipToCommand()
         }
     }
 
@@ -40,27 +44,20 @@ class MessageCreatedHandler {
         if (content.length < 2) return Mono.empty()
 
         val first = content.split(" ")[0]
-        val prefix = first[0]
+        val prefix = first[0].toString()
         val commandName = first.substring(1).lowercase()
 
-        if (prefix == '!' && (commands.containsKey(commandName) || commandName == "help" || commandName == "h")) {
+        if (isCommand(prefix, commandName)) {
             logger.info { "Executing $commandName command." }
-
-            if (EnvironmentManager.get(MAINTENANCE).toBoolean()) {
-                val message =
-                    "Trenutno radim na unaprijeđenju mogućnosti bota pa može biti poteškoća u radu. Hvala na strpljenju!"
-                val embed = defaultEmbed()
-                    .title("Obavijest!")
-                    .description(message)
-                    .build()
-                return event.message.channel.flatMap { it.createMessage(embed) }
-                    .then(commands[commandName]!!.execute(event))
-            }
-
             return commands[commandName]!!.execute(event)
         }
 
         return mono { null }
+    }
+
+    private fun isCommand(prefix: String, commandName: String): Boolean {
+        return prefix == EnvironmentManager.get(PREFIX) &&
+                (commands.containsKey(commandName) || commandName == "help" || commandName == "h")
     }
 
 }
