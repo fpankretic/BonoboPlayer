@@ -126,12 +126,16 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
         menusTasks[customId] = AtomicReference(task.subscribe())
     }
 
-    fun getQueue(): List<AudioTrack> {
-        return scheduler.getQueue()
-    }
-
     fun play(track: AudioTrack) {
         scheduler.play(track.makeClone())
+    }
+
+    fun isSongLoaded(): Boolean {
+        return scheduler.currentSong().isPresent
+    }
+
+    fun getQueue(): List<AudioTrack> {
+        return scheduler.getQueue()
     }
 
     fun currentSong(): Optional<AudioTrack> {
@@ -140,6 +144,14 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
 
     fun clearQueue() {
         scheduler.clearQueue()
+    }
+
+    fun skipTo(position: Int): Boolean {
+        if (position < 1 || position > scheduler.getQueue().size) {
+            return false
+        }
+
+        return scheduler.skipTo(position)
     }
 
     fun skipInQueue(position: Int): Boolean {

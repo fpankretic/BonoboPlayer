@@ -91,6 +91,21 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
         return true
     }
 
+    fun skipTo(position: Int): Boolean {
+        if (position < 1 || position > queue.size) {
+            return false
+        }
+
+        for (i in 1 until position) {
+            val track = queue.removeAt(0)
+            logger.info { "Removed ${track.info.title} from queue." }
+        }
+
+        GuildManager.getAudio(guildId).sendMessage(nextSongMessage(queue.first()))
+
+        return true
+    }
+
     fun clearQueue() {
         queue.clear()
     }
@@ -120,6 +135,14 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
     private fun trackSkippedMessage(track: AudioTrack): EmbedCreateSpec {
         return defaultEmbed()
             .title("Removed from the queue")
+            .description(bold(trackAsHyperLink(track)))
+            .thumbnail(track.info.artworkUrl)
+            .build()
+    }
+
+    private fun nextSongMessage(track: AudioTrack): EmbedCreateSpec {
+        return defaultEmbed()
+            .title("Next in queue")
             .description(bold(trackAsHyperLink(track)))
             .thumbnail(track.info.artworkUrl)
             .build()

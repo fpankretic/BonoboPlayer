@@ -33,6 +33,10 @@ class MessageCreatedHandler {
             commands["h"] = HelpCommand(commands)
             commands["help"] = HelpCommand(commands)
             commands["search"] = SearchCommand()
+            commands["remove"] = RemoveCommand()
+            commands["r"] = RemoveCommand()
+            commands["skipto"] = SkipToCommand()
+            commands["st"] = SkipToCommand()
         }
     }
 
