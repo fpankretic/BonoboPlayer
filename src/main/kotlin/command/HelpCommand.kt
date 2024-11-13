@@ -13,9 +13,11 @@ class HelpCommand(private val commands: MutableMap<String, Command>) : Command {
     override fun execute(event: MessageCreateEvent): Mono<Void> {
         val author = event.member.get()
 
-        val messages = commands.map { "${bold(it.key)} - ${it.value.help()}" }.toList()
-        val message = (1..commands.size).map { "${it}. ${messages[it - 1]}" }.joinToString("\n")
+        val messages = commands.filter { isShortCommand(it.key).not() }
+            .map { "${bold(it.key)} - ${it.value.help()}" }
+            .toMutableList()
 
+        val message = (1..messages.size).joinToString("\n") { "${it}. ${messages[it - 1]}" }
         val embed = defaultEmbed()
             .title("All commands")
             .description(message)
@@ -28,5 +30,9 @@ class HelpCommand(private val commands: MutableMap<String, Command>) : Command {
 
     override fun help(): String {
         return "List all available commands."
+    }
+
+    private fun isShortCommand(command: String): Boolean {
+        return command.length <= 2
     }
 }
