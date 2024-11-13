@@ -3,7 +3,6 @@ package handler
 import command.*
 import discord4j.core.event.domain.message.MessageCreateEvent
 import env.EnvironmentManager
-import env.EnvironmentValue.MAINTENANCE
 import env.EnvironmentValue.PREFIX
 import kotlinx.coroutines.reactor.mono
 import mu.KotlinLogging
@@ -50,18 +49,6 @@ class MessageCreatedHandler {
 
         if (isCommand(prefix, commandName)) {
             logger.info { "Executing $commandName command." }
-
-            if (EnvironmentManager.get(MAINTENANCE).toBoolean()) {
-                val message =
-                    "Trenutno radim na unaprijeđenju mogućnosti bota pa može biti poteškoća u radu. Hvala na strpljenju!"
-                val embed = defaultEmbed()
-                    .title("Obavijest!")
-                    .description(message)
-                    .build()
-                return event.message.channel.flatMap { it.createMessage(embed) }
-                    .then(commands[commandName]!!.execute(event))
-            }
-
             return commands[commandName]!!.execute(event)
         }
 

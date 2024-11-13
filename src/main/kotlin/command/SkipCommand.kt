@@ -19,7 +19,7 @@ class SkipCommand : Command {
             .filter { it }
             .switchIfEmpty(sendQueueEmptyMessage(event))
             .map { GuildManager.getAudio(guildId) }
-            .filter { filterChain(it, event) }
+            .filter { skipSong(it) }
             .map { it.scheduleLeave() }
             .onErrorComplete()
             .then()
@@ -29,7 +29,7 @@ class SkipCommand : Command {
         return "Skips the current song in the queue."
     }
 
-    private fun filterChain(guildAudio: GuildAudio, event: MessageCreateEvent): Boolean {
+    private fun skipSong(guildAudio: GuildAudio): Boolean {
         return guildAudio.skipInQueue(0).not() && guildAudio.isLeavingScheduled().not()
     }
 
