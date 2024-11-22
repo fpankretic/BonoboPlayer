@@ -7,10 +7,8 @@ import com.sedmelluq.lava.extensions.youtuberotator.planner.NanoIpRoutePlanner
 import com.sedmelluq.lava.extensions.youtuberotator.tools.ip.Ipv6Block
 import dev.lavalink.youtube.YoutubeAudioSourceManager
 import dev.lavalink.youtube.clients.*
-import dev.lavalink.youtube.clients.skeleton.Client
 import env.EnvironmentManager
-import env.EnvironmentValue.IPV6_CIDR
-import env.EnvironmentValue.IPV6_ENABLED
+import env.EnvironmentValue.*
 import com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeAudioSourceManager as YoutubeAudioSourceManagerDeprecated
 
 class GlobalData {
@@ -28,7 +26,11 @@ class GlobalData {
             PLAYER_MANAGER.configuration.isFilterHotSwapEnabled = true
 
             // YoutubeAudioSourceManager is deprecated, use youtube-source instead
-            val clients = arrayOf<Client>(
+            val poToken = EnvironmentManager.get(PO_TOKEN)
+            val visitorData = EnvironmentManager.get(VISITOR_DATA)
+            WebWithThumbnail.setPoTokenAndVisitorData(poToken, visitorData)
+
+            val clients = arrayOf(
                 MusicWithThumbnail(),
                 WebWithThumbnail(),
                 TvHtml5EmbeddedWithThumbnail(),
@@ -38,6 +40,7 @@ class GlobalData {
                 IosWithThumbnail(),
                 MediaConnectWithThumbnail()
             )
+
             val youtubeSource = YoutubeAudioSourceManager(*clients)
             PLAYER_MANAGER.registerSourceManagers(youtubeSource)
 
