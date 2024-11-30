@@ -3,8 +3,8 @@ package command
 import audio.GuildManager
 import audio.LavaPlayerAudioProvider
 import discord4j.common.util.Snowflake
-import discord4j.core.event.domain.interaction.SelectMenuInteractionEvent
 import discord4j.core.event.domain.message.MessageCreateEvent
+import discord4j.core.`object`.entity.Member
 import discord4j.core.`object`.entity.channel.MessageChannel
 import discord4j.core.`object`.entity.channel.VoiceChannel
 import discord4j.core.spec.VoiceChannelJoinSpec
@@ -12,6 +12,7 @@ import discord4j.voice.VoiceConnection
 import kotlinx.coroutines.reactor.mono
 import mu.KotlinLogging
 import reactor.core.publisher.Mono
+import java.util.*
 
 class JoinCommand : Command {
 
@@ -21,23 +22,35 @@ class JoinCommand : Command {
         if (event.guildId.isEmpty) {
             return mono { null }
         }
+
         val guildId = event.guildId.get()
+        val messageChannelMono = event.message.channel
+        val member = event.member
 
         return event.client.voiceConnectionRegistry.getVoiceConnection(guildId)
             .switchIfEmpty(destroyAudioAndJoin(event, guildId))
-            .then(joinVoiceChannel(event, guildId))
+            .then(joinVoiceChannel(messageChannelMono, member, guildId))
+            .onErrorStop()
             .then()
     }
 
-    fun executeManual(event: SelectMenuInteractionEvent, guildId: Snowflake): Mono<Void> {
-        return mono { event.interaction.member }
+    fun joinVoiceChannel(
+        messageChannelMono: Mono<MessageChannel>,
+        member: Optional<Member>,
+        guildId: Snowflake
+    ): Mono<VoiceConnection> {
+        return mono { member }
             .filter { it.isPresent }
             .map { it.get() }
             .flatMap { it.voiceState }
             .flatMap { it.channel }
-            .zipWith(event.interaction.channel)
+            .switchIfEmpty(mono {
+                logger.info { "User is not in a voice channel." }
+                throw IllegalStateException("User is not in a voice channel.")
+            })
+            .onErrorStop()
+            .zipWith(messageChannelMono)
             .flatMap { createVoiceConnection(it.t1, it.t2, guildId) }
-            .then()
     }
 
     override fun help(): String {
@@ -48,17 +61,7 @@ class JoinCommand : Command {
         return mono {
             logger.info { "Function destroyAudioAndJoin called." }
             GuildManager.destroyAudio(guildId)
-        }.then(joinVoiceChannel(event, guildId))
-    }
-
-    private fun joinVoiceChannel(event: MessageCreateEvent, guildId: Snowflake): Mono<VoiceConnection> {
-        return mono { event.member }
-            .filter { it.isPresent }
-            .map { it.get() }
-            .flatMap { it.voiceState }
-            .flatMap { it.channel }
-            .zipWith(event.message.channel)
-            .flatMap { createVoiceConnection(it.t1, it.t2, guildId) }
+        }.then(joinVoiceChannel(event.message.channel, event.member, guildId))
     }
 
     private fun createVoiceConnection(

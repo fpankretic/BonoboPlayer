@@ -7,7 +7,6 @@ import discord4j.core.`object`.component.SelectMenu
 import discord4j.core.`object`.component.SelectMenu.Option
 import discord4j.core.spec.EmbedCreateSpec
 import discord4j.rest.util.Color
-import java.util.*
 
 class EmbedUtils {
 
@@ -39,7 +38,7 @@ class EmbedUtils {
         fun chooseSongSelect(tracks: List<AudioTrack>, customId: String): ActionRow {
             val select = SelectMenu.of(
                 customId,
-                tracks.mapIndexed { index, audioTrack -> Option.of((index + 1).toString(), audioTrack.info.title) }
+                tracks.mapIndexed { index, audioTrack -> Option.of((index + 1).toString(), audioTrack.info.uri) }
             )
             return ActionRow.of(select)
         }

@@ -3,6 +3,7 @@ package command
 import audio.GuildAudio
 import audio.GuildManager
 import audio.load.DefaultAudioLoadResultHandler
+import discord4j.common.util.Snowflake
 import discord4j.core.event.domain.message.MessageCreateEvent
 import kotlinx.coroutines.reactor.mono
 import mu.KotlinLogging
@@ -20,12 +21,11 @@ class PlayCommand : Command {
         }
         val guildId = event.guildId.get()
 
-        return executeJoinCommand(event)
+        cancelLeave(guildId)
+        return executeJoinCommand(event, guildId)
             .then(event.message.channel)
             .map { GuildManager.createAudio(event.client, guildId, it.id) }
             .map { play(it, event) }
-            .doOnError { logger.error { it.message } }
-            .retry(2)
             .onErrorStop()
             .then()
     }
@@ -39,19 +39,32 @@ class PlayCommand : Command {
         val track = loadTrack(query)
         logger.info { "Parsed query: $track." }
 
-        guildAudio.addHandler(DefaultAudioLoadResultHandler(event.guildId.get(), event.message.author.get()), track)
+        guildAudio.addHandler(
+            DefaultAudioLoadResultHandler(event.guildId.get(), event.message.author.get(), track),
+            track
+        )
     }
 
     private fun loadTrack(query: String): String {
         return try {
             URI(query).toString()
         } catch (exception: URISyntaxException) {
-            "ytsearch: $query"
+            "ytmsearch: $query"
         }
     }
 
-    private fun executeJoinCommand(event: MessageCreateEvent): Mono<Void> {
-        return JoinCommand().execute(event)
+    private fun executeJoinCommand(event: MessageCreateEvent, guildId: Snowflake): Mono<Void> {
+        if (GuildManager.audioExists(guildId).not()) {
+            return JoinCommand().execute(event).onErrorStop()
+        }
+        logger.info { "Skipping join command!" }
+        return mono { null }
+    }
+
+    private fun cancelLeave(guildId: Snowflake) {
+        if (GuildManager.audioExists(guildId) && GuildManager.getAudio(guildId).isLeavingScheduled()) {
+            GuildManager.getAudio(guildId).cancelLeave()
+        }
     }
 
 }

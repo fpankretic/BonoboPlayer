@@ -18,6 +18,9 @@ fun main() {
     val client = DiscordClient.create(EnvironmentManager.get(EnvironmentValue.DISCORD_API_TOKEN))
     val gateway = client.login().block() ?: return
 
+    // Initialize the player manager
+    GlobalData.PLAYER_MANAGER
+
     val messageCreatedHandler = MessageCreatedHandler()
     val voiceStateUpdatedHandler = VoiceStateUpdatedHandler()
 
