@@ -28,6 +28,7 @@ import java.util.concurrent.Future
 import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
+import kotlin.math.log
 
 class GuildAudio(private val client: GatewayDiscordClient, private val guildId: Snowflake) {
 
@@ -106,12 +107,14 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
             if (it.customId.equals(customId)) {
                 val value = it.values.toString().replace("[", "").replace("]", "")
                 val author = it.interaction.user
+                val messageChannelMono = it.interaction.channel
+                val member = it.interaction.member
 
-                return@on JoinCommand().executeManual(it, guildId)
+                return@on JoinCommand().joinVoiceChannel(messageChannelMono, member, guildId)
                     .timeout(removeDelay).then(it.message.get().delete())
                     .then(mono {
-                        val track = "ytsearch: $value"
-                        addHandler(DefaultAudioLoadResultHandler(guildId, author), track)
+                        logger.info { "Selected value while using search: $value" }
+                        addHandler(DefaultAudioLoadResultHandler(guildId, author, value), value)
                     })
             }
 

@@ -17,8 +17,10 @@ import util.EmbedUtils.Companion.trackAsHyperLink
 import java.time.Instant
 
 class DefaultAudioLoadResultHandler(
-    guildId: Snowflake,
-    private val author: User
+    private val guildId: Snowflake,
+    private val author: User,
+    private val track: String,
+    private val retried: Boolean = false
 ) : AudioLoadResultHandler {
 
     private val logger = KotlinLogging.logger {}
@@ -52,14 +54,20 @@ class DefaultAudioLoadResultHandler(
     }
 
     override fun noMatches() {
-        logger.info { "Found no matches." }
+        logger.info { "Found no matches for: $track." }
         guildAudio.sendMessage(getNoMatchesMessage())
         guildAudio.removeHandler(this)
     }
 
     override fun loadFailed(exception: FriendlyException?) {
         guildAudio.removeHandler(this)
-        logger.info { "Load failed." }
+        if (retried) {
+            logger.error { "Failed to load track: $track." }
+            guildAudio.sendMessage(getFailedToLoadMessage())
+        } else {
+            logger.info { "Retrying to load track: $track." }
+            guildAudio.addHandler(DefaultAudioLoadResultHandler(guildId, author, track, true), track)
+        }
     }
 
     private fun getTrackLoadedMessage(track: AudioTrack): EmbedCreateSpec {
@@ -85,5 +93,9 @@ class DefaultAudioLoadResultHandler(
 
     private fun getNoMatchesMessage(): EmbedCreateSpec {
         return EmbedUtils.simpleMessageEmbed("Found no matches.").build()
+    }
+
+    private fun getFailedToLoadMessage(): EmbedCreateSpec {
+        return EmbedUtils.simpleMessageEmbed("Failed to load track.").build()
     }
 }

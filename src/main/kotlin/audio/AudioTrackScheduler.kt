@@ -42,7 +42,12 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
     }
 
     override fun onTrackException(player: AudioPlayer?, track: AudioTrack?, exception: FriendlyException?) {
-        logger.info { "Track exception for ${track!!.info.title}." }
+        logger.info { "Exception occurred while playing: ${track!!.info.title}." }
+        GuildManager.getAudio(guildId).sendMessage(exceptionOccurredMessage(track!!))
+
+        // TODO: Implement a retry mechanism
+        // This could be done by adding retry count to this class and check if player is still playing
+        // Player should be playing even if exception occurred, so we can retry the track.
     }
 
     override fun onTrackStuck(player: AudioPlayer?, track: AudioTrack?, thresholdMs: Long) {
@@ -100,6 +105,7 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
             val track = queue.removeAt(0)
             logger.info { "Removed ${track.info.title} from queue." }
         }
+        skip()
 
         GuildManager.getAudio(guildId).sendMessage(nextSongMessage(queue.first()))
 
@@ -146,6 +152,10 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
             .description(bold(trackAsHyperLink(track)))
             .thumbnail(track.info.artworkUrl)
             .build()
+    }
+
+    private fun exceptionOccurredMessage(track: AudioTrack): EmbedCreateSpec {
+        return simpleMessageEmbed("An error occurred while playing ${track.info.title}.").build()
     }
 
 }
