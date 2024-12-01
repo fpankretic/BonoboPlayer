@@ -34,7 +34,7 @@ class PlayCommand : Command {
         return "Plays a song."
     }
 
-    private fun play(guildAudio: GuildAudio, event: MessageCreateEvent) {
+    fun play(guildAudio: GuildAudio, event: MessageCreateEvent) {
         val query = event.message.content.substringAfter(" ").trim()
         val track = loadTrack(query)
         logger.info { "Parsed query: $track." }
@@ -45,7 +45,7 @@ class PlayCommand : Command {
         )
     }
 
-    private fun loadTrack(query: String): String {
+    fun loadTrack(query: String): String {
         return try {
             URI(query).toString()
         } catch (exception: URISyntaxException) {
@@ -53,7 +53,7 @@ class PlayCommand : Command {
         }
     }
 
-    private fun executeJoinCommand(event: MessageCreateEvent, guildId: Snowflake): Mono<Void> {
+    fun executeJoinCommand(event: MessageCreateEvent, guildId: Snowflake): Mono<Void> {
         if (GuildManager.audioExists(guildId).not()) {
             return JoinCommand().execute(event).onErrorStop()
         }
@@ -61,7 +61,7 @@ class PlayCommand : Command {
         return mono { null }
     }
 
-    private fun cancelLeave(guildId: Snowflake) {
+    fun cancelLeave(guildId: Snowflake) {
         if (GuildManager.audioExists(guildId) && GuildManager.getAudio(guildId).isLeavingScheduled()) {
             GuildManager.getAudio(guildId).cancelLeave()
         }
