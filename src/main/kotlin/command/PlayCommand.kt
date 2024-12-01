@@ -11,7 +11,7 @@ import reactor.core.publisher.Mono
 import java.net.URI
 import java.net.URISyntaxException
 
-class PlayCommand : Command {
+open class PlayCommand : Command {
 
     private val logger = KotlinLogging.logger {}
 
@@ -34,7 +34,7 @@ class PlayCommand : Command {
         return "Plays a song."
     }
 
-    fun play(guildAudio: GuildAudio, event: MessageCreateEvent) {
+    protected open fun play(guildAudio: GuildAudio, event: MessageCreateEvent) {
         val query = event.message.content.substringAfter(" ").trim()
         val track = loadTrack(query)
         logger.info { "Parsed query: $track." }
@@ -45,7 +45,7 @@ class PlayCommand : Command {
         )
     }
 
-    fun loadTrack(query: String): String {
+    protected fun loadTrack(query: String): String {
         return try {
             URI(query).toString()
         } catch (exception: URISyntaxException) {
@@ -53,7 +53,7 @@ class PlayCommand : Command {
         }
     }
 
-    fun executeJoinCommand(event: MessageCreateEvent, guildId: Snowflake): Mono<Void> {
+    protected fun executeJoinCommand(event: MessageCreateEvent, guildId: Snowflake): Mono<Void> {
         if (GuildManager.audioExists(guildId).not()) {
             return JoinCommand().execute(event).onErrorStop()
         }
@@ -61,7 +61,7 @@ class PlayCommand : Command {
         return mono { null }
     }
 
-    fun cancelLeave(guildId: Snowflake) {
+    protected fun cancelLeave(guildId: Snowflake) {
         if (GuildManager.audioExists(guildId) && GuildManager.getAudio(guildId).isLeavingScheduled()) {
             GuildManager.getAudio(guildId).cancelLeave()
         }
