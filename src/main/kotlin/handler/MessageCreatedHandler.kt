@@ -19,6 +19,7 @@ class MessageCreatedHandler {
         init {
             commands["play"] = PlayCommand()
             commands["search"] = SearchCommand()
+            commands["list"] = ListCommand()
             commands["queue"] = QueueCommand()
             commands["clear"] = ClearCommand()
             commands["skip"] = SkipCommand()
@@ -36,6 +37,7 @@ class MessageCreatedHandler {
             commands["np"] = NowPlayingCommand()
             commands["r"] = RemoveCommand()
             commands["st"] = SkipToCommand()
+            commands["l"] = ListCommand()
             commands["h"] = HelpCommand(commands)
         }
     }
