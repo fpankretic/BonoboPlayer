@@ -12,13 +12,18 @@ import util.EmbedUtils.Companion.bold
 import util.EmbedUtils.Companion.defaultEmbed
 import util.EmbedUtils.Companion.simpleMessageEmbed
 import util.EmbedUtils.Companion.trackAsHyperLink
+import java.time.Instant
 import java.util.*
+
+data class RequestedBy(val user: String, val avatarUrl: String, val time: Instant)
+data class SongRequest(val audioTrack: AudioTrack, val requestedBy: RequestedBy)
 
 class AudioTrackScheduler private constructor() : AudioEventAdapter() {
 
     private val logger = KotlinLogging.logger {}
 
-    private val queue: MutableList<AudioTrack> = Collections.synchronizedList(mutableListOf())
+    private val queue: MutableList<SongRequest> = Collections.synchronizedList(mutableListOf())
+    private var requestedBy: RequestedBy? = null
     private lateinit var player: AudioPlayer
     private lateinit var guildId: Snowflake
 
@@ -54,25 +59,30 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
         logger.info { "Track ${track!!.info.title} got stuck, skipping." }
     }
 
-    fun play(track: AudioTrack): Boolean {
-        return play(track, false)
+    fun play(songRequest: SongRequest): Boolean {
+        return play(songRequest, false)
     }
 
-    private fun play(track: AudioTrack, force: Boolean): Boolean {
-        val started = player.startTrack(track.makeClone(), !force)
-        if (!started) {
-            queue.add(track)
-        }
-        player.playingTrack.info
+    private fun play(songRequest: SongRequest, force: Boolean): Boolean {
+        val track = songRequest.audioTrack
 
-        if (started) {
+        val oldRequestedBy = requestedBy
+        requestedBy = songRequest.requestedBy
+
+        val started = player.startTrack(track.makeClone(), !force)
+
+        if (!started) {
+            queue.add(songRequest)
+            requestedBy = oldRequestedBy
+        } else {
             GuildManager.getAudio(guildId).cancelLeave()
         }
+
         return started
     }
 
     fun getQueue(): List<AudioTrack> {
-        return Collections.unmodifiableList(queue)
+        return Collections.unmodifiableList(queue.map { it.audioTrack })
     }
 
     fun skip(): Boolean {
@@ -89,7 +99,7 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
             return false
         }
 
-        val track = queue.removeAt(position - 1)
+        val track = queue.removeAt(position - 1).audioTrack
         logger.info { "Removed ${track.info.title} from queue." }
 
         GuildManager.getAudio(guildId).sendMessage(trackSkippedMessage(track))
@@ -102,12 +112,12 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
         }
 
         for (i in 1 until position) {
-            val track = queue.removeAt(0)
+            val track = queue.removeAt(0).audioTrack
             logger.info { "Removed ${track.info.title} from queue." }
         }
         skip()
 
-        GuildManager.getAudio(guildId).sendMessage(nextSongMessage(queue.first()))
+        GuildManager.getAudio(guildId).sendMessage(nextSongMessage(queue.first().audioTrack))
 
         return true
     }
@@ -125,6 +135,10 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
         return Optional.ofNullable(player.playingTrack)
     }
 
+    fun requestedBy(): RequestedBy? {
+        return requestedBy
+    }
+
     fun destroy() {
         player.destroy()
         clear()
@@ -135,7 +149,11 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
     }
 
     private fun onTrackStartMessage(track: AudioTrack): EmbedCreateSpec {
-        return simpleMessageEmbed("Now playing: ${trackAsHyperLink(track)}").build()
+        return defaultEmbed()
+            .description("Now playing: ${trackAsHyperLink(track)}")
+            .footer("Requested by ${requestedBy!!.user}", requestedBy!!.avatarUrl)
+            .timestamp(requestedBy!!.time)
+            .build()
     }
 
     private fun trackSkippedMessage(track: AudioTrack): EmbedCreateSpec {

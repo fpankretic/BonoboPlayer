@@ -11,7 +11,6 @@ import reactor.core.publisher.Mono
 import util.EmbedUtils
 import util.EmbedUtils.Companion.defaultEmbed
 import util.EmbedUtils.Companion.simpleMessageEmbed
-import java.time.Instant
 
 class QueueCommand : Command {
 
@@ -47,8 +46,6 @@ class QueueCommand : Command {
         return defaultEmbed()
             .title("Queue")
             .addFields(*fields)
-            .footer("Requested by ${author.globalName.orElse(author.username)}", author.avatarUrl)
-            .timestamp(Instant.now())
             .build()
     }
 

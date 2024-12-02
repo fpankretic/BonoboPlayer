@@ -53,7 +53,7 @@ open class PlayCommand : Command {
         }
     }
 
-    protected fun executeJoinCommand(event: MessageCreateEvent, guildId: Snowflake): Mono<Void> {
+    private fun executeJoinCommand(event: MessageCreateEvent, guildId: Snowflake): Mono<Void> {
         if (GuildManager.audioExists(guildId).not()) {
             return JoinCommand().execute(event).onErrorStop()
         }
@@ -61,7 +61,7 @@ open class PlayCommand : Command {
         return mono { null }
     }
 
-    protected fun cancelLeave(guildId: Snowflake) {
+    private fun cancelLeave(guildId: Snowflake) {
         if (GuildManager.audioExists(guildId) && GuildManager.getAudio(guildId).isLeavingScheduled()) {
             GuildManager.getAudio(guildId).cancelLeave()
         }
