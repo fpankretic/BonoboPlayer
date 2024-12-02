@@ -5,11 +5,14 @@ import audio.GuildManager
 import audio.load.DefaultAudioLoadResultHandler
 import discord4j.common.util.Snowflake
 import discord4j.core.event.domain.message.MessageCreateEvent
+import discord4j.core.`object`.entity.Member
+import discord4j.core.`object`.entity.channel.VoiceChannel
 import kotlinx.coroutines.reactor.mono
 import mu.KotlinLogging
 import reactor.core.publisher.Mono
 import java.net.URI
 import java.net.URISyntaxException
+import java.util.*
 
 open class PlayCommand : Command {
 
@@ -21,13 +24,15 @@ open class PlayCommand : Command {
         }
         val guildId = event.guildId.get()
 
-        cancelLeave(guildId)
-        return executeJoinCommand(event, guildId)
-            .then(event.message.channel)
-            .map { GuildManager.createAudio(event.client, guildId, it.id) }
-            .map { play(it, event) }
-            .onErrorStop()
-            .then()
+        return isUserJoined(event.member).flatMap {
+            cancelLeave(guildId)
+                .then(executeJoinCommand(event, guildId))
+                .then(event.message.channel)
+                .map { GuildManager.createAudio(event.client, guildId, it.id) }
+                .map { play(it, event) }
+                .onErrorStop()
+                .then()
+        }
     }
 
     override fun help(): String {
@@ -61,10 +66,17 @@ open class PlayCommand : Command {
         return mono { null }
     }
 
-    private fun cancelLeave(guildId: Snowflake) {
-        if (GuildManager.audioExists(guildId) && GuildManager.getAudio(guildId).isLeavingScheduled()) {
-            GuildManager.getAudio(guildId).cancelLeave()
-        }
+    private fun isUserJoined(member: Optional<Member>): Mono<VoiceChannel> {
+        return mono { member.get() }
+            .flatMap { it.voiceState }
+            .flatMap { it.channel }
+    }
+
+    private fun cancelLeave(guildId: Snowflake): Mono<GuildAudio> {
+        return mono { GuildManager.audioExists(guildId) }
+            .filter { it }
+            .map { GuildManager.getAudio(guildId) }
+            .filter { it.isLeavingScheduled() }
     }
 
 }
