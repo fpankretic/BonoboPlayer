@@ -7,7 +7,6 @@ import env.EnvironmentValue.PREFIX
 import kotlinx.coroutines.reactor.mono
 import mu.KotlinLogging
 import reactor.core.publisher.Mono
-import util.EmbedUtils.Companion.defaultEmbed
 
 class MessageCreatedHandler {
 

@@ -2,6 +2,8 @@ package audio.load
 
 import audio.GuildAudio
 import audio.GuildManager
+import audio.RequestedBy
+import audio.SongRequest
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist
@@ -32,9 +34,14 @@ class DefaultAudioLoadResultHandler(
         if (guildAudio.getQueue().isNotEmpty() || guildAudio.isSongLoaded()) {
             guildAudio.sendMessage(getTrackLoadedMessage(track))
         }
-        guildAudio.play(track)
+        guildAudio.play(
+            SongRequest(
+                track,
+                RequestedBy(author.globalName.orElse(author.username), author.avatarUrl, Instant.now())
+            )
+        )
 
-        logger.info { "Finished loading track ${track.info.title}." }
+        logger.info { "Loaded track ${track.info.title}." }
         guildAudio.removeHandler(this)
     }
 
@@ -47,7 +54,14 @@ class DefaultAudioLoadResultHandler(
         logger.info { "Started loading playlist ${playlist.name}." }
 
         guildAudio.sendMessage(getPlaylistLoadedMessage(playlist))
-        playlist.tracks.forEach { guildAudio.play(it) }
+        playlist.tracks.forEach {
+            guildAudio.play(
+                SongRequest(
+                    it,
+                    RequestedBy(author.globalName.orElse(author.username), author.avatarUrl, Instant.now())
+                )
+            )
+        }
 
         logger.info { "Finished loading playlist ${playlist.name}." }
         guildAudio.removeHandler(this)
@@ -75,8 +89,6 @@ class DefaultAudioLoadResultHandler(
             .title("Added to the queue")
             .description(bold(trackAsHyperLink(track)))
             .thumbnail(track.info.artworkUrl)
-            .footer("Requested by ${author.globalName.orElse(author.username)}", author.avatarUrl)
-            .timestamp(Instant.now())
             .build()
     }
 
@@ -86,8 +98,6 @@ class DefaultAudioLoadResultHandler(
             .description(bold(trackAsHyperLink(playlist)))
             .thumbnail(playlist.tracks[0].info.artworkUrl)
             .addField("Songs in playlist: ${playlist.tracks.size}", "", true)
-            .footer("Requested by ${author.globalName.orElse(author.username)}", author.avatarUrl)
-            .timestamp(Instant.now())
             .build()
     }
 

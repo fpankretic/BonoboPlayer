@@ -28,7 +28,6 @@ import java.util.concurrent.Future
 import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
-import kotlin.math.log
 
 class GuildAudio(private val client: GatewayDiscordClient, private val guildId: Snowflake) {
 
@@ -129,8 +128,8 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
         menusTasks[customId] = AtomicReference(task.subscribe())
     }
 
-    fun play(track: AudioTrack) {
-        scheduler.play(track.makeClone())
+    fun play(songRequest: SongRequest) {
+        scheduler.play(SongRequest(songRequest.audioTrack.makeClone(), songRequest.requestedBy))
     }
 
     fun isSongLoaded(): Boolean {
@@ -143,6 +142,10 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
 
     fun currentSong(): Optional<AudioTrack> {
         return scheduler.currentSong()
+    }
+
+    fun requestedBy(): RequestedBy? {
+        return scheduler.requestedBy()
     }
 
     fun clearQueue() {
