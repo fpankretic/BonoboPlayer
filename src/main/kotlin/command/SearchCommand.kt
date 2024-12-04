@@ -29,6 +29,7 @@ class SearchCommand : Command {
         logger.info { "Parsed query: $query." }
 
         val guildAudio = GuildManager.createAudio(event.client, event.guildId.get(), event.message.channelId)
+        JoinCommand().joinVoiceChannel(event.message.channel, event.member, event.guildId.get()).subscribe()
         guildAudio.addHandler(SearchAudioLoadResultHandler(event.guildId.get()), query)
     }
 
