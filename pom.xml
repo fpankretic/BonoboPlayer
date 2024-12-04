@@ -64,7 +64,7 @@
         <dependency>
             <groupId>dev.lavalink.youtube</groupId>
             <artifactId>v2</artifactId>
-            <version>1.9.0</version>
+            <version>1.10.2</version>
         </dependency>
 
         <!-- Libs -->

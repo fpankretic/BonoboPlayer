@@ -34,15 +34,14 @@ class GlobalData {
                 MusicWithThumbnail(),
                 WebWithThumbnail(),
                 WebEmbeddedWithThumbnail(),
+                MWebWithThumbnail(),
+                TvHtml5EmbeddedWithThumbnail(),
+                AndroidVrWithThumbnail(),
                 AndroidMusicWithThumbnail(),
-                AndroidTestsuiteWithThumbnail(),
-                AndroidLiteWithThumbnail(),
-                IosWithThumbnail(),
-                MediaConnectWithThumbnail()
             )
 
             val youtubeSource = YoutubeAudioSourceManager(*clients)
-            // youtubeSource.useOauth2(EnvironmentManager.get(REFRESH_TOKEN), false)
+            youtubeSource.useOauth2(EnvironmentManager.get(REFRESH_TOKEN), true)
             PLAYER_MANAGER.registerSourceManagers(youtubeSource)
 
             AudioSourceManagers.registerRemoteSources(PLAYER_MANAGER, YoutubeAudioSourceManagerDeprecated::class.java)
