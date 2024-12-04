@@ -77,6 +77,9 @@ class DefaultAudioLoadResultHandler(
         guildAudio.removeHandler(this)
         if (retried) {
             logger.error { "Failed to load track: $track." }
+            if (exception != null) {
+                logger.error { exception.stackTraceToString() }
+            }
             guildAudio.sendMessage(getFailedToLoadMessage())
         } else {
             logger.info { "Retrying to load track: $track." }
