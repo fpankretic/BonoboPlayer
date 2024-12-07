@@ -3,8 +3,8 @@ package command
 import discord4j.core.event.domain.message.MessageCreateEvent
 import mu.KotlinLogging
 import reactor.core.publisher.Mono
-import util.EmbedUtils.Companion.bold
-import util.EmbedUtils.Companion.defaultEmbed
+import util.bold
+import util.defaultEmbed
 
 class HelpCommand(private val commands: MutableMap<String, Command>) : Command {
     val logger = KotlinLogging.logger {}

@@ -3,14 +3,13 @@ package command
 import audio.GuildManager
 import discord4j.common.util.Snowflake
 import discord4j.core.event.domain.message.MessageCreateEvent
-import discord4j.core.`object`.entity.User
 import discord4j.core.spec.EmbedCreateFields
 import discord4j.core.spec.EmbedCreateSpec
 import kotlinx.coroutines.reactor.mono
 import reactor.core.publisher.Mono
-import util.EmbedUtils
-import util.EmbedUtils.Companion.defaultEmbed
-import util.EmbedUtils.Companion.simpleMessageEmbed
+import util.defaultEmbed
+import util.simpleMessageEmbed
+import util.trackAsHyperLink
 
 class QueueCommand : Command {
 
@@ -19,9 +18,9 @@ class QueueCommand : Command {
             return mono { null }
         }
         val guildId = event.guildId.get()
-        val author = event.member.get()
+
         return event.message.channel
-            .flatMap { it.createMessage(createList(guildId, author)) }
+            .flatMap { it.createMessage(createList(guildId)) }
             .then()
     }
 
@@ -29,7 +28,7 @@ class QueueCommand : Command {
         return "Shows the current queue."
     }
 
-    private fun createList(guildId: Snowflake, author: User): EmbedCreateSpec {
+    private fun createList(guildId: Snowflake): EmbedCreateSpec {
         if (GuildManager.audioExists(guildId).not() || GuildManager.getAudio(guildId).getQueue().isEmpty()) {
             return simpleMessageEmbed("Queue is empty.").build()
         }
@@ -39,7 +38,7 @@ class QueueCommand : Command {
         var index = 0
         val fields = queue.take(10)
             .map {
-                EmbedCreateFields.Field.of("", "${++index}. ${EmbedUtils.trackAsHyperLink(it)}", false)
+                EmbedCreateFields.Field.of("", "${++index}. ${trackAsHyperLink(it)}", false)
             }
             .toTypedArray()
 

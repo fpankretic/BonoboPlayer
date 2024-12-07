@@ -6,7 +6,7 @@ import discord4j.core.event.domain.message.MessageCreateEvent
 import discord4j.core.spec.EmbedCreateSpec
 import kotlinx.coroutines.reactor.mono
 import reactor.core.publisher.Mono
-import util.EmbedUtils
+import util.simpleMessageEmbed
 
 class RemoveCommand : Command {
     override fun execute(event: MessageCreateEvent): Mono<Void> {
@@ -48,7 +48,7 @@ class RemoveCommand : Command {
     }
 
     private fun queueEmptyMessage(): EmbedCreateSpec {
-        return EmbedUtils.simpleMessageEmbed("Queue is empty.").build()
+        return simpleMessageEmbed("Queue is empty.").build()
     }
 
 }
