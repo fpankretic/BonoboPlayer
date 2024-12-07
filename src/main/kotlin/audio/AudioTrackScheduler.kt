@@ -7,7 +7,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason
 import discord4j.common.util.Snowflake
 import discord4j.core.spec.EmbedCreateSpec
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import util.bold
 import util.defaultEmbedBuilder
 import util.simpleMessageEmbed

@@ -3,7 +3,7 @@ package command
 import audio.GuildAudio
 import audio.load.DefaultAudioLoadResultHandler
 import discord4j.core.event.domain.message.MessageCreateEvent
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 class ListCommand : PlayCommand() {
 

@@ -9,8 +9,8 @@ import discord4j.core.`object`.entity.channel.MessageChannel
 import discord4j.core.`object`.entity.channel.VoiceChannel
 import discord4j.core.spec.VoiceChannelJoinSpec
 import discord4j.voice.VoiceConnection
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.reactor.mono
-import mu.KotlinLogging
 import reactor.core.publisher.Mono
 import util.monoOptional
 import java.util.*

@@ -7,7 +7,7 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import discord4j.common.util.Snowflake
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import util.chooseSongSelect
 import util.defaultEmbedBuilder
 import util.simpleMessageEmbed

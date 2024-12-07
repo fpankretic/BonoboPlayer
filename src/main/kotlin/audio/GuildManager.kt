@@ -2,7 +2,7 @@ package audio
 
 import discord4j.common.util.Snowflake
 import discord4j.core.GatewayDiscordClient
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.ConcurrentHashMap
 
 class GuildManager private constructor() {

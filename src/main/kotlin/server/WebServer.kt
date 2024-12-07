@@ -4,7 +4,7 @@ import com.sun.net.httpserver.HttpServer
 import discord4j.core.GatewayDiscordClient
 import env.EnvironmentManager
 import env.EnvironmentValue.PORT
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import util.simpleMessageEmbed
 import java.net.InetSocketAddress
 import java.nio.charset.StandardCharsets

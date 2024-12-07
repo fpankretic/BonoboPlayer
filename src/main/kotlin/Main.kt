@@ -6,9 +6,8 @@ import env.EnvironmentValue
 import env.EnvironmentValue.IPV6_ENABLED
 import handler.MessageCreatedHandler
 import handler.VoiceStateUpdatedHandler
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import server.startWebServer
-import java.util.*
 
 fun main() {
     val logger = KotlinLogging.logger {}
