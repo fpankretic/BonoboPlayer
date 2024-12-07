@@ -10,10 +10,9 @@ import mu.KotlinLogging
 import server.startWebServer
 import java.util.*
 
-
-val logger = KotlinLogging.logger {}
-
 fun main() {
+    val logger = KotlinLogging.logger {}
+
     if (EnvironmentManager.get(IPV6_ENABLED).toBoolean()) {
         System.setProperty("java.net.preferIPv6Addresses", "true")
         System.setProperty("java.net.preferIPv4Stack", "false")
