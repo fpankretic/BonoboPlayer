@@ -16,7 +16,7 @@ class RemoveCommand : Command {
         val guildId = event.guildId.get()
 
         return mono { GuildManager.audioExists(guildId) }
-            .filter { exists -> exists }
+            .filter { it }
             .switchIfEmpty(sendQueueEmptyMessage(event))
             .map { GuildManager.getAudio(guildId) }
             .filter { skipSong(it, event) }
