@@ -4,7 +4,7 @@ import audio.GuildManager
 import discord4j.core.event.domain.message.MessageCreateEvent
 import kotlinx.coroutines.reactor.mono
 import reactor.core.publisher.Mono
-import util.ReactorUtil.Companion.monoOptional
+import util.monoOptional
 
 class LeaveCommand : Command {
 

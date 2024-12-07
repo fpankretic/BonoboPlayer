@@ -9,10 +9,10 @@ import discord4j.core.spec.EmbedCreateSpec
 import kotlinx.coroutines.reactor.mono
 import mu.KotlinLogging
 import reactor.core.publisher.Mono
-import util.EmbedUtils
-import util.EmbedUtils.Companion.bold
-import util.EmbedUtils.Companion.simpleMessageEmbed
-import util.EmbedUtils.Companion.trackAsHyperLink
+import util.bold
+import util.defaultEmbed
+import util.simpleMessageEmbed
+import util.trackAsHyperLink
 import java.util.*
 
 class NowPlayingCommand : Command {
@@ -64,7 +64,7 @@ class NowPlayingCommand : Command {
         val durationMinutes = duration / 60
         val durationSeconds = duration % 60
 
-        return EmbedUtils.defaultEmbed().title("Now playing ♪").thumbnail(track.info.artworkUrl)
+        return defaultEmbed().title("Now playing ♪").thumbnail(track.info.artworkUrl)
             .addField("Playing", bold(trackAsHyperLink(track)), true)
             .addField("Author", track.info.author, true)
             .addField("Progress", progressBar(duration, position), false)
