@@ -14,12 +14,12 @@ import discord4j.core.`object`.component.ActionRow
 import discord4j.core.`object`.entity.channel.MessageChannel
 import discord4j.core.spec.EmbedCreateSpec
 import discord4j.core.spec.MessageCreateSpec
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.reactor.mono
-import mu.KotlinLogging
 import reactor.core.Disposable
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
-import util.defaultEmbed
+import util.defaultEmbedBuilder
 import util.simpleMessageEmbed
 import java.time.Duration
 import java.util.*
@@ -54,6 +54,7 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
         if (destroyed) {
             return
         }
+
         logger.info { "Scheduling bot leave." }
         leavingTask.set(
             Mono.delay(leaveDelay, Schedulers.boundedElastic())
@@ -88,44 +89,6 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
     fun sendMessageWithComponentAndTimeout(embedCreateSpec: EmbedCreateSpec, actionRow: ActionRow, customId: String) {
         sendMessageWithComponent(embedCreateSpec, actionRow)
         setMenuComponentTimeout(customId)
-    }
-
-    private fun sendMessageWithComponent(embedCreateSpec: EmbedCreateSpec, actionRow: ActionRow) {
-        getMessageChannel().flatMap { channel ->
-            channel.createMessage(
-                MessageCreateSpec.builder()
-                    .addEmbed(embedCreateSpec)
-                    .addComponent(actionRow)
-                    .build()
-            )
-        }.subscribe()
-    }
-
-    private fun setMenuComponentTimeout(customId: String) {
-        val task = client.on(SelectMenuInteractionEvent::class.java) {
-            if (it.customId.equals(customId)) {
-                val value = it.values.toString().replace("[", "").replace("]", "")
-                val author = it.interaction.user
-                val messageChannelMono = it.interaction.channel
-                val member = it.interaction.member
-
-                return@on JoinCommand().joinVoiceChannel(messageChannelMono, member, guildId)
-                    .timeout(removeDelay).then(it.message.get().delete())
-                    .then(mono {
-                        logger.info { "Selected value while using search: $value" }
-                        addHandler(DefaultAudioLoadResultHandler(guildId, author, value), value)
-                    })
-            }
-
-            return@on mono { null }
-        }.timeout(menuDelay)
-            .onErrorResume(TimeoutException::class.java) { mono { logger.info { "Menu item timed out." } } }
-            .map {
-                if (menusTasks[customId] != null)
-                    menusTasks[customId]?.get()?.dispose()
-            }
-
-        menusTasks[customId] = AtomicReference(task.subscribe())
     }
 
     fun play(songRequest: SongRequest) {
@@ -164,7 +127,7 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
         if (position == 0) {
             val skipped = skip()
             if (!skipped) {
-                GuildManager.getAudio(guildId).sendMessage(simpleMessageEmbed("Queue is empty.").build())
+                GuildManager.getAudio(guildId).sendMessage(simpleMessageEmbed("Queue is empty."))
             }
             return skipped
         } else if (position < 0 || position > scheduler.getQueue().size) {
@@ -193,21 +156,54 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
         destroyed = true
     }
 
+    private fun setMenuComponentTimeout(customId: String) {
+        val task = client.on(SelectMenuInteractionEvent::class.java) {
+            if (it.customId.equals(customId)) {
+                val value = it.values.toString().replace("[", "").replace("]", "")
+                val author = it.interaction.user
+                val messageChannelMono = it.interaction.channel
+                val member = it.interaction.member
+
+                return@on JoinCommand().joinVoiceChannel(messageChannelMono, member, guildId)
+                    .timeout(removeDelay).then(it.message.get().delete())
+                    .then(mono {
+                        logger.info { "Selected value while using search: $value" }
+                        addHandler(DefaultAudioLoadResultHandler(guildId, author, value), value)
+                    })
+            }
+
+            return@on mono { null }
+        }.timeout(menuDelay)
+            .onErrorResume(TimeoutException::class.java) { mono { logger.info { "Menu item timed out." } } }
+            .map {
+                if (menusTasks[customId] != null)
+                    menusTasks[customId]?.get()?.dispose()
+            }
+
+        menusTasks[customId] = AtomicReference(task.subscribe())
+    }
+
+    private fun sendMessageWithComponent(embedCreateSpec: EmbedCreateSpec, actionRow: ActionRow) {
+        getMessageChannel().flatMap { channel ->
+            channel.createMessage(
+                MessageCreateSpec.builder()
+                    .addEmbed(embedCreateSpec)
+                    .addComponent(actionRow)
+                    .build()
+            )
+        }.subscribe()
+    }
+
     private fun skip(): Boolean {
         return scheduler.skip()
     }
 
-    private fun getMessageChannelId(): Snowflake {
-        return Snowflake.of(messageChannelId.get())
-    }
-
     private fun getMessageChannel(): Mono<MessageChannel> {
-        return client.getChannelById(getMessageChannelId())
-            .cast(MessageChannel::class.java)
+        return client.getChannelById(Snowflake.of(messageChannelId.get())).map { it as MessageChannel }
     }
 
     private fun leaveMessage(): EmbedCreateSpec {
-        return defaultEmbed()
+        return defaultEmbedBuilder()
             .description("Left the voice channel due to inactivity.")
             .build()
     }

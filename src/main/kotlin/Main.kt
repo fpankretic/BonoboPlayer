@@ -6,9 +6,8 @@ import env.EnvironmentValue
 import env.EnvironmentValue.IPV6_ENABLED
 import handler.MessageCreatedHandler
 import handler.VoiceStateUpdatedHandler
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import server.startWebServer
-import java.util.*
 
 fun main() {
     val logger = KotlinLogging.logger {}
@@ -19,7 +18,6 @@ fun main() {
         logger.info { "Bot is in IPv6 mode." }
     }
 
-    Locale.setDefault(Locale.UK); // Temporary fix for the locale issue
     val client = DiscordClient.create(EnvironmentManager.get(EnvironmentValue.DISCORD_API_TOKEN))
     val gateway = client.login().block() ?: return
 

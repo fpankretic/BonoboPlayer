@@ -1,10 +1,10 @@
 package command
 
 import discord4j.core.event.domain.message.MessageCreateEvent
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import reactor.core.publisher.Mono
 import util.bold
-import util.defaultEmbed
+import util.defaultEmbedBuilder
 
 class HelpCommand(private val commands: MutableMap<String, Command>) : Command {
     val logger = KotlinLogging.logger {}
@@ -15,7 +15,7 @@ class HelpCommand(private val commands: MutableMap<String, Command>) : Command {
             .toMutableList()
 
         val message = (1..messages.size).joinToString("\n") { "${it}. ${messages[it - 1]}" }
-        val embed = defaultEmbed()
+        val embed = defaultEmbedBuilder()
             .title("All commands")
             .description(message)
             .build()

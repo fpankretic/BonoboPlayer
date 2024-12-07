@@ -6,11 +6,11 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import discord4j.common.util.Snowflake
 import discord4j.core.event.domain.message.MessageCreateEvent
 import discord4j.core.spec.EmbedCreateSpec
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.reactor.mono
-import mu.KotlinLogging
 import reactor.core.publisher.Mono
 import util.bold
-import util.defaultEmbed
+import util.defaultEmbedBuilder
 import util.simpleMessageEmbed
 import util.trackAsHyperLink
 import java.util.*
@@ -50,7 +50,7 @@ class NowPlayingCommand : Command {
         return song.map {
             nowPlayingMessage(it, requestedBy!!)
         }.orElse(
-            simpleMessageEmbed("No songs currently playing").build()
+            simpleMessageEmbed("No songs currently playing")
         )
     }
 
@@ -64,7 +64,7 @@ class NowPlayingCommand : Command {
         val durationMinutes = duration / 60
         val durationSeconds = duration % 60
 
-        return defaultEmbed().title("Now playing ♪").thumbnail(track.info.artworkUrl)
+        return defaultEmbedBuilder().title("Now playing ♪").thumbnail(track.info.artworkUrl)
             .addField("Playing", bold(trackAsHyperLink(track)), true)
             .addField("Author", track.info.author, true)
             .addField("Progress", progressBar(duration, position), false)

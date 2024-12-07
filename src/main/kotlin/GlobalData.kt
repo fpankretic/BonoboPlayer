@@ -12,7 +12,6 @@ import env.EnvironmentManager
 import env.EnvironmentValue.*
 import com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeAudioSourceManager as YoutubeAudioSourceManagerDeprecated
 
-
 class GlobalData {
 
     companion object {

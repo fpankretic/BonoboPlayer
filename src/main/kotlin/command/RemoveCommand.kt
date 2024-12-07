@@ -3,7 +3,6 @@ package command
 import audio.GuildAudio
 import audio.GuildManager
 import discord4j.core.event.domain.message.MessageCreateEvent
-import discord4j.core.spec.EmbedCreateSpec
 import kotlinx.coroutines.reactor.mono
 import reactor.core.publisher.Mono
 import util.simpleMessageEmbed
@@ -43,12 +42,8 @@ class RemoveCommand : Command {
 
     private fun sendQueueEmptyMessage(event: MessageCreateEvent): Mono<Boolean> {
         return event.message.channel
-            .flatMap { it.createMessage(queueEmptyMessage()) }
+            .flatMap { it.createMessage(simpleMessageEmbed("Queue is empty.")) }
             .mapNotNull { null }
-    }
-
-    private fun queueEmptyMessage(): EmbedCreateSpec {
-        return simpleMessageEmbed("Queue is empty.").build()
     }
 
 }

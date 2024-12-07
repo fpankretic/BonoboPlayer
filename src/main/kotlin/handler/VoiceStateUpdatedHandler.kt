@@ -5,8 +5,8 @@ import audio.GuildManager
 import discord4j.common.util.Snowflake
 import discord4j.core.event.domain.VoiceStateUpdateEvent
 import discord4j.core.`object`.VoiceState
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.reactor.mono
-import mu.KotlinLogging
 import reactor.core.publisher.Mono
 
 class VoiceStateUpdatedHandler {

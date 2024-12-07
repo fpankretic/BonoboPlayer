@@ -4,7 +4,7 @@ import com.sun.net.httpserver.HttpServer
 import discord4j.core.GatewayDiscordClient
 import env.EnvironmentManager
 import env.EnvironmentValue.PORT
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import util.simpleMessageEmbed
 import java.net.InetSocketAddress
 import java.nio.charset.StandardCharsets
@@ -38,7 +38,7 @@ fun startWebServer(client: GatewayDiscordClient) {
 }
 
 private fun sendMessageToAllServers(message: String, client: GatewayDiscordClient) {
-    val messageEmbed = simpleMessageEmbed("@here $message").build()
+    val messageEmbed = simpleMessageEmbed("@here $message")
     client.guilds
         .flatMap { it.systemChannel }
         .flatMap { it.createMessage(messageEmbed) }

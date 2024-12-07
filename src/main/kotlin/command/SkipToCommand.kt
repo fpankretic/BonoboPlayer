@@ -33,7 +33,7 @@ class SkipToCommand : Command {
 
     private fun sendQueueEmptyMessage(event: MessageCreateEvent): Mono<Boolean> {
         return event.message.channel
-            .flatMap { it.createMessage(simpleMessageEmbed("Queue is empty.").build()) }
+            .flatMap { it.createMessage(simpleMessageEmbed("Queue is empty.")) }
             .mapNotNull { null }
     }
 

@@ -3,8 +3,8 @@ package command
 import audio.GuildManager
 import audio.load.SearchAudioLoadResultHandler
 import discord4j.core.event.domain.message.MessageCreateEvent
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.reactor.mono
-import mu.KotlinLogging
 import reactor.core.publisher.Mono
 
 class SearchCommand : Command {

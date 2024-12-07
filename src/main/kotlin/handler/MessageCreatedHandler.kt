@@ -4,8 +4,8 @@ import command.*
 import discord4j.core.event.domain.message.MessageCreateEvent
 import env.EnvironmentManager
 import env.EnvironmentValue.PREFIX
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.reactor.mono
-import mu.KotlinLogging
 import reactor.core.publisher.Mono
 
 class MessageCreatedHandler {
