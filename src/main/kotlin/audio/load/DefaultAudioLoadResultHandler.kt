@@ -75,15 +75,10 @@ class DefaultAudioLoadResultHandler(
 
     override fun loadFailed(exception: FriendlyException?) {
         guildAudio.removeHandler(this)
-        if (retried) {
-            logger.error { "Failed to load track: $track." }
-            if (exception != null) {
-                logger.error { exception.stackTraceToString() }
-            }
-            guildAudio.sendMessage(simpleMessageEmbed("Failed to load track."))
-        } else {
-            logger.info { "Retrying to load track: $track." }
-            guildAudio.addHandler(DefaultAudioLoadResultHandler(guildId, author, track, true), track)
+        when {
+            retried -> handleSecondLoadFail(exception)
+            track.contains("spsearch") -> handleSpotifyLoadFail()
+            else -> handleGenericLoadFail()
         }
     }
 
@@ -102,6 +97,25 @@ class DefaultAudioLoadResultHandler(
             .thumbnail(playlist.tracks[0].info.artworkUrl)
             .addField("Songs in playlist: ${playlist.tracks.size}", "", true)
             .build()
+    }
+
+    private fun handleSecondLoadFail(exception: FriendlyException?) {
+        logger.error { "Failed to load track: $track." }
+        if (exception != null) {
+            logger.error { exception.stackTraceToString() }
+        }
+        guildAudio.sendMessage(simpleMessageEmbed("Failed to load track."))
+    }
+
+    private fun handleSpotifyLoadFail() {
+        val newTrack = track.replace("spsearch", "ytsearch")
+        logger.info { "Retrying to load track ${newTrack.replace("ytsearch: ", "")} with youtube." }
+        guildAudio.addHandler(DefaultAudioLoadResultHandler(guildId, author, track, true), track)
+    }
+
+    private fun handleGenericLoadFail() {
+        logger.info { "Retrying to load track: $track." }
+        guildAudio.addHandler(DefaultAudioLoadResultHandler(guildId, author, track, true), track)
     }
 
 }

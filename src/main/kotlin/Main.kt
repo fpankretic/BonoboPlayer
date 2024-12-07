@@ -19,7 +19,6 @@ fun main() {
         logger.info { "Bot is in IPv6 mode." }
     }
 
-    Locale.setDefault(Locale.UK); // Temporary fix for the locale issue
     val client = DiscordClient.create(EnvironmentManager.get(EnvironmentValue.DISCORD_API_TOKEN))
     val gateway = client.login().block() ?: return
 

@@ -1,3 +1,4 @@
+import com.github.topi314.lavasrc.spotify.SpotifySourceManager
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers
@@ -42,7 +43,17 @@ class GlobalData {
 
             val youtubeSource = YoutubeAudioSourceManager(*clients)
             youtubeSource.useOauth2(EnvironmentManager.get(REFRESH_TOKEN), true)
+            println(youtubeSource.`interface`.context.httpRoute)
             PLAYER_MANAGER.registerSourceManagers(youtubeSource)
+
+            val spotifySource = SpotifySourceManager(
+                null,
+                EnvironmentManager.get(SPOTIFY_CLIENT_ID),
+                EnvironmentManager.get(SPOTIFY_CLIENT_SECRET),
+                "HR",
+                PLAYER_MANAGER
+            )
+            PLAYER_MANAGER.registerSourceManager(spotifySource)
 
             AudioSourceManagers.registerRemoteSources(PLAYER_MANAGER, YoutubeAudioSourceManagerDeprecated::class.java)
             AudioSourceManagers.registerLocalSource(PLAYER_MANAGER)
