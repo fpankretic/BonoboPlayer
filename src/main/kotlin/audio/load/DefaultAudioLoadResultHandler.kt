@@ -13,7 +13,7 @@ import discord4j.core.`object`.entity.User
 import discord4j.core.spec.EmbedCreateSpec
 import mu.KotlinLogging
 import util.bold
-import util.defaultEmbed
+import util.defaultEmbedBuilder
 import util.simpleMessageEmbed
 import util.trackAsHyperLink
 import java.time.Instant
@@ -69,7 +69,7 @@ class DefaultAudioLoadResultHandler(
 
     override fun noMatches() {
         logger.info { "Found no matches for: $track." }
-        guildAudio.sendMessage(getNoMatchesMessage())
+        guildAudio.sendMessage(simpleMessageEmbed("Found no matches."))
         guildAudio.removeHandler(this)
     }
 
@@ -80,7 +80,7 @@ class DefaultAudioLoadResultHandler(
             if (exception != null) {
                 logger.error { exception.stackTraceToString() }
             }
-            guildAudio.sendMessage(getFailedToLoadMessage())
+            guildAudio.sendMessage(simpleMessageEmbed("Failed to load track."))
         } else {
             logger.info { "Retrying to load track: $track." }
             guildAudio.addHandler(DefaultAudioLoadResultHandler(guildId, author, track, true), track)
@@ -88,7 +88,7 @@ class DefaultAudioLoadResultHandler(
     }
 
     private fun getTrackLoadedMessage(track: AudioTrack): EmbedCreateSpec {
-        return defaultEmbed()
+        return defaultEmbedBuilder()
             .title("Added to the queue")
             .description(bold(trackAsHyperLink(track)))
             .thumbnail(track.info.artworkUrl)
@@ -96,7 +96,7 @@ class DefaultAudioLoadResultHandler(
     }
 
     private fun getPlaylistLoadedMessage(playlist: AudioPlaylist): EmbedCreateSpec {
-        return defaultEmbed()
+        return defaultEmbedBuilder()
             .title("Added playlist to the queue")
             .description(bold(trackAsHyperLink(playlist)))
             .thumbnail(playlist.tracks[0].info.artworkUrl)
@@ -104,11 +104,4 @@ class DefaultAudioLoadResultHandler(
             .build()
     }
 
-    private fun getNoMatchesMessage(): EmbedCreateSpec {
-        return simpleMessageEmbed("Found no matches.").build()
-    }
-
-    private fun getFailedToLoadMessage(): EmbedCreateSpec {
-        return simpleMessageEmbed("Failed to load track.").build()
-    }
 }

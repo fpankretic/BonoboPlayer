@@ -38,7 +38,7 @@ fun startWebServer(client: GatewayDiscordClient) {
 }
 
 private fun sendMessageToAllServers(message: String, client: GatewayDiscordClient) {
-    val messageEmbed = simpleMessageEmbed("@here $message").build()
+    val messageEmbed = simpleMessageEmbed("@here $message")
     client.guilds
         .flatMap { it.systemChannel }
         .flatMap { it.createMessage(messageEmbed) }

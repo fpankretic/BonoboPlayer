@@ -8,15 +8,15 @@ import discord4j.core.`object`.component.SelectMenu.Option
 import discord4j.core.spec.EmbedCreateSpec
 import discord4j.rest.util.Color
 
-fun defaultEmbed(): EmbedCreateSpec.Builder {
+fun defaultEmbedBuilder(): EmbedCreateSpec.Builder {
     return EmbedCreateSpec.builder()
         .color(Color.PINK)
 }
 
-fun simpleMessageEmbed(text: String): EmbedCreateSpec.Builder {
-    return EmbedCreateSpec.builder()
-        .color(Color.PINK)
+fun simpleMessageEmbed(text: String): EmbedCreateSpec {
+    return defaultEmbedBuilder()
         .description(text)
+        .build()
 }
 
 fun trackAsHyperLink(playlist: AudioPlaylist): String {

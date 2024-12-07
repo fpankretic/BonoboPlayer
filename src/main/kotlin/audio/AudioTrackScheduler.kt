@@ -9,7 +9,7 @@ import discord4j.common.util.Snowflake
 import discord4j.core.spec.EmbedCreateSpec
 import mu.KotlinLogging
 import util.bold
-import util.defaultEmbed
+import util.defaultEmbedBuilder
 import util.simpleMessageEmbed
 import util.trackAsHyperLink
 import java.time.Instant
@@ -149,7 +149,7 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
     }
 
     private fun onTrackStartMessage(track: AudioTrack): EmbedCreateSpec {
-        return defaultEmbed()
+        return defaultEmbedBuilder()
             .description("Now playing: ${trackAsHyperLink(track)}")
             .footer("Requested by ${requestedBy!!.user}", requestedBy!!.avatarUrl)
             .timestamp(requestedBy!!.time)
@@ -157,7 +157,7 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
     }
 
     private fun trackSkippedMessage(track: AudioTrack): EmbedCreateSpec {
-        return defaultEmbed()
+        return defaultEmbedBuilder()
             .title("Removed from the queue")
             .description(bold(trackAsHyperLink(track)))
             .thumbnail(track.info.artworkUrl)
@@ -165,7 +165,7 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
     }
 
     private fun nextSongMessage(track: AudioTrack): EmbedCreateSpec {
-        return defaultEmbed()
+        return defaultEmbedBuilder()
             .title("Next in queue")
             .description(bold(trackAsHyperLink(track)))
             .thumbnail(track.info.artworkUrl)
@@ -173,7 +173,7 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
     }
 
     private fun exceptionOccurredMessage(track: AudioTrack): EmbedCreateSpec {
-        return simpleMessageEmbed("An error occurred while playing ${track.info.title}.").build()
+        return simpleMessageEmbed("An error occurred while playing ${track.info.title}.")
     }
 
 }

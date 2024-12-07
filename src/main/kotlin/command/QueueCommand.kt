@@ -7,7 +7,7 @@ import discord4j.core.spec.EmbedCreateFields
 import discord4j.core.spec.EmbedCreateSpec
 import kotlinx.coroutines.reactor.mono
 import reactor.core.publisher.Mono
-import util.defaultEmbed
+import util.defaultEmbedBuilder
 import util.simpleMessageEmbed
 import util.trackAsHyperLink
 
@@ -30,7 +30,7 @@ class QueueCommand : Command {
 
     private fun createList(guildId: Snowflake): EmbedCreateSpec {
         if (GuildManager.audioExists(guildId).not() || GuildManager.getAudio(guildId).getQueue().isEmpty()) {
-            return simpleMessageEmbed("Queue is empty.").build()
+            return simpleMessageEmbed("Queue is empty.")
         }
 
         val queue = GuildManager.getAudio(guildId).getQueue()
@@ -42,7 +42,7 @@ class QueueCommand : Command {
             }
             .toTypedArray()
 
-        return defaultEmbed()
+        return defaultEmbedBuilder()
             .title("Queue")
             .addFields(*fields)
             .build()
