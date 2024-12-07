@@ -8,5 +8,7 @@ enum class EnvironmentValue {
     PO_TOKEN,
     VISITOR_DATA,
     REFRESH_TOKEN,
-    PORT
+    PORT,
+    SPOTIFY_CLIENT_ID,
+    SPOTIFY_CLIENT_SECRET
 }

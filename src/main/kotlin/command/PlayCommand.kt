@@ -55,7 +55,7 @@ open class PlayCommand : Command {
         return try {
             URI(query).toString()
         } catch (exception: URISyntaxException) {
-            "ytmsearch: $query"
+            "spsearch: $query"
         }
     }
 
