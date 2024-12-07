@@ -8,10 +8,10 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason
 import discord4j.common.util.Snowflake
 import discord4j.core.spec.EmbedCreateSpec
 import mu.KotlinLogging
-import util.EmbedUtils.Companion.bold
-import util.EmbedUtils.Companion.defaultEmbed
-import util.EmbedUtils.Companion.simpleMessageEmbed
-import util.EmbedUtils.Companion.trackAsHyperLink
+import util.bold
+import util.defaultEmbed
+import util.simpleMessageEmbed
+import util.trackAsHyperLink
 import java.time.Instant
 import java.util.*
 

@@ -5,7 +5,7 @@ import audio.GuildManager
 import discord4j.core.event.domain.message.MessageCreateEvent
 import kotlinx.coroutines.reactor.mono
 import reactor.core.publisher.Mono
-import util.EmbedUtils
+import util.simpleMessageEmbed
 
 class SkipCommand : Command {
 
@@ -35,7 +35,7 @@ class SkipCommand : Command {
 
     private fun sendQueueEmptyMessage(event: MessageCreateEvent): Mono<Boolean> {
         return event.message.channel
-            .flatMap { it.createMessage(EmbedUtils.simpleMessageEmbed("Queue is empty.").build()) }
+            .flatMap { it.createMessage(simpleMessageEmbed("Queue is empty.").build()) }
             .mapNotNull { null }
     }
 

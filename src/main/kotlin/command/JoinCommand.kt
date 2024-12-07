@@ -12,6 +12,7 @@ import discord4j.voice.VoiceConnection
 import kotlinx.coroutines.reactor.mono
 import mu.KotlinLogging
 import reactor.core.publisher.Mono
+import util.monoOptional
 import java.util.*
 
 class JoinCommand : Command {
@@ -39,9 +40,7 @@ class JoinCommand : Command {
         member: Optional<Member>,
         guildId: Snowflake
     ): Mono<VoiceConnection> {
-        return mono { member }
-            .filter { it.isPresent }
-            .map { it.get() }
+        return monoOptional(member)
             .flatMap { it.voiceState }
             .flatMap { it.channel }
             .switchIfEmpty(mono {

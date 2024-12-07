@@ -12,10 +12,10 @@ import discord4j.common.util.Snowflake
 import discord4j.core.`object`.entity.User
 import discord4j.core.spec.EmbedCreateSpec
 import mu.KotlinLogging
-import util.EmbedUtils
-import util.EmbedUtils.Companion.bold
-import util.EmbedUtils.Companion.defaultEmbed
-import util.EmbedUtils.Companion.trackAsHyperLink
+import util.bold
+import util.defaultEmbed
+import util.simpleMessageEmbed
+import util.trackAsHyperLink
 import java.time.Instant
 
 class DefaultAudioLoadResultHandler(
@@ -100,11 +100,11 @@ class DefaultAudioLoadResultHandler(
     }
 
     private fun getNoMatchesMessage(): EmbedCreateSpec {
-        return EmbedUtils.simpleMessageEmbed("Found no matches.").build()
+        return simpleMessageEmbed("Found no matches.").build()
     }
 
     private fun getFailedToLoadMessage(): EmbedCreateSpec {
-        return EmbedUtils.simpleMessageEmbed("Failed to load track.").build()
+        return simpleMessageEmbed("Failed to load track.").build()
     }
 
     private fun handleSecondLoadFail(exception: FriendlyException?) {

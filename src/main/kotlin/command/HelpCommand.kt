@@ -3,15 +3,13 @@ package command
 import discord4j.core.event.domain.message.MessageCreateEvent
 import mu.KotlinLogging
 import reactor.core.publisher.Mono
-import util.EmbedUtils.Companion.bold
-import util.EmbedUtils.Companion.defaultEmbed
+import util.bold
+import util.defaultEmbed
 
 class HelpCommand(private val commands: MutableMap<String, Command>) : Command {
     val logger = KotlinLogging.logger {}
 
     override fun execute(event: MessageCreateEvent): Mono<Void> {
-        val author = event.member.get()
-
         val messages = commands.filter { isShortCommand(it.key).not() }
             .map { "${bold(it.key)} - ${it.value.help()}" }
             .toMutableList()

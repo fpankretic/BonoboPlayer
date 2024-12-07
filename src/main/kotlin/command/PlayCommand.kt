@@ -10,6 +10,7 @@ import discord4j.core.`object`.entity.channel.VoiceChannel
 import kotlinx.coroutines.reactor.mono
 import mu.KotlinLogging
 import reactor.core.publisher.Mono
+import util.monoOptional
 import java.net.URI
 import java.net.URISyntaxException
 import java.util.*
@@ -67,7 +68,7 @@ open class PlayCommand : Command {
     }
 
     private fun isUserJoined(member: Optional<Member>): Mono<VoiceChannel> {
-        return mono { member.get() }
+        return monoOptional(member)
             .flatMap { it.voiceState }
             .flatMap { it.channel }
     }

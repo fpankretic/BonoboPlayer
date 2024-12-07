@@ -19,8 +19,8 @@ import mu.KotlinLogging
 import reactor.core.Disposable
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
-import util.EmbedUtils
-import util.EmbedUtils.Companion.simpleMessageEmbed
+import util.defaultEmbed
+import util.simpleMessageEmbed
 import java.time.Duration
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -207,7 +207,7 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
     }
 
     private fun leaveMessage(): EmbedCreateSpec {
-        return EmbedUtils.defaultEmbed()
+        return defaultEmbed()
             .description("Left the voice channel due to inactivity.")
             .build()
     }
