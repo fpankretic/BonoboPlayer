@@ -54,8 +54,12 @@ open class PlayCommand : Command {
         return try {
             URI(query).toURL().toString()
         } catch (e: Exception) {
-            "spsearch: $query"
+            "${searchProvider()}: $query"
         }
+    }
+
+    protected open fun searchProvider(): String {
+        return "spsearch"
     }
 
     private fun executeJoinCommand(event: MessageCreateEvent, guildId: Snowflake): Mono<Void> {

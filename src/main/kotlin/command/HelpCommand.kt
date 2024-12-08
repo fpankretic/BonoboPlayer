@@ -6,12 +6,14 @@ import reactor.core.publisher.Mono
 import util.bold
 import util.defaultEmbedBuilder
 
-class HelpCommand(private val commands: MutableMap<String, Command>) : Command {
-    val logger = KotlinLogging.logger {}
+class HelpCommand(
+    private val longCommands: MutableMap<String, Command>,
+    private val shortCommands: MutableMap<String, Command>
+) : Command {
 
     override fun execute(event: MessageCreateEvent): Mono<Void> {
-        val messages = commands.filter { isShortCommand(it.key).not() }
-            .map { "${bold(it.key)} - ${it.value.help()}" }
+        val messages = longCommands
+            .map { "${entryName(it)} - ${it.value.help()}" }
             .toMutableList()
 
         val message = (1..messages.size).joinToString("\n") { "${it}. ${messages[it - 1]}" }
@@ -27,7 +29,9 @@ class HelpCommand(private val commands: MutableMap<String, Command>) : Command {
         return "List all available commands."
     }
 
-    private fun isShortCommand(command: String): Boolean {
-        return command.length <= 2
+    private fun entryName(entry: Map.Entry<String, Command>): String {
+        val shortname = shortCommands.entries.find { it.value == entry.value }?.key ?: ""
+        return bold(if (shortname.isNotEmpty()) "${entry.key} ($shortname)" else entry.key)
     }
+
 }

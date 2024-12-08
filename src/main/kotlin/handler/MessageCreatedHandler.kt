@@ -11,33 +11,44 @@ import reactor.core.publisher.Mono
 class MessageCreatedHandler {
 
     private val logger = KotlinLogging.logger {}
+    private val prefix = EnvironmentManager.get(PREFIX)
 
     companion object {
+        private val longCommands: MutableMap<String, Command> = mutableMapOf()
+        private val shortCommands: MutableMap<String, Command> = mutableMapOf()
         private val commands: MutableMap<String, Command> = mutableMapOf()
 
         init {
-            commands["play"] = PlayCommand()
-            commands["search"] = SearchCommand()
-            commands["list"] = ListCommand()
-            commands["queue"] = QueueCommand()
-            commands["clear"] = ClearCommand()
-            commands["skip"] = SkipCommand()
-            commands["skipto"] = SkipToCommand()
-            commands["remove"] = RemoveCommand()
-            commands["nowplaying"] = NowPlayingCommand()
-            commands["pause"] = PauseCommand()
-            commands["resume"] = ResumeCommand()
-            commands["join"] = JoinCommand()
-            commands["leave"] = LeaveCommand()
-            commands["help"] = HelpCommand(commands)
-            commands["p"] = PlayCommand()
-            commands["s"] = SkipCommand()
-            commands["q"] = QueueCommand()
-            commands["np"] = NowPlayingCommand()
-            commands["r"] = RemoveCommand()
-            commands["st"] = SkipToCommand()
-            commands["l"] = ListCommand()
-            commands["h"] = HelpCommand(commands)
+            // commands
+            longCommands["play"] = PlayCommand()
+            longCommands["yt"] = YoutubeCommand()
+            longCommands["ytm"] = YoutubeMusicCommand()
+            longCommands["search"] = SearchCommand()
+            longCommands["list"] = ListCommand()
+            longCommands["queue"] = QueueCommand()
+            longCommands["clear"] = ClearCommand()
+            longCommands["skip"] = SkipCommand()
+            longCommands["skipto"] = SkipToCommand()
+            longCommands["remove"] = RemoveCommand()
+            longCommands["np"] = NowPlayingCommand()
+            longCommands["pause"] = PauseCommand()
+            longCommands["resume"] = ResumeCommand()
+            longCommands["join"] = JoinCommand()
+            longCommands["leave"] = LeaveCommand()
+            longCommands["help"] = HelpCommand(longCommands, shortCommands)
+
+            // Hidden short commands
+            shortCommands["p"] = longCommands["play"]!!
+            shortCommands["l"] = longCommands["list"]!!
+            shortCommands["q"] = longCommands["queue"]!!
+            shortCommands["s"] = longCommands["skip"]!!
+            shortCommands["st"] = longCommands["skipto"]!!
+            shortCommands["r"] = longCommands["remove"]!!
+            shortCommands["h"] = longCommands["help"]!!
+
+            // All commands
+            commands.putAll(longCommands)
+            commands.putAll(shortCommands)
         }
     }
 
@@ -46,20 +57,19 @@ class MessageCreatedHandler {
         if (content.length < 2) return Mono.empty()
 
         val first = content.split(" ")[0]
-        val prefix = first[0].toString()
+        val foundPrefix = first[0].toString()
         val commandName = first.substring(1).lowercase()
 
-        if (isCommand(prefix, commandName)) {
+        if (isCommand(foundPrefix, commandName)) {
             logger.info { "Executing $commandName command." }
-            return commands[commandName]!!.execute(event)
+            return commands[commandName]?.execute(event) ?: mono { null }
         }
 
         return mono { null }
     }
 
-    private fun isCommand(prefix: String, commandName: String): Boolean {
-        return prefix == EnvironmentManager.get(PREFIX) &&
-                (commands.containsKey(commandName) || commandName == "help" || commandName == "h")
+    private fun isCommand(foundPrefix: String, commandName: String): Boolean {
+        return foundPrefix == prefix && commands.containsKey(commandName)
     }
 
 }
