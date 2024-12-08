@@ -11,33 +11,44 @@ import reactor.core.publisher.Mono
 class MessageCreatedHandler {
 
     private val logger = KotlinLogging.logger {}
+    private val prefix = EnvironmentManager.get(PREFIX)
 
     companion object {
+        private val displayHelpCommands: MutableMap<String, Command> = mutableMapOf()
+        private val hiddenHelpCommands: MutableMap<String, Command> = mutableMapOf()
         private val commands: MutableMap<String, Command> = mutableMapOf()
 
         init {
-            commands["play"] = PlayCommand()
-            commands["search"] = SearchCommand()
-            commands["list"] = ListCommand()
-            commands["queue"] = QueueCommand()
-            commands["clear"] = ClearCommand()
-            commands["skip"] = SkipCommand()
-            commands["skipto"] = SkipToCommand()
-            commands["remove"] = RemoveCommand()
-            commands["nowplaying"] = NowPlayingCommand()
-            commands["pause"] = PauseCommand()
-            commands["resume"] = ResumeCommand()
-            commands["join"] = JoinCommand()
-            commands["leave"] = LeaveCommand()
-            commands["help"] = HelpCommand(commands)
-            commands["p"] = PlayCommand()
-            commands["s"] = SkipCommand()
-            commands["q"] = QueueCommand()
-            commands["np"] = NowPlayingCommand()
-            commands["r"] = RemoveCommand()
-            commands["st"] = SkipToCommand()
-            commands["l"] = ListCommand()
-            commands["h"] = HelpCommand(commands)
+            // Display help commands
+            displayHelpCommands["play"] = PlayCommand()
+            displayHelpCommands["yt"] = YoutubeCommand()
+            displayHelpCommands["ytm"] = YoutubeMusicCommand()
+            displayHelpCommands["search"] = SearchCommand()
+            displayHelpCommands["list"] = ListCommand()
+            displayHelpCommands["queue"] = QueueCommand()
+            displayHelpCommands["clear"] = ClearCommand()
+            displayHelpCommands["skip"] = SkipCommand()
+            displayHelpCommands["skipto"] = SkipToCommand()
+            displayHelpCommands["remove"] = RemoveCommand()
+            displayHelpCommands["np"] = NowPlayingCommand()
+            displayHelpCommands["pause"] = PauseCommand()
+            displayHelpCommands["resume"] = ResumeCommand()
+            displayHelpCommands["join"] = JoinCommand()
+            displayHelpCommands["leave"] = LeaveCommand()
+            displayHelpCommands["help"] = HelpCommand(displayHelpCommands)
+
+            // Hidden help commands
+            hiddenHelpCommands["p"] = PlayCommand()
+            hiddenHelpCommands["l"] = ListCommand()
+            hiddenHelpCommands["q"] = QueueCommand()
+            hiddenHelpCommands["s"] = SkipCommand()
+            hiddenHelpCommands["st"] = SkipToCommand()
+            hiddenHelpCommands["r"] = RemoveCommand()
+            hiddenHelpCommands["h"] = HelpCommand(displayHelpCommands)
+
+            // All commands
+            commands.putAll(displayHelpCommands)
+            commands.putAll(hiddenHelpCommands)
         }
     }
 
@@ -46,20 +57,19 @@ class MessageCreatedHandler {
         if (content.length < 2) return Mono.empty()
 
         val first = content.split(" ")[0]
-        val prefix = first[0].toString()
+        val foundPrefix = first[0].toString()
         val commandName = first.substring(1).lowercase()
 
-        if (isCommand(prefix, commandName)) {
+        if (isCommand(foundPrefix, commandName)) {
             logger.info { "Executing $commandName command." }
-            return commands[commandName]!!.execute(event)
+            return commands[commandName]?.execute(event) ?: mono { null }
         }
 
         return mono { null }
     }
 
-    private fun isCommand(prefix: String, commandName: String): Boolean {
-        return prefix == EnvironmentManager.get(PREFIX) &&
-                (commands.containsKey(commandName) || commandName == "help" || commandName == "h")
+    private fun isCommand(foundPrefix: String, commandName: String): Boolean {
+        return foundPrefix == prefix && commands.containsKey(commandName)
     }
 
 }

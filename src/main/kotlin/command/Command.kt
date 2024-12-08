@@ -6,5 +6,4 @@ import reactor.core.publisher.Mono
 interface Command {
     fun execute(event: MessageCreateEvent): Mono<Void>
     fun help(): String
-
 }

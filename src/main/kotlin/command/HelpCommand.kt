@@ -10,7 +10,7 @@ class HelpCommand(private val commands: MutableMap<String, Command>) : Command {
     val logger = KotlinLogging.logger {}
 
     override fun execute(event: MessageCreateEvent): Mono<Void> {
-        val messages = commands.filter { isShortCommand(it.key).not() }
+        val messages = commands
             .map { "${bold(it.key)} - ${it.value.help()}" }
             .toMutableList()
 
@@ -27,7 +27,4 @@ class HelpCommand(private val commands: MutableMap<String, Command>) : Command {
         return "List all available commands."
     }
 
-    private fun isShortCommand(command: String): Boolean {
-        return command.length <= 2
-    }
 }
