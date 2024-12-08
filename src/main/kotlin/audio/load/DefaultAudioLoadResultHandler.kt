@@ -59,12 +59,12 @@ class DefaultAudioLoadResultHandler(
             guildAudio.play(SongRequest(it, RequestedBy(authorName, author.avatarUrl, Instant.now())))
         }
 
-        logger.info { "Loading playlist ${playlist.name}." }
+        logger.info { "Loaded playlist ${playlist.name}." }
     }
 
     override fun noMatches() {
         guildAudio.removeHandler(this)
-        logger.error { "Found no matches for: $track." }
+        logger.debug { "Found no matches for: $track." }
         when {
             retriedSearch.not() and track.contains("spsearch") -> handleSearchFail()
             else -> handleNoMatchesFail()

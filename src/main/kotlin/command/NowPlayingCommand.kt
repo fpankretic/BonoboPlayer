@@ -55,7 +55,7 @@ class NowPlayingCommand : Command {
     }
 
     private fun nowPlayingMessage(track: AudioTrack, requestedBy: RequestedBy): EmbedCreateSpec {
-        logger.info { "Current track state for ${track.info.title} is ${track.state}" }
+        logger.debug { "Current track state for ${track.info.title} is ${track.state}" }
         val position = track.position / 1000
         val duration = track.duration / 1000
 

@@ -44,7 +44,7 @@ class JoinCommand : Command {
             .flatMap { it.voiceState }
             .flatMap { it.channel }
             .switchIfEmpty(mono {
-                logger.info { "User is not in a voice channel." }
+                logger.debug { "User is not in a voice channel." }
                 throw IllegalStateException("User is not in a voice channel.")
             })
             .onErrorStop()
@@ -58,7 +58,7 @@ class JoinCommand : Command {
 
     private fun destroyAudioAndJoin(event: MessageCreateEvent, guildId: Snowflake): Mono<VoiceConnection> {
         return mono {
-            logger.info { "Function destroyAudioAndJoin called." }
+            logger.debug { "Function destroyAudioAndJoin called." }
             GuildManager.destroyAudio(guildId)
         }.then(joinVoiceChannel(event.message.channel, event.member, guildId))
     }

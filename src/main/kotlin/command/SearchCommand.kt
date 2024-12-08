@@ -26,7 +26,7 @@ class SearchCommand : Command {
 
     private fun search(event: MessageCreateEvent) {
         val query = "ytsearch: ${event.message.content.substringAfter(" ").trim()}"
-        logger.info { "Parsed query: $query." }
+        logger.debug { "Parsed query \"$query\"." }
 
         val guildAudio = GuildManager.createAudio(event.client, event.guildId.get(), event.message.channelId)
         JoinCommand().joinVoiceChannel(event.message.channel, event.member, event.guildId.get()).subscribe()

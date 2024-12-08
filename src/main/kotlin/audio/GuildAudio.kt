@@ -138,13 +138,13 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
     }
 
     fun addHandler(loadResultHandler: AudioLoadResultHandler, query: String) {
-        logger.info { "GuildId: ${guildId.asLong()} Adding audio load result handler: ${loadResultHandler.hashCode()}" }
+        logger.debug { "GuildId: ${guildId.asLong()} Adding audio load result handler: ${loadResultHandler.hashCode()}" }
         loadResultHandlers[loadResultHandler] =
             GlobalData.PLAYER_MANAGER.loadItemOrdered(guildId.asLong(), query, loadResultHandler)
     }
 
     fun removeHandler(loadResultHandler: AudioLoadResultHandler) {
-        logger.info { "GuildId: ${guildId.asLong()} Removing audio load result handler: ${loadResultHandler.hashCode()}" }
+        logger.debug { "GuildId: ${guildId.asLong()} Removing audio load result handler: ${loadResultHandler.hashCode()}" }
         loadResultHandlers.remove(loadResultHandler)
     }
 

@@ -38,7 +38,7 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
     }
 
     override fun onTrackEnd(player: AudioPlayer?, track: AudioTrack?, endReason: AudioTrackEndReason?) {
-        logger.info { "OnTrackEndCalled with endReason $endReason." }
+        logger.debug { "OnTrackEndCalled with endReason $endReason." }
         if (endReason != null && endReason.mayStartNext) {
             if (skip().not()) {
                 GuildManager.getAudio(guildId).scheduleLeave()
