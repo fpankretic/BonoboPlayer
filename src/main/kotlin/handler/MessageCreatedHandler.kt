@@ -14,41 +14,41 @@ class MessageCreatedHandler {
     private val prefix = EnvironmentManager.get(PREFIX)
 
     companion object {
-        private val displayHelpCommands: MutableMap<String, Command> = mutableMapOf()
-        private val hiddenHelpCommands: MutableMap<String, Command> = mutableMapOf()
+        private val longCommands: MutableMap<String, Command> = mutableMapOf()
+        private val shortCommands: MutableMap<String, Command> = mutableMapOf()
         private val commands: MutableMap<String, Command> = mutableMapOf()
 
         init {
-            // Display help commands
-            displayHelpCommands["play"] = PlayCommand()
-            displayHelpCommands["yt"] = YoutubeCommand()
-            displayHelpCommands["ytm"] = YoutubeMusicCommand()
-            displayHelpCommands["search"] = SearchCommand()
-            displayHelpCommands["list"] = ListCommand()
-            displayHelpCommands["queue"] = QueueCommand()
-            displayHelpCommands["clear"] = ClearCommand()
-            displayHelpCommands["skip"] = SkipCommand()
-            displayHelpCommands["skipto"] = SkipToCommand()
-            displayHelpCommands["remove"] = RemoveCommand()
-            displayHelpCommands["np"] = NowPlayingCommand()
-            displayHelpCommands["pause"] = PauseCommand()
-            displayHelpCommands["resume"] = ResumeCommand()
-            displayHelpCommands["join"] = JoinCommand()
-            displayHelpCommands["leave"] = LeaveCommand()
-            displayHelpCommands["help"] = HelpCommand(displayHelpCommands)
+            // commands
+            longCommands["play"] = PlayCommand()
+            longCommands["yt"] = YoutubeCommand()
+            longCommands["ytm"] = YoutubeMusicCommand()
+            longCommands["search"] = SearchCommand()
+            longCommands["list"] = ListCommand()
+            longCommands["queue"] = QueueCommand()
+            longCommands["clear"] = ClearCommand()
+            longCommands["skip"] = SkipCommand()
+            longCommands["skipto"] = SkipToCommand()
+            longCommands["remove"] = RemoveCommand()
+            longCommands["np"] = NowPlayingCommand()
+            longCommands["pause"] = PauseCommand()
+            longCommands["resume"] = ResumeCommand()
+            longCommands["join"] = JoinCommand()
+            longCommands["leave"] = LeaveCommand()
+            longCommands["help"] = HelpCommand(longCommands, shortCommands)
 
-            // Hidden help commands
-            hiddenHelpCommands["p"] = PlayCommand()
-            hiddenHelpCommands["l"] = ListCommand()
-            hiddenHelpCommands["q"] = QueueCommand()
-            hiddenHelpCommands["s"] = SkipCommand()
-            hiddenHelpCommands["st"] = SkipToCommand()
-            hiddenHelpCommands["r"] = RemoveCommand()
-            hiddenHelpCommands["h"] = HelpCommand(displayHelpCommands)
+            // Hidden short commands
+            shortCommands["p"] = longCommands["play"]!!
+            shortCommands["l"] = longCommands["list"]!!
+            shortCommands["q"] = longCommands["queue"]!!
+            shortCommands["s"] = longCommands["skip"]!!
+            shortCommands["st"] = longCommands["skipto"]!!
+            shortCommands["r"] = longCommands["remove"]!!
+            shortCommands["h"] = longCommands["help"]!!
 
             // All commands
-            commands.putAll(displayHelpCommands)
-            commands.putAll(hiddenHelpCommands)
+            commands.putAll(longCommands)
+            commands.putAll(shortCommands)
         }
     }
 
