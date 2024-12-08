@@ -1,7 +1,6 @@
 package command
 
 import discord4j.core.event.domain.message.MessageCreateEvent
-import io.github.oshai.kotlinlogging.KotlinLogging
 import reactor.core.publisher.Mono
 import util.bold
 import util.defaultEmbedBuilder
