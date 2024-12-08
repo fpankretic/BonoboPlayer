@@ -12,7 +12,6 @@ import kotlinx.coroutines.reactor.mono
 import reactor.core.publisher.Mono
 import util.monoOptional
 import java.net.URI
-import java.net.URISyntaxException
 import java.util.*
 
 open class PlayCommand : Command {
@@ -53,8 +52,8 @@ open class PlayCommand : Command {
 
     protected fun loadTrack(query: String): String {
         return try {
-            URI(query).toString()
-        } catch (exception: URISyntaxException) {
+            URI(query).toURL().toString()
+        } catch (e: Exception) {
             "spsearch: $query"
         }
     }
