@@ -22,16 +22,16 @@ class SearchAudioLoadResultHandler(
     private val guildAudio: GuildAudio = GuildManager.getAudio(guildId)
 
     override fun trackLoaded(track: AudioTrack?) {
-        logger.info { "Should never get to trackLoaded!" }
         guildAudio.removeHandler(this)
     }
 
     override fun playlistLoaded(playlist: AudioPlaylist) {
+        guildAudio.removeHandler(this)
+
         if (playlist.isSearchResult.not()) {
-            logger.info { "Error while searching!" }
+            logger.error { "Error while searching!" }
             return
         }
-
 
         val filteredTracks = playlist.tracks.distinctBy { it.info.title }
         val numberOfElements = min(5, filteredTracks.size)
@@ -50,18 +50,17 @@ class SearchAudioLoadResultHandler(
             chooseSongSelect(filteredTracks.subList(0, numberOfElements), customId),
             customId
         )
-        guildAudio.removeHandler(this)
     }
 
     override fun noMatches() {
+        guildAudio.removeHandler(this)
         logger.info { "Found no matches." }
         guildAudio.sendMessage(simpleMessageEmbed("Found no matches."))
-        guildAudio.removeHandler(this)
     }
 
     override fun loadFailed(exception: FriendlyException?) {
+        guildAudio.removeHandler(this)
         logger.error { "Error while searching!" }
         guildAudio.sendMessage(simpleMessageEmbed("Error while searching!"))
-        guildAudio.removeHandler(this)
     }
 }
