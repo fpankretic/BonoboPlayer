@@ -22,14 +22,15 @@ class DefaultAudioLoadResultHandler(
     private val guildId: Snowflake,
     private val author: User,
     private val track: String,
-    private val retried: Boolean = false
+    private val retried: Boolean = false,
+    private val retriedSearch: Boolean = false
 ) : AudioLoadResultHandler {
 
     private val logger = KotlinLogging.logger {}
     private val guildAudio: GuildAudio = GuildManager.getAudio(guildId)
 
     override fun trackLoaded(track: AudioTrack) {
-        logger.info { "Started loading track ${track.info.title}." }
+        guildAudio.removeHandler(this)
 
         if (guildAudio.getQueue().isNotEmpty() || guildAudio.isSongLoaded()) {
             guildAudio.sendMessage(getTrackLoadedMessage(track))
@@ -42,35 +43,32 @@ class DefaultAudioLoadResultHandler(
         )
 
         logger.info { "Loaded track ${track.info.title}." }
-        guildAudio.removeHandler(this)
     }
 
     override fun playlistLoaded(playlist: AudioPlaylist) {
+        guildAudio.removeHandler(this)
+
         if (playlist.isSearchResult) {
             trackLoaded(playlist.tracks[0])
             return
         }
 
-        logger.info { "Started loading playlist ${playlist.name}." }
-
         guildAudio.sendMessage(getPlaylistLoadedMessage(playlist))
         playlist.tracks.forEach {
-            guildAudio.play(
-                SongRequest(
-                    it,
-                    RequestedBy(author.globalName.orElse(author.username), author.avatarUrl, Instant.now())
-                )
-            )
+            val authorName = author.globalName.orElse(author.username)
+            guildAudio.play(SongRequest(it, RequestedBy(authorName, author.avatarUrl, Instant.now())))
         }
 
-        logger.info { "Finished loading playlist ${playlist.name}." }
-        guildAudio.removeHandler(this)
+        logger.info { "Loading playlist ${playlist.name}." }
     }
 
     override fun noMatches() {
-        logger.info { "Found no matches for: $track." }
-        guildAudio.sendMessage(simpleMessageEmbed("Found no matches."))
         guildAudio.removeHandler(this)
+        logger.error { "Found no matches for: $track." }
+        when {
+            retriedSearch.not() and track.contains("spsearch") -> handleSearchFail()
+            else -> handleNoMatchesFail()
+        }
     }
 
     override fun loadFailed(exception: FriendlyException?) {
@@ -80,6 +78,36 @@ class DefaultAudioLoadResultHandler(
             track.contains("spsearch") -> handleSpotifyLoadFail()
             else -> handleGenericLoadFail()
         }
+    }
+
+    private fun handleSecondLoadFail(exception: FriendlyException?) {
+        logger.error { "Failed to load track: $track." }
+        if (exception != null) {
+            logger.error { exception.stackTraceToString() }
+        }
+        guildAudio.sendMessage(simpleMessageEmbed("Failed to load track."))
+    }
+
+    private fun handleSpotifyLoadFail() {
+        val newTrack = track.replace("spsearch", "ytsearch")
+        logger.info { "Retrying to load track ${newTrack.replace("ytsearch: ", "")} with youtube." }
+        guildAudio.addHandler(DefaultAudioLoadResultHandler(guildId, author, newTrack, true), newTrack)
+    }
+
+    private fun handleGenericLoadFail() {
+        logger.info { "Retrying to load track: $track." }
+        guildAudio.addHandler(DefaultAudioLoadResultHandler(guildId, author, track, true), track)
+    }
+
+    private fun handleNoMatchesFail() {
+        val trackName = if (!track.contains("search:")) track else track.dropWhile { it != ' ' }.trim()
+        guildAudio.sendMessage(simpleMessageEmbed("Found no matches for $trackName."))
+    }
+
+    private fun handleSearchFail() {
+        val newTrack = track.replace("spsearch", "ytsearch")
+        logger.info { "Searching again with $newTrack." }
+        guildAudio.addHandler(DefaultAudioLoadResultHandler(guildId, author, newTrack, retried, true), newTrack)
     }
 
     private fun getTrackLoadedMessage(track: AudioTrack): EmbedCreateSpec {
@@ -97,25 +125,6 @@ class DefaultAudioLoadResultHandler(
             .thumbnail(playlist.tracks[0].info.artworkUrl)
             .addField("Songs in playlist: ${playlist.tracks.size}", "", true)
             .build()
-    }
-
-    private fun handleSecondLoadFail(exception: FriendlyException?) {
-        logger.error { "Failed to load track: $track." }
-        if (exception != null) {
-            logger.error { exception.stackTraceToString() }
-        }
-        guildAudio.sendMessage(simpleMessageEmbed("Failed to load track."))
-    }
-
-    private fun handleSpotifyLoadFail() {
-        val newTrack = track.replace("spsearch", "ytsearch")
-        logger.info { "Retrying to load track ${newTrack.replace("ytsearch: ", "")} with youtube." }
-        guildAudio.addHandler(DefaultAudioLoadResultHandler(guildId, author, track, true), track)
-    }
-
-    private fun handleGenericLoadFail() {
-        logger.info { "Retrying to load track: $track." }
-        guildAudio.addHandler(DefaultAudioLoadResultHandler(guildId, author, track, true), track)
     }
 
 }
