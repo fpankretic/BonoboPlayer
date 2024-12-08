@@ -42,7 +42,7 @@ open class PlayCommand : Command {
     protected open fun play(guildAudio: GuildAudio, event: MessageCreateEvent) {
         val query = event.message.content.substringAfter(" ").trim()
         val track = loadTrack(query)
-        logger.info { "Parsed query: $track." }
+        logger.debug { "Parsed query \"$track\"." }
 
         guildAudio.addHandler(
             DefaultAudioLoadResultHandler(event.guildId.get(), event.message.author.get(), track),
@@ -62,7 +62,7 @@ open class PlayCommand : Command {
         if (GuildManager.audioExists(guildId).not()) {
             return JoinCommand().execute(event).onErrorStop()
         }
-        logger.info { "Skipping join command!" }
+        logger.debug { "Skipping join command!" }
         return mono { null }
     }
 
