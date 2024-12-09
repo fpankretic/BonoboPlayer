@@ -59,7 +59,7 @@ open class PlayCommand : Command {
     }
 
     protected open fun searchProvider(): String {
-        return "spsearch"
+        return "ytmsearch"
     }
 
     private fun executeJoinCommand(event: MessageCreateEvent, guildId: Snowflake): Mono<Void> {

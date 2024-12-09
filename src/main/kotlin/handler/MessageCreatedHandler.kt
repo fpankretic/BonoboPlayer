@@ -23,6 +23,7 @@ class MessageCreatedHandler {
             longCommands["play"] = PlayCommand()
             longCommands["yt"] = YoutubeCommand()
             longCommands["ytm"] = YoutubeMusicCommand()
+            longCommands["sp"] = SpotifyCommand()
             longCommands["search"] = SearchCommand()
             longCommands["list"] = ListCommand()
             longCommands["queue"] = QueueCommand()
