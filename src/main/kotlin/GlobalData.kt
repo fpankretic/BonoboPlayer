@@ -30,6 +30,8 @@ class GlobalData {
             val poToken = EnvironmentManager.get(PO_TOKEN)
             val visitorData = EnvironmentManager.get(VISITOR_DATA)
             WebWithThumbnail.setPoTokenAndVisitorData(poToken, visitorData)
+            WebEmbeddedWithThumbnail.setPoTokenAndVisitorData(poToken, visitorData)
+            MWebWithThumbnail.setPoTokenAndVisitorData(poToken, visitorData)
 
             val clients = arrayOf(
                 MusicWithThumbnail(),

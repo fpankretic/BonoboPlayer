@@ -48,11 +48,8 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
 
     override fun onTrackException(player: AudioPlayer?, track: AudioTrack?, exception: FriendlyException?) {
         logger.error { "Exception occurred while playing: ${track!!.info.title}." }
+        logger.error { exception?.stackTrace }
         GuildManager.getAudio(guildId).sendMessage(exceptionOccurredMessage(track!!))
-
-        // TODO: Implement a retry mechanism
-        // This could be done by adding retry count to this class and check if player is still playing
-        // Player should be playing even if exception occurred, so we can retry the track.
     }
 
     override fun onTrackStuck(player: AudioPlayer?, track: AudioTrack?, thresholdMs: Long) {

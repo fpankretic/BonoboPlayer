@@ -29,20 +29,20 @@ class DefaultAudioLoadResultHandler(
     private val logger = KotlinLogging.logger {}
     private val guildAudio: GuildAudio = GuildManager.getAudio(guildId)
 
-    override fun trackLoaded(track: AudioTrack) {
+    override fun trackLoaded(loadedTrack: AudioTrack) {
         guildAudio.removeHandler(this)
 
         if (guildAudio.getQueue().isNotEmpty() || guildAudio.isSongLoaded()) {
-            guildAudio.sendMessage(getTrackLoadedMessage(track))
+            guildAudio.sendMessage(getTrackLoadedMessage(loadedTrack))
         }
         guildAudio.play(
             SongRequest(
-                track,
+                loadedTrack,
                 RequestedBy(author.globalName.orElse(author.username), author.avatarUrl, Instant.now())
             )
         )
 
-        logger.info { "Loaded track ${track.info.title}." }
+        logger.info { "Loaded track object: $loadedTrack}." }
     }
 
     override fun playlistLoaded(playlist: AudioPlaylist) {
