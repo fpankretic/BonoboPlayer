@@ -48,7 +48,7 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
 
     override fun onTrackException(player: AudioPlayer?, track: AudioTrack?, exception: FriendlyException?) {
         logger.error { "Exception occurred while playing: ${track!!.info.title}." }
-        logger.error { exception?.stackTrace }
+        logger.debug { exception?.stackTrace }
         GuildManager.getAudio(guildId).sendMessage(exceptionOccurredMessage(track!!))
     }
 
