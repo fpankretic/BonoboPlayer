@@ -32,17 +32,20 @@ import java.util.concurrent.atomic.AtomicReference
 class GuildAudio(private val client: GatewayDiscordClient, private val guildId: Snowflake) {
 
     private val logger = KotlinLogging.logger {}
+
     private val leaveDelay = Duration.ofMinutes(5)
     private val menuDelay = Duration.ofMinutes(1)
     private val removeDelay = Duration.ofSeconds(3)
 
     val player: AudioPlayer = GlobalData.PLAYER_MANAGER.createPlayer()
-    private var destroyed: Boolean = false
     private val scheduler: AudioTrackScheduler = AudioTrackScheduler(player, guildId)
+    private var destroyed: Boolean = false
     private var messageChannelId: AtomicLong = AtomicLong()
     private val leavingTask: AtomicReference<Disposable> = AtomicReference()
     private val menusTasks: HashMap<String, AtomicReference<Disposable>> = hashMapOf()
     private val loadResultHandlers: ConcurrentHashMap<AudioLoadResultHandler, Future<Void>> = ConcurrentHashMap()
+
+    // TODO: Implement the equalizer
     private val equalizer: EqualizerFactory = EqualizerFactory()
 
     init {
@@ -154,6 +157,10 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
         loadResultHandlers.clear()
         scheduler.destroy()
         destroyed = true
+    }
+
+    fun flipRepeating() {
+        scheduler.flipRepeating()
     }
 
     private fun setMenuComponentTimeout(customId: String) {

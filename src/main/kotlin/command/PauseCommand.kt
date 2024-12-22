@@ -29,7 +29,6 @@ class PauseCommand : Command {
             ResumeCommand().execute(event)
         } else {
             player.isPaused = true
-            guildAudio.scheduleLeave()
             mono { null }
         }
     }

@@ -34,6 +34,7 @@ class MessageCreatedHandler {
             longCommands["np"] = NowPlayingCommand()
             longCommands["pause"] = PauseCommand()
             longCommands["resume"] = ResumeCommand()
+            longCommands["repeat"] = RepeatCommand()
             longCommands["join"] = JoinCommand()
             longCommands["leave"] = LeaveCommand()
             longCommands["help"] = HelpCommand(longCommands, shortCommands)
