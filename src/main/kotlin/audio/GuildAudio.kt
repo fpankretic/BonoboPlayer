@@ -37,7 +37,7 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
     private val menuDelay = Duration.ofMinutes(1)
     private val removeDelay = Duration.ofSeconds(3)
 
-    private val player: AudioPlayer = GlobalData.PLAYER_MANAGER.createPlayer()
+    val player: AudioPlayer = GlobalData.PLAYER_MANAGER.createPlayer()
     private val scheduler: AudioTrackScheduler = AudioTrackScheduler(player, guildId)
     private var destroyed: Boolean = false
     private var messageChannelId: AtomicLong = AtomicLong()
@@ -160,7 +160,7 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
     }
 
     fun flipRepeating() {
-        repeating.set(repeating.get().not())
+        scheduler.flipRepeating()
     }
 
     private fun setMenuComponentTimeout(customId: String) {

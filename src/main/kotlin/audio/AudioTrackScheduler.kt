@@ -23,10 +23,11 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
 
     private val logger = KotlinLogging.logger {}
 
-    private val queue: MutableList<SongRequest> = Collections.synchronizedList(mutableListOf())
-    private var requestedBy: RequestedBy? = null
     private lateinit var player: AudioPlayer
     private lateinit var guildId: Snowflake
+
+    private val queue: MutableList<SongRequest> = Collections.synchronizedList(mutableListOf())
+    private var requestedBy: RequestedBy? = null
     private val repeating: AtomicReference<Boolean> = AtomicReference(false)
 
     constructor(player: AudioPlayer, guildId: Snowflake) : this() {
@@ -42,7 +43,7 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
     override fun onTrackEnd(player: AudioPlayer?, track: AudioTrack?, endReason: AudioTrackEndReason?) {
         logger.debug { "OnTrackEndCalled with endReason $endReason." }
         if (endReason != null && endReason.mayStartNext) {
-            if (skip().not()) {
+            if (skip(track).not()) {
                 GuildManager.getAudio(guildId).scheduleLeave()
             }
         }
@@ -60,24 +61,6 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
 
     fun play(songRequest: SongRequest): Boolean {
         return play(songRequest, false)
-    }
-
-    private fun play(songRequest: SongRequest, force: Boolean): Boolean {
-        val track = songRequest.audioTrack
-
-        val oldRequestedBy = requestedBy
-        requestedBy = songRequest.requestedBy
-
-        val started = player.startTrack(track.makeClone(), !force)
-
-        if (!started) {
-            queue.add(songRequest)
-            requestedBy = oldRequestedBy
-        } else {
-            GuildManager.getAudio(guildId).cancelLeave()
-        }
-
-        return started
     }
 
     fun getQueue(): List<AudioTrack> {
@@ -125,11 +108,6 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
         queue.clear()
     }
 
-    private fun clear() {
-        queue.clear()
-        player.playTrack(null)
-    }
-
     fun currentSong(): Optional<AudioTrack> {
         return Optional.ofNullable(player.playingTrack)
     }
@@ -143,8 +121,43 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
         clear()
     }
 
+    fun flipRepeating() {
+        repeating.set(repeating.get().not())
+    }
+
+    private fun play(songRequest: SongRequest, force: Boolean): Boolean {
+        val track = songRequest.audioTrack
+
+        val oldRequestedBy = requestedBy
+        requestedBy = songRequest.requestedBy
+
+        val started = player.startTrack(track.makeClone(), !force)
+
+        if (!started) {
+            queue.add(songRequest)
+            requestedBy = oldRequestedBy
+        } else {
+            GuildManager.getAudio(guildId).cancelLeave()
+        }
+
+        return started
+    }
+
+    private fun skip(track: AudioTrack?): Boolean {
+        if (repeating.get()) {
+            return play(SongRequest(track!!, requestedBy!!), true)
+        }
+
+        return skip()
+    }
+
     private fun isPlaying(): Boolean {
         return player.playingTrack != null
+    }
+
+    private fun clear() {
+        queue.clear()
+        player.playTrack(null)
     }
 
     private fun onTrackStartMessage(track: AudioTrack): EmbedCreateSpec {
