@@ -14,6 +14,7 @@ import util.simpleMessageEmbed
 import util.trackAsHyperLink
 import java.time.Instant
 import java.util.*
+import java.util.concurrent.atomic.AtomicReference
 
 data class RequestedBy(val user: String, val avatarUrl: String, val time: Instant)
 data class SongRequest(val audioTrack: AudioTrack, val requestedBy: RequestedBy)
@@ -26,6 +27,7 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
     private var requestedBy: RequestedBy? = null
     private lateinit var player: AudioPlayer
     private lateinit var guildId: Snowflake
+    private val repeating: AtomicReference<Boolean> = AtomicReference(false)
 
     constructor(player: AudioPlayer, guildId: Snowflake) : this() {
         this.player = player
