@@ -29,6 +29,7 @@ class VoiceStateUpdatedHandler {
         }
 
         return mono { GuildManager.getAudio(guildId) }
+            .filter { isMovementEvent(event) }
             .flatMap { updateBot(it, guildId, event) }
             .onErrorComplete()
     }
@@ -61,6 +62,7 @@ class VoiceStateUpdatedHandler {
             guildAudio.player.isPaused = true
             guildAudio.scheduleLeave()
         } else if (memberCount != 0L && guildAudio.isLeavingScheduled()) {
+            println("executing")
             guildAudio.player.isPaused = false
             if (guildAudio.currentSong().isPresent) {
                 guildAudio.cancelLeave()
@@ -68,4 +70,7 @@ class VoiceStateUpdatedHandler {
         }
     }
 
+    private fun isMovementEvent(event: VoiceStateUpdateEvent): Boolean {
+        return event.isJoinEvent || event.isLeaveEvent || event.isMoveEvent
+    }
 }

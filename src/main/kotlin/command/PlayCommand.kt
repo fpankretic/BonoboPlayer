@@ -7,6 +7,8 @@ import discord4j.common.util.Snowflake
 import discord4j.core.event.domain.message.MessageCreateEvent
 import discord4j.core.`object`.entity.Member
 import discord4j.core.`object`.entity.channel.VoiceChannel
+import env.EnvironmentManager
+import env.EnvironmentValue.PREFIX
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.reactor.mono
 import reactor.core.publisher.Mono
@@ -41,6 +43,10 @@ open class PlayCommand : Command {
 
     protected open fun play(guildAudio: GuildAudio, event: MessageCreateEvent) {
         val query = event.message.content.substringAfter(" ").trim()
+        if (query.isEmpty() || query.startsWith("${EnvironmentManager.get(PREFIX)}p")) {
+            return
+        }
+
         val track = loadTrack(query)
         logger.debug { "Parsed query \"$track\"." }
 
