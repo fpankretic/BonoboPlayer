@@ -35,11 +35,11 @@ class QueueCommand : Command {
     }
 
     private fun createList(guildId: Snowflake, pageNumber: Int): EmbedCreateSpec {
-        val queue = GuildManager.getAudio(guildId).getQueue()
-        if (GuildManager.audioExists(guildId).not() || queue.isEmpty()) {
+        if (GuildManager.audioExists(guildId).not() || GuildManager.getAudio(guildId).getQueue().isEmpty()) {
             return simpleMessageEmbed("Queue is empty.")
         }
 
+        val queue = GuildManager.getAudio(guildId).getQueue()
         val lastPage = max(1, (queue.size - 1) / 10 + 1)
         if (pageNumber < 1 || pageNumber > lastPage) {
             return simpleMessageEmbed("Invalid page number. Must be between 1 and $lastPage.")
