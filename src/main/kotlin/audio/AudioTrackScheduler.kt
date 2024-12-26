@@ -121,13 +121,13 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
         clearQueueAndTrack()
     }
 
+    fun flipRepeating() {
+        repeating.set(repeating.get().not())
+    }
+
     private fun clearQueueAndTrack() {
         queue.clear()
         player.playTrack(null)
-    }
-
-    fun flipRepeating() {
-        repeating.set(repeating.get().not())
     }
 
     private fun play(songRequest: SongRequest, force: Boolean): Boolean {
