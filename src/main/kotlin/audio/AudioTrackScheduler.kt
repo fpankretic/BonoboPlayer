@@ -125,6 +125,15 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
         repeating.set(repeating.get().not())
     }
 
+    fun shuffleQueue(): Boolean {
+        if (queue.size < 2) {
+            return false
+        }
+
+        queue.shuffle()
+        return true
+    }
+
     private fun clearQueueAndTrack() {
         queue.clear()
         player.playTrack(null)
