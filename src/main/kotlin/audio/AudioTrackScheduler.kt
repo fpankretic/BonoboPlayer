@@ -84,7 +84,7 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
 
     fun skip(): Boolean {
         if (queue.isEmpty() && isPlaying()) {
-            clear()
+            clearQueueAndTrack()
             return false
         }
 
@@ -123,11 +123,6 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
         queue.clear()
     }
 
-    private fun clear() {
-        queue.clear()
-        player.playTrack(null)
-    }
-
     fun currentSong(): Optional<AudioTrack> {
         return Optional.ofNullable(player.playingTrack)
     }
@@ -138,7 +133,12 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
 
     fun destroy() {
         player.destroy()
-        clear()
+        clearQueueAndTrack()
+    }
+
+    private fun clearQueueAndTrack() {
+        queue.clear()
+        player.playTrack(null)
     }
 
     private fun isPlaying(): Boolean {
