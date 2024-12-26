@@ -39,8 +39,8 @@ class GlobalData {
                 WebEmbeddedWithThumbnail(),
                 MWebWithThumbnail(),
                 TvHtml5EmbeddedWithThumbnail(),
-                AndroidVrWithThumbnail(),
-                AndroidMusicWithThumbnail(),
+//                AndroidVrWithThumbnail(),
+//                AndroidMusicWithThumbnail(),
             )
 
             val youtubeSource = YoutubeAudioSourceManager(*clients)
