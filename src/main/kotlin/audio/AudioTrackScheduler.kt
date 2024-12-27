@@ -69,7 +69,7 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
 
     fun skip(): Boolean {
         if (queue.isEmpty() && isPlaying()) {
-            clear()
+            clearQueueAndTrack()
             return false
         }
 
@@ -118,11 +118,25 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
 
     fun destroy() {
         player.destroy()
-        clear()
+        clearQueueAndTrack()
     }
 
     fun flipRepeating() {
         repeating.set(repeating.get().not())
+    }
+
+    fun shuffleQueue(): Boolean {
+        if (queue.size < 2) {
+            return false
+        }
+
+        queue.shuffle()
+        return true
+    }
+
+    private fun clearQueueAndTrack() {
+        queue.clear()
+        player.playTrack(null)
     }
 
     private fun play(songRequest: SongRequest, force: Boolean): Boolean {

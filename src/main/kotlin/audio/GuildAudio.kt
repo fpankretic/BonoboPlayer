@@ -163,6 +163,10 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
         scheduler.flipRepeating()
     }
 
+    fun shuffleQueue(): Boolean {
+        return scheduler.shuffleQueue()
+    }
+
     private fun setMenuComponentTimeout(customId: String) {
         val task = client.on(SelectMenuInteractionEvent::class.java) {
             if (it.customId.equals(customId)) {

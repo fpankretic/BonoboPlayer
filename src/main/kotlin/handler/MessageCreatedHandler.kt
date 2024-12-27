@@ -35,6 +35,7 @@ class MessageCreatedHandler {
             longCommands["pause"] = PauseCommand()
             longCommands["resume"] = ResumeCommand()
             longCommands["repeat"] = RepeatCommand()
+            longCommands["shuffle"] = ShuffleCommand()
             longCommands["join"] = JoinCommand()
             longCommands["leave"] = LeaveCommand()
             longCommands["help"] = HelpCommand(longCommands, shortCommands)
@@ -46,6 +47,7 @@ class MessageCreatedHandler {
             shortCommands["s"] = longCommands["skip"]!!
             shortCommands["st"] = longCommands["skipto"]!!
             shortCommands["r"] = longCommands["remove"]!!
+            shortCommands["sh"] = longCommands["shuffle"]!!
             shortCommands["h"] = longCommands["help"]!!
 
             // All commands
