@@ -44,8 +44,10 @@ class GlobalData {
             )
 
             val youtubeSource = YoutubeAudioSourceManager(*clients)
-            youtubeSource.useOauth2(EnvironmentManager.get(REFRESH_TOKEN), true)
-            PLAYER_MANAGER.registerSourceManagers(youtubeSource)
+            if (EnvironmentManager.get(REFRESH_TOKEN).isNotEmpty()) {
+                youtubeSource.useOauth2(EnvironmentManager.get(REFRESH_TOKEN), true)
+                PLAYER_MANAGER.registerSourceManagers(youtubeSource)
+            }
 
             val spotifySource = SpotifySourceManager(
                 null,
