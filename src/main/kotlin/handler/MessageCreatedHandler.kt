@@ -3,7 +3,7 @@ package handler
 import command.*
 import discord4j.core.event.domain.message.MessageCreateEvent
 import env.EnvironmentManager
-import env.EnvironmentValue.PREFIX
+import env.EnvironmentValue.*
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.reactor.mono
 import reactor.core.publisher.Mono
@@ -17,6 +17,9 @@ class MessageCreatedHandler {
         private val longCommands: MutableMap<String, Command> = mutableMapOf()
         private val shortCommands: MutableMap<String, Command> = mutableMapOf()
         private val commands: MutableMap<String, Command> = mutableMapOf()
+
+        private val filteredGuilds = EnvironmentManager.get(FILTERED_GUILDS).split(",").toSet()
+        private val allowedChannels = EnvironmentManager.get(ALLOWED_CHANNELS).split(",").toSet()
 
         init {
             // commands
@@ -57,6 +60,10 @@ class MessageCreatedHandler {
     }
 
     fun handle(event: MessageCreateEvent): Mono<Void> {
+        if (isFiltered(event)) {
+            return Mono.empty()
+        }
+
         val content = event.message.content
         if (content.length < 2) return Mono.empty()
 
@@ -74,6 +81,15 @@ class MessageCreatedHandler {
 
     private fun isCommand(foundPrefix: String, commandName: String): Boolean {
         return foundPrefix == prefix && commands.containsKey(commandName)
+    }
+
+    private fun isFiltered(event: MessageCreateEvent): Boolean {
+        return if (event.guildId.isEmpty) true
+        else {
+            val guildId = event.guildId.get().asString()
+            val channelId = event.message.channelId.asString()
+            filteredGuilds.contains(guildId) && allowedChannels.contains(channelId).not()
+        }
     }
 
 }
