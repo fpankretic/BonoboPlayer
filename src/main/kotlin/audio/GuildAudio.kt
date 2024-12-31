@@ -163,6 +163,10 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
         scheduler.flipRepeating()
     }
 
+    fun isRepeating(): Boolean {
+        return scheduler.repeating()
+    }
+
     fun shuffleQueue(): Boolean {
         return scheduler.shuffleQueue()
     }
