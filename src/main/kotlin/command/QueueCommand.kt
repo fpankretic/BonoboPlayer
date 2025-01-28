@@ -9,10 +9,7 @@ import env.EnvironmentManager
 import env.EnvironmentValue.PREFIX
 import kotlinx.coroutines.reactor.mono
 import reactor.core.publisher.Mono
-import util.bold
-import util.defaultEmbedBuilder
-import util.simpleMessageEmbed
-import util.trackAsHyperLink
+import util.*
 import kotlin.math.max
 
 class QueueCommand : Command {
@@ -35,11 +32,11 @@ class QueueCommand : Command {
     }
 
     private fun createList(guildId: Snowflake, pageNumber: Int): EmbedCreateSpec {
-        if (GuildManager.audioExists(guildId).not() || GuildManager.getAudio(guildId).getQueue().isEmpty()) {
-            return simpleMessageEmbed("Queue is empty.")
+        if (GuildManager.audioExists(guildId).not() || GuildManager.audio(guildId).isQueueEmpty()) {
+            return simpleMessageEmbed(Message.QUEUE_EMPTY.message)
         }
 
-        val queue = GuildManager.getAudio(guildId).getQueue()
+        val queue = GuildManager.audio(guildId).getQueueCopy()
         val lastPage = max(1, (queue.size - 1) / 10 + 1)
         if (pageNumber < 1 || pageNumber > lastPage) {
             return simpleMessageEmbed("Invalid page number. Must be between 1 and $lastPage.")

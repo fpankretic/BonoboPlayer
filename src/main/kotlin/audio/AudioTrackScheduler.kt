@@ -40,7 +40,7 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
 
     override fun onTrackStart(player: AudioPlayer?, track: AudioTrack?) {
         logger.info { "Now playing ${track!!.info.title} from ${track.info.uri}." }
-        GuildManager.getAudio(guildId).sendMessage(onTrackStartMessage(track!!))
+        GuildManager.audio(guildId).sendMessage(onTrackStartMessage(track!!))
     }
 
     override fun onTrackEnd(player: AudioPlayer?, track: AudioTrack?, endReason: AudioTrackEndReason?) {
@@ -57,7 +57,7 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
             }
 
             if (started.not()) {
-                GuildManager.getAudio(guildId).scheduleLeave()
+                GuildManager.audio(guildId).scheduleLeave()
             }
         }
     }
@@ -65,7 +65,7 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
     override fun onTrackException(player: AudioPlayer?, track: AudioTrack?, exception: FriendlyException?) {
         logger.error { "Exception occurred while playing: ${track!!.info.title}." }
         logger.debug { exception?.stackTrace }
-        GuildManager.getAudio(guildId).sendMessage(exceptionOccurredMessage(track!!))
+        GuildManager.audio(guildId).sendMessage(exceptionOccurredMessage(track!!))
     }
 
     override fun onTrackStuck(player: AudioPlayer?, track: AudioTrack?, thresholdMs: Long) {
@@ -76,17 +76,25 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
         return play(songRequest, false)
     }
 
-    fun getQueue(): List<AudioTrack> {
+    fun getQueueCopy(): List<AudioTrack> {
         return Collections.unmodifiableList(queue.map { it.audioTrack })
     }
 
+    fun getQueueSize(): Int {
+        return queue.size
+    }
+
+    fun isQueueEmpty(): Boolean {
+        return queue.isEmpty()
+    }
+
     fun next(): Boolean {
-        if (queue.isEmpty() && isPlaying()) {
+        if (queue.isEmpty()) {
             clearQueueAndTrack()
             return false
         }
 
-        return queue.isNotEmpty() && play(queue.removeAt(0), true)
+        return play(queue.removeAt(0), true)
     }
 
     fun skipInQueue(position: Int): Boolean {
@@ -97,7 +105,7 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
         val track = queue.removeAt(position - 1).audioTrack
         logger.info { "Removed ${track.info.title} from queue." }
 
-        GuildManager.getAudio(guildId).sendMessage(trackSkippedMessage(track))
+        GuildManager.audio(guildId).sendMessage(trackSkippedMessage(track))
         return true
     }
 
@@ -112,7 +120,7 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
         }
         next()
 
-        GuildManager.getAudio(guildId).sendMessage(nextSongMessage(queue.first().audioTrack))
+        GuildManager.audio(guildId).sendMessage(nextSongMessage(queue.first().audioTrack))
 
         return true
     }
@@ -168,14 +176,10 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
             queue.add(songRequest)
         } else {
             currentSongRequest = songRequest
-            GuildManager.getAudio(guildId).cancelLeave()
+            GuildManager.audio(guildId).cancelLeave()
         }
 
         return started
-    }
-
-    private fun isPlaying(): Boolean {
-        return player.playingTrack != null
     }
 
     private fun onTrackStartMessage(track: AudioTrack): EmbedCreateSpec {

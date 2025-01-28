@@ -27,12 +27,12 @@ class DefaultAudioLoadResultHandler(
 ) : AudioLoadResultHandler {
 
     private val logger = KotlinLogging.logger {}
-    private val guildAudio: GuildAudio = GuildManager.getAudio(guildId)
+    private val guildAudio: GuildAudio = GuildManager.audio(guildId)
 
     override fun trackLoaded(loadedTrack: AudioTrack) {
         guildAudio.removeHandler(this)
 
-        if (guildAudio.getQueue().isNotEmpty() || guildAudio.isSongLoaded()) {
+        if (guildAudio.getQueueCopy().isNotEmpty() || guildAudio.isSongLoaded()) {
             guildAudio.sendMessage(getTrackLoadedMessage(loadedTrack))
         }
         guildAudio.play(

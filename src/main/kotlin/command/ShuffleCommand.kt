@@ -1,25 +1,22 @@
 package command
 
+import audio.GuildAudio
 import audio.GuildManager
 import discord4j.core.event.domain.message.MessageCreateEvent
-import kotlinx.coroutines.reactor.mono
 import reactor.core.publisher.Mono
+import util.Message
+import util.monoOptional
+import util.sendQueueEmptyMessage
 import util.simpleMessageEmbed
 
 class ShuffleCommand : Command {
 
     override fun execute(event: MessageCreateEvent): Mono<Void> {
-        if (event.guildId.isEmpty) {
-            return mono { null }
-        }
 
-        val guildId = event.guildId.get()
-        return mono { GuildManager.audioExists(guildId) }
-            .filter { it }
+        return monoOptional(event.guildId)
+            .flatMap { GuildManager.audioMono(it) }
             .switchIfEmpty(sendQueueEmptyMessage(event))
-            .map { GuildManager.getAudio(guildId) }
-            .filter { it.shuffleQueue() }
-            .map { it.sendMessage(simpleMessageEmbed("Queue shuffled.")) }
+            .map { shuffle(it) }
             .then()
     }
 
@@ -27,9 +24,12 @@ class ShuffleCommand : Command {
         return "Shuffles the queue."
     }
 
-    private fun sendQueueEmptyMessage(event: MessageCreateEvent): Mono<Boolean> {
-        return event.message.channel
-            .flatMap { it.createMessage(simpleMessageEmbed("Queue is empty.")) }
-            .mapNotNull { null }
+    private fun shuffle(guildAudio: GuildAudio) {
+        val shuffled = guildAudio.shuffleQueue()
+        if (shuffled) {
+            guildAudio.sendMessage(simpleMessageEmbed(Message.QUEUE_SHUFFLED.message))
+        }
+
     }
+
 }

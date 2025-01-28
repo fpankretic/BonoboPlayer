@@ -19,8 +19,8 @@ import kotlinx.coroutines.reactor.mono
 import reactor.core.Disposable
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
+import util.Message
 import util.defaultEmbedBuilder
-import util.simpleMessageEmbed
 import java.time.Duration
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -54,7 +54,7 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
     }
 
     fun scheduleLeave() {
-        if (destroyed) {
+        if (destroyed || isLeavingScheduled()) {
             return
         }
 
@@ -102,8 +102,12 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
         return scheduler.currentSong().isPresent
     }
 
-    fun getQueue(): List<AudioTrack> {
-        return scheduler.getQueue()
+    fun getQueueCopy(): List<AudioTrack> {
+        return scheduler.getQueueCopy()
+    }
+
+    fun isQueueEmpty(): Boolean {
+        return scheduler.isQueueEmpty()
     }
 
     fun currentSong(): Optional<AudioTrack> {
@@ -119,7 +123,7 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
     }
 
     fun skipTo(position: Int): Boolean {
-        if (position < 1 || position > scheduler.getQueue().size) {
+        if (position < 1 || position > scheduler.getQueueSize()) {
             return false
         }
 
@@ -128,12 +132,8 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
 
     fun skipInQueue(position: Int): Boolean {
         if (position == 0) {
-            val started = next()
-            if (!started) {
-                GuildManager.getAudio(guildId).sendMessage(simpleMessageEmbed("Queue is empty."))
-            }
-            return started
-        } else if (position < 0 || position > scheduler.getQueue().size) {
+            return next()
+        } else if (position < 0 || position > scheduler.getQueueSize()) {
             return false
         }
 
@@ -219,7 +219,7 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
 
     private fun leaveMessage(): EmbedCreateSpec {
         return defaultEmbedBuilder()
-            .description("Left the voice channel due to inactivity.")
+            .description(Message.INACTIVITY.message)
             .build()
     }
 

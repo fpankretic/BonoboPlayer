@@ -3,24 +3,19 @@ package command
 import audio.GuildAudio
 import audio.GuildManager
 import discord4j.core.event.domain.message.MessageCreateEvent
-import kotlinx.coroutines.reactor.mono
 import reactor.core.publisher.Mono
+import util.Message
+import util.monoOptional
+import util.sendQueueEmptyMessage
 import util.simpleMessageEmbed
 
 class SkipCommand : Command {
 
     override fun execute(event: MessageCreateEvent): Mono<Void> {
-        if (event.guildId.isEmpty) {
-            return mono { null }
-        }
-        val guildId = event.guildId.get()
-
-        return mono { GuildManager.audioExists(guildId) }
-            .filter { it }
+        return monoOptional(event.guildId)
+            .flatMap { GuildManager.audioMono(it) }
             .switchIfEmpty(sendQueueEmptyMessage(event))
-            .map { GuildManager.getAudio(guildId) }
-            .filter { skipSong(it) }
-            .map { it.scheduleLeave() }
+            .map { skipSong(it) }
             .onErrorComplete()
             .then()
     }
@@ -29,14 +24,12 @@ class SkipCommand : Command {
         return "Skips the current song in the queue."
     }
 
-    private fun skipSong(guildAudio: GuildAudio): Boolean {
-        return guildAudio.skipInQueue(0).not() && guildAudio.isLeavingScheduled().not()
-    }
-
-    private fun sendQueueEmptyMessage(event: MessageCreateEvent): Mono<Boolean> {
-        return event.message.channel
-            .flatMap { it.createMessage(simpleMessageEmbed("Queue is empty.")) }
-            .mapNotNull { null }
+    private fun skipSong(guildAudio: GuildAudio) {
+        val trackStarted = guildAudio.skipInQueue(0)
+        if (trackStarted.not()) {
+            guildAudio.sendMessage(simpleMessageEmbed(Message.QUEUE_EMPTY.message))
+            guildAudio.scheduleLeave()
+        }
     }
 
 }

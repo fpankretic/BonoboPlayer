@@ -19,7 +19,7 @@ class RepeatCommand : Command {
             return mono { null }
         }
 
-        val guildAudio = GuildManager.getAudio(guildId)
+        val guildAudio = GuildManager.audio(guildId)
         guildAudio.changeQueueStatus()
 
         return event.message.channel
