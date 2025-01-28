@@ -171,11 +171,15 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
     private fun play(songRequest: SongRequest, force: Boolean): Boolean {
         val track = songRequest.audioTrack
 
+        val oldSongRequest = currentSongRequest?: songRequest
+        currentSongRequest = songRequest
+
         val started = player.startTrack(track.makeClone(), !force)
+
         if (!started) {
             queue.add(songRequest)
+            currentSongRequest = oldSongRequest
         } else {
-            currentSongRequest = songRequest
             GuildManager.audio(guildId).cancelLeave()
         }
 

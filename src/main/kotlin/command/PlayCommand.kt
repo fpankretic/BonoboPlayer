@@ -83,7 +83,9 @@ open class PlayCommand : Command {
     }
 
     private fun cancelLeave(guildId: Snowflake): Mono<GuildAudio> {
-        return GuildManager.audioMono(guildId)
+        return mono { GuildManager.audioExists(guildId) }
+            .filter { it }
+            .map { GuildManager.audio(guildId) }
             .filter { it.isLeavingScheduled() }
     }
 
