@@ -19,7 +19,7 @@ class SearchAudioLoadResultHandler(
 ) : AudioLoadResultHandler {
 
     private val logger = KotlinLogging.logger {}
-    private val guildAudio: GuildAudio = GuildManager.getAudio(guildId)
+    private val guildAudio: GuildAudio = GuildManager.audio(guildId)
 
     override fun trackLoaded(track: AudioTrack?) {
         guildAudio.removeHandler(this)

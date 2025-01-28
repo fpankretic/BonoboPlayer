@@ -3,24 +3,18 @@ package command
 import audio.GuildAudio
 import audio.GuildManager
 import discord4j.core.event.domain.message.MessageCreateEvent
-import kotlinx.coroutines.reactor.mono
 import reactor.core.publisher.Mono
+import util.Message
+import util.monoOptional
+import util.sendQueueEmptyMessage
 import util.simpleMessageEmbed
 
 class RemoveCommand : Command {
     override fun execute(event: MessageCreateEvent): Mono<Void> {
-        if (event.guildId.isEmpty) {
-            return Mono.empty()
-        }
-        val guildId = event.guildId.get()
-
-        return mono { GuildManager.audioExists(guildId) }
-            .filter { it }
+        return monoOptional(event.guildId)
+            .flatMap { GuildManager.audioMono(it) }
             .switchIfEmpty(sendQueueEmptyMessage(event))
-            .map { GuildManager.getAudio(guildId) }
-            .filter { skipSong(it, event) }
-            .filter { isNotPlaying(it) }
-            .map { it.scheduleLeave() }
+            .map { skipSong(it, event) }
             .onErrorComplete()
             .then()
     }
@@ -29,21 +23,12 @@ class RemoveCommand : Command {
         return "Skips any song in the queue."
     }
 
-    private fun skipSong(guildAudio: GuildAudio, event: MessageCreateEvent): Boolean {
+    private fun skipSong(guildAudio: GuildAudio, event: MessageCreateEvent) {
         val position = event.message.content.split(" ")[1].toInt()
-        return position != 0 && guildAudio.skipInQueue(position)
-    }
-
-    private fun isNotPlaying(guildAudio: GuildAudio): Boolean {
-        return guildAudio.isLeavingScheduled().not() &&
-                guildAudio.getQueue().isNotEmpty() &&
-                guildAudio.isSongLoaded().not()
-    }
-
-    private fun sendQueueEmptyMessage(event: MessageCreateEvent): Mono<Boolean> {
-        return event.message.channel
-            .flatMap { it.createMessage(simpleMessageEmbed("Queue is empty.")) }
-            .mapNotNull { null }
+        val skipped = guildAudio.skipInQueue(position)
+        if (skipped && guildAudio.isQueueEmpty() && guildAudio.isSongLoaded().not()) {
+            guildAudio.sendMessage(simpleMessageEmbed(Message.QUEUE_EMPTY.message))
+        }
     }
 
 }

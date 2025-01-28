@@ -9,10 +9,7 @@ import discord4j.core.spec.EmbedCreateSpec
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.reactor.mono
 import reactor.core.publisher.Mono
-import util.bold
-import util.defaultEmbedBuilder
-import util.simpleMessageEmbed
-import util.trackAsHyperLink
+import util.*
 import java.util.*
 
 class NowPlayingCommand : Command {
@@ -36,21 +33,21 @@ class NowPlayingCommand : Command {
 
     private fun getAudioTrack(guildId: Snowflake): Optional<AudioTrack> {
         return if (GuildManager.audioExists(guildId)) {
-            GuildManager.getAudio(guildId).currentSong()
+            GuildManager.audio(guildId).currentSong()
         } else {
             Optional.empty()
         }
     }
 
     private fun getRequestedBy(guildId: Snowflake): RequestedBy? {
-        return if (GuildManager.audioExists(guildId)) GuildManager.getAudio(guildId).requestedBy() else null
+        return if (GuildManager.audioExists(guildId)) GuildManager.audio(guildId).requestedBy() else null
     }
 
     private fun responseMessage(song: Optional<AudioTrack>, requestedBy: RequestedBy?): EmbedCreateSpec {
         return song.map {
             nowPlayingMessage(it, requestedBy!!)
         }.orElse(
-            simpleMessageEmbed("No songs currently playing")
+            simpleMessageEmbed(Message.NO_SONGS.message)
         )
     }
 

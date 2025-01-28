@@ -10,7 +10,7 @@ class ResumeCommand : Command {
 
     override fun execute(event: MessageCreateEvent): Mono<Void> {
         return monoOptional(event.guildId)
-            .map { GuildManager.getAudio(it) }
+            .flatMap { GuildManager.audioMono(it) }
             .map { resume(it) }
             .then()
     }

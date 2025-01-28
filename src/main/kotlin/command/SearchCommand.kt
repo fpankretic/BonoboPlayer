@@ -4,20 +4,16 @@ import audio.GuildManager
 import audio.load.SearchAudioLoadResultHandler
 import discord4j.core.event.domain.message.MessageCreateEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.reactor.mono
 import reactor.core.publisher.Mono
+import util.monoOptional
 
 class SearchCommand : Command {
     private val logger = KotlinLogging.logger {}
 
     override fun execute(event: MessageCreateEvent): Mono<Void> {
-        if (event.guildId.isEmpty) {
-            return mono { null }
-        }
-
-        search(event)
-
-        return mono { null }
+        return monoOptional(event.guildId)
+            .map { search(event) }
+            .then()
     }
 
     override fun help(): String {

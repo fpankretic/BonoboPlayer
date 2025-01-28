@@ -3,6 +3,8 @@ package audio
 import discord4j.common.util.Snowflake
 import discord4j.core.GatewayDiscordClient
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.reactor.mono
+import reactor.core.publisher.Mono
 import java.util.concurrent.ConcurrentHashMap
 
 class GuildManager private constructor() {
@@ -18,8 +20,12 @@ class GuildManager private constructor() {
             return guildAudio
         }
 
-        fun getAudio(id: Snowflake): GuildAudio {
+        fun audio(id: Snowflake): GuildAudio {
             return MANAGERS[id] ?: throw IllegalStateException("Audio does not exist.")
+        }
+
+        fun audioMono(id: Snowflake): Mono<GuildAudio> {
+            return mono { MANAGERS[id] }
         }
 
         fun audioExists(id: Snowflake): Boolean {

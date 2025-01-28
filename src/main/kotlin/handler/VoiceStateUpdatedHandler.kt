@@ -28,7 +28,7 @@ class VoiceStateUpdatedHandler {
             return mono { null }
         }
 
-        return mono { GuildManager.getAudio(guildId) }
+        return mono { GuildManager.audio(guildId) }
             .filter { isMovementEvent(event) }
             .flatMap { updateBot(it, guildId, event) }
             .onErrorComplete()

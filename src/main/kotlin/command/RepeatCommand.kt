@@ -19,8 +19,8 @@ class RepeatCommand : Command {
             return mono { null }
         }
 
-        val guildAudio = GuildManager.getAudio(guildId)
-        guildAudio.flipRepeating()
+        val guildAudio = GuildManager.audio(guildId)
+        guildAudio.changeQueueStatus()
 
         return event.message.channel
             .flatMap { it.createMessage(repeatMessage(guildAudio.isRepeating())) }
