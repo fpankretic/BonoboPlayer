@@ -20,7 +20,7 @@ fun simpleMessageEmbed(text: String): EmbedCreateSpec {
 }
 
 fun trackAsHyperLink(playlist: AudioPlaylist): String {
-    return textAsHyperLink(playlist.tracks[0].info.title, playlist.tracks[0].info.uri)
+    return textAsHyperLink(playlist.name, playlist.tracks[0].info.uri)
 }
 
 fun trackAsHyperLink(track: AudioTrack): String {
