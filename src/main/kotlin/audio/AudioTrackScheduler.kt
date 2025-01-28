@@ -18,6 +18,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 data class RequestedBy(val user: String, val avatarUrl: String, val time: Instant)
 data class SongRequest(val audioTrack: AudioTrack, val requestedBy: RequestedBy)
+enum class QueueType { NORMAL, REPEAT }
 
 class AudioTrackScheduler private constructor() : AudioEventAdapter() {
 
@@ -27,8 +28,10 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
     private lateinit var guildId: Snowflake
 
     private val queue: MutableList<SongRequest> = Collections.synchronizedList(mutableListOf())
+    private val queueType: AtomicReference<QueueType> = AtomicReference(QueueType.NORMAL)
+
+    private var currentSongRequest: SongRequest? = null
     private var requestedBy: RequestedBy? = null
-    private val repeating: AtomicReference<Boolean> = AtomicReference(false)
 
     constructor(player: AudioPlayer, guildId: Snowflake) : this() {
         this.player = player
@@ -43,7 +46,17 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
     override fun onTrackEnd(player: AudioPlayer?, track: AudioTrack?, endReason: AudioTrackEndReason?) {
         logger.debug { "OnTrackEndCalled with endReason $endReason." }
         if (endReason != null && endReason.mayStartNext) {
-            if (skip(track).not()) {
+            val started = when (queueType.get()) {
+                QueueType.NORMAL -> next()
+                QueueType.REPEAT -> {
+                    queue.addFirst(currentSongRequest!!)
+                    next()
+                }
+
+                null -> throw IllegalStateException("QueueType is null.")
+            }
+
+            if (started.not()) {
                 GuildManager.getAudio(guildId).scheduleLeave()
             }
         }
@@ -67,7 +80,7 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
         return Collections.unmodifiableList(queue.map { it.audioTrack })
     }
 
-    fun skip(): Boolean {
+    fun next(): Boolean {
         if (queue.isEmpty() && isPlaying()) {
             clearQueueAndTrack()
             return false
@@ -97,7 +110,7 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
             val track = queue.removeAt(0).audioTrack
             logger.info { "Removed ${track.info.title} from queue." }
         }
-        skip()
+        next()
 
         GuildManager.getAudio(guildId).sendMessage(nextSongMessage(queue.first().audioTrack))
 
@@ -121,12 +134,16 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
         clearQueueAndTrack()
     }
 
-    fun flipRepeating() {
-        repeating.set(repeating.get().not())
+    fun changeQueueStatus() {
+        if (queueType.get() == QueueType.NORMAL) {
+            queueType.set(QueueType.REPEAT)
+        } else {
+            queueType.set(QueueType.NORMAL)
+        }
     }
 
     fun repeating(): Boolean {
-        return repeating.get()
+        return queueType.get() == QueueType.REPEAT
     }
 
     fun shuffleQueue(): Boolean {
@@ -146,36 +163,19 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
     private fun play(songRequest: SongRequest, force: Boolean): Boolean {
         val track = songRequest.audioTrack
 
-        val oldRequestedBy = requestedBy
-        requestedBy = songRequest.requestedBy
-
         val started = player.startTrack(track.makeClone(), !force)
-
         if (!started) {
             queue.add(songRequest)
-            requestedBy = oldRequestedBy
         } else {
+            currentSongRequest = songRequest
             GuildManager.getAudio(guildId).cancelLeave()
         }
 
         return started
     }
 
-    private fun skip(track: AudioTrack?): Boolean {
-        if (repeating.get()) {
-            return play(SongRequest(track!!, requestedBy!!), true)
-        }
-
-        return skip()
-    }
-
     private fun isPlaying(): Boolean {
         return player.playingTrack != null
-    }
-
-    private fun clear() {
-        queue.clear()
-        player.playTrack(null)
     }
 
     private fun onTrackStartMessage(track: AudioTrack): EmbedCreateSpec {

@@ -128,11 +128,11 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
 
     fun skipInQueue(position: Int): Boolean {
         if (position == 0) {
-            val skipped = skip()
-            if (!skipped) {
+            val started = next()
+            if (!started) {
                 GuildManager.getAudio(guildId).sendMessage(simpleMessageEmbed("Queue is empty."))
             }
-            return skipped
+            return started
         } else if (position < 0 || position > scheduler.getQueue().size) {
             return false
         }
@@ -159,8 +159,8 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
         destroyed = true
     }
 
-    fun flipRepeating() {
-        scheduler.flipRepeating()
+    fun changeQueueStatus() {
+        scheduler.changeQueueStatus()
     }
 
     fun isRepeating(): Boolean {
@@ -209,8 +209,8 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
         }.subscribe()
     }
 
-    private fun skip(): Boolean {
-        return scheduler.skip()
+    private fun next(): Boolean {
+        return scheduler.next()
     }
 
     private fun getMessageChannel(): Mono<MessageChannel> {
