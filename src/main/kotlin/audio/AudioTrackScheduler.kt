@@ -31,7 +31,6 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
     private val queueType: AtomicReference<QueueType> = AtomicReference(QueueType.NORMAL)
 
     private var currentSongRequest: SongRequest? = null
-    private var requestedBy: RequestedBy? = null
 
     constructor(player: AudioPlayer, guildId: Snowflake) : this() {
         this.player = player
@@ -134,7 +133,7 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
     }
 
     fun requestedBy(): RequestedBy? {
-        return requestedBy
+        return currentSongRequest?.requestedBy
     }
 
     fun destroy() {
@@ -171,11 +170,15 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
     private fun play(songRequest: SongRequest, force: Boolean): Boolean {
         val track = songRequest.audioTrack
 
+        val oldSongRequest = currentSongRequest?: songRequest
+        currentSongRequest = songRequest
+
         val started = player.startTrack(track.makeClone(), !force)
+
         if (!started) {
             queue.add(songRequest)
+            currentSongRequest = oldSongRequest
         } else {
-            currentSongRequest = songRequest
             GuildManager.audio(guildId).cancelLeave()
         }
 
@@ -183,10 +186,11 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
     }
 
     private fun onTrackStartMessage(track: AudioTrack): EmbedCreateSpec {
+        val requestedBy = requestedBy()!!
         return defaultEmbedBuilder()
             .description("Now playing: ${trackAsHyperLink(track)}")
-            .footer("Requested by ${requestedBy!!.user}", requestedBy!!.avatarUrl)
-            .timestamp(requestedBy!!.time)
+            .footer("Requested by ${requestedBy.user}", requestedBy.avatarUrl)
+            .timestamp(requestedBy.time)
             .build()
     }
 

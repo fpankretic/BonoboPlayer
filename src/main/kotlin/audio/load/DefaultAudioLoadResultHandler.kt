@@ -32,7 +32,7 @@ class DefaultAudioLoadResultHandler(
     override fun trackLoaded(loadedTrack: AudioTrack) {
         guildAudio.removeHandler(this)
 
-        if (guildAudio.getQueueCopy().isNotEmpty() || guildAudio.isSongLoaded()) {
+        if (guildAudio.isQueueEmpty().not() || guildAudio.isSongLoaded()) {
             guildAudio.sendMessage(getTrackLoadedMessage(loadedTrack))
         }
         guildAudio.play(
