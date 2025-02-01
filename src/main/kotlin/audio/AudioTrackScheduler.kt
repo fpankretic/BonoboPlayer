@@ -38,7 +38,7 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
     }
 
     override fun onTrackStart(player: AudioPlayer?, track: AudioTrack?) {
-        val guildName = GuildManager.audio(guildId).getGuildName()
+        val guildName = GuildManager.audio(guildId).guildName
         logger.info { "Now playing ${track!!.info.title} from ${track.info.uri} in guild $guildName." }
         GuildManager.audio(guildId).sendMessage(onTrackStartMessage(track!!))
     }
