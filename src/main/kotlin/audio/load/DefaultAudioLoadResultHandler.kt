@@ -35,14 +35,13 @@ class DefaultAudioLoadResultHandler(
         if (guildAudio.isQueueEmpty().not() || guildAudio.isSongLoaded()) {
             guildAudio.sendMessage(getTrackLoadedMessage(loadedTrack))
         }
+
         guildAudio.play(
             SongRequest(
                 loadedTrack,
                 RequestedBy(author.globalName.orElse(author.username), author.avatarUrl, Instant.now())
             )
         )
-
-        logger.info { "Loaded track object: $loadedTrack}." }
     }
 
     override fun playlistLoaded(playlist: AudioPlaylist) {

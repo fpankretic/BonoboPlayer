@@ -9,10 +9,6 @@ abstract class Command {
     abstract fun help(): String
 
     fun executeForGuild(event: MessageCreateEvent): Mono<Void> {
-        return if (event.guildId.isPresent) {
-            execute(event, event.guildId.get())
-        } else {
-            event.message.channel.flatMap { it.createMessage("This command is only available in guilds.") }.then()
-        }
+        return execute(event, event.guildId.get())
     }
 }

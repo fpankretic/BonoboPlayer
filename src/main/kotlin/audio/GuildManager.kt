@@ -34,9 +34,12 @@ class GuildManager private constructor() {
 
         fun destroyAudio(id: Snowflake) {
             MANAGERS[id] ?: return
-            MANAGERS[id]?.destroy()
+
+            val guildName = MANAGERS[id]!!.guildName
+            MANAGERS[id]!!.destroy()
             MANAGERS.remove(id)
-            logger.info { "Audio destroyed." }
+
+            logger.info { "Audio destroyed for guild: ${guildName}." }
         }
 
     }
