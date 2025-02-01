@@ -2,6 +2,7 @@ package command
 
 import audio.GuildAudio
 import audio.load.DefaultAudioLoadResultHandler
+import discord4j.common.util.Snowflake
 import discord4j.core.event.domain.message.MessageCreateEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
 
@@ -9,7 +10,7 @@ class ListCommand : PlayCommand() {
 
     private val logger = KotlinLogging.logger {}
 
-    override fun play(guildAudio: GuildAudio, event: MessageCreateEvent) {
+    override fun play(event: MessageCreateEvent, guildAudio: GuildAudio, guildId: Snowflake) {
         val songList = event.message.content.substringAfter(" ").trim().split(";")
 
         songList.forEach {
@@ -17,7 +18,7 @@ class ListCommand : PlayCommand() {
             logger.debug { "Parsed query \"$songList\"." }
 
             guildAudio.addHandler(
-                DefaultAudioLoadResultHandler(event.guildId.get(), event.message.author.get(), track),
+                DefaultAudioLoadResultHandler(guildId, event.message.author.get(), track),
                 track
             )
         }

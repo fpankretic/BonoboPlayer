@@ -7,23 +7,16 @@ import discord4j.common.util.Snowflake
 import discord4j.core.event.domain.message.MessageCreateEvent
 import discord4j.core.spec.EmbedCreateSpec
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.reactor.mono
 import reactor.core.publisher.Mono
 import util.*
-import java.util.*
 
-class NowPlayingCommand : Command {
+class NowPlayingCommand : Command() {
 
     private val logger = KotlinLogging.logger {}
 
-    override fun execute(event: MessageCreateEvent): Mono<Void> {
-        if (event.guildId.isEmpty) {
-            return mono { null }
-        }
-        val guildId = event.guildId.get()
-
+    override fun execute(event: MessageCreateEvent, guildId: Snowflake): Mono<Void> {
         return event.message.channel.flatMap {
-            it.createMessage(responseMessage(getAudioTrack(guildId), getRequestedBy(guildId)))
+            it.createMessage(responseMessage(guildId))
         }.then()
     }
 
@@ -31,21 +24,14 @@ class NowPlayingCommand : Command {
         return "Shows the currently playing song."
     }
 
-    private fun getAudioTrack(guildId: Snowflake): Optional<AudioTrack> {
-        return if (GuildManager.audioExists(guildId)) {
-            GuildManager.audio(guildId).currentSong()
-        } else {
-            Optional.empty()
+    private fun responseMessage(guildId: Snowflake): EmbedCreateSpec {
+        if (GuildManager.audioExists(guildId).not()) {
+            return simpleMessageEmbed(Message.NO_SONGS.message)
         }
-    }
 
-    private fun getRequestedBy(guildId: Snowflake): RequestedBy? {
-        return if (GuildManager.audioExists(guildId)) GuildManager.audio(guildId).requestedBy() else null
-    }
-
-    private fun responseMessage(song: Optional<AudioTrack>, requestedBy: RequestedBy?): EmbedCreateSpec {
-        return song.map {
-            nowPlayingMessage(it, requestedBy!!)
+        val guildManager = GuildManager.audio(guildId)
+        return guildManager.currentSong().map {
+            nowPlayingMessage(it, guildManager.requestedBy()!!)
         }.orElse(
             simpleMessageEmbed(Message.NO_SONGS.message)
         )

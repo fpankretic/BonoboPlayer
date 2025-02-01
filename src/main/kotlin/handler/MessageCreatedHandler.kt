@@ -73,7 +73,7 @@ class MessageCreatedHandler {
 
         if (isCommand(foundPrefix, commandName)) {
             logger.info { "Executing $commandName command." }
-            return commands[commandName]?.execute(event) ?: mono { null }
+            return commands[commandName]?.executeForGuild(event) ?: mono { null }
         }
 
         return mono { null }

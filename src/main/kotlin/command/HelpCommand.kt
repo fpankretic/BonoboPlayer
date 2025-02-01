@@ -1,5 +1,6 @@
 package command
 
+import discord4j.common.util.Snowflake
 import discord4j.core.event.domain.message.MessageCreateEvent
 import reactor.core.publisher.Mono
 import util.bold
@@ -8,9 +9,9 @@ import util.defaultEmbedBuilder
 class HelpCommand(
     private val longCommands: MutableMap<String, Command>,
     private val shortCommands: MutableMap<String, Command>
-) : Command {
+) : Command() {
 
-    override fun execute(event: MessageCreateEvent): Mono<Void> {
+    override fun execute(event: MessageCreateEvent, guildId: Snowflake): Mono<Void> {
         val messages = longCommands
             .map { "${entryName(it)} - ${it.value.help()}" }
             .toMutableList()

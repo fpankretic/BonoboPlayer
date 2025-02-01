@@ -1,15 +1,14 @@
 package command
 
 import audio.GuildManager
+import discord4j.common.util.Snowflake
 import discord4j.core.event.domain.message.MessageCreateEvent
 import reactor.core.publisher.Mono
-import util.monoOptional
 
-class ClearCommand : Command {
+class ClearCommand : Command() {
 
-    override fun execute(event: MessageCreateEvent): Mono<Void> {
-        return monoOptional(event.guildId)
-            .flatMap { GuildManager.audioMono(it) }
+    override fun execute(event: MessageCreateEvent, guildId: Snowflake): Mono<Void> {
+        return GuildManager.audioMono(guildId)
             .map { it.clearQueue() }
             .then()
     }

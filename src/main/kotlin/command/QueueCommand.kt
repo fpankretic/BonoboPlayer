@@ -7,19 +7,13 @@ import discord4j.core.spec.EmbedCreateFields
 import discord4j.core.spec.EmbedCreateSpec
 import env.EnvironmentManager
 import env.EnvironmentValue.PREFIX
-import kotlinx.coroutines.reactor.mono
 import reactor.core.publisher.Mono
 import util.*
 import kotlin.math.max
 
-class QueueCommand : Command {
+class QueueCommand : Command() {
 
-    override fun execute(event: MessageCreateEvent): Mono<Void> {
-        if (event.guildId.isEmpty) {
-            return mono { null }
-        }
-
-        val guildId = event.guildId.get()
+    override fun execute(event: MessageCreateEvent, guildId: Snowflake): Mono<Void> {
         val pageNumber = pageNumberFromMessage(event.message.content)
 
         return event.message.channel.flatMap {
