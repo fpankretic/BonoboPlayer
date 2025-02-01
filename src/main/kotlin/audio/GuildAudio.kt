@@ -171,14 +171,6 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
         return scheduler.shuffleQueue()
     }
 
-    fun pause() {
-        player.isPaused = true
-    }
-
-    fun resume() {
-        player.isPaused = false
-    }
-
     private fun setMenuComponentTimeout(customId: String) {
         val task = client.on(SelectMenuInteractionEvent::class.java) {
             if (it.customId.equals(customId)) {
