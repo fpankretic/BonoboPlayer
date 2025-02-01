@@ -42,6 +42,8 @@ class DefaultAudioLoadResultHandler(
                 RequestedBy(author.globalName.orElse(author.username), author.avatarUrl, Instant.now())
             )
         )
+
+        logger.info { "Loaded track object: $loadedTrack}." }
     }
 
     override fun playlistLoaded(playlist: AudioPlaylist) {
