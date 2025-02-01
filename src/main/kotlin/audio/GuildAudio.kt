@@ -38,14 +38,14 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
     private val removeDelay = Duration.ofSeconds(3)
 
     val player: AudioPlayer = GlobalData.PLAYER_MANAGER.createPlayer()
+    val guildName: String = client.getGuildById(guildId).block()?.name ?: "Unknown"
+
     private val scheduler: AudioTrackScheduler = AudioTrackScheduler(player, guildId)
     private var destroyed: Boolean = false
     private var messageChannelId: AtomicLong = AtomicLong()
     private val leavingTask: AtomicReference<Disposable> = AtomicReference()
     private val menusTasks: HashMap<String, AtomicReference<Disposable>> = hashMapOf()
     private val loadResultHandlers: ConcurrentHashMap<AudioLoadResultHandler, Future<Void>> = ConcurrentHashMap()
-
-    // TODO: Implement the equalizer
     private val equalizer: EqualizerFactory = EqualizerFactory()
 
     init {
@@ -58,7 +58,6 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
             return
         }
 
-        logger.info { "Scheduling bot leave." }
         leavingTask.set(
             Mono.delay(leaveDelay, Schedulers.boundedElastic())
                 .filter { isLeavingScheduled() }
@@ -69,12 +68,13 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
                 .map { GuildManager.destroyAudio(guildId) }
                 .subscribe()
         )
+        logger.info { "Bot leave scheduled in guild: $guildName." }
     }
 
     fun cancelLeave() {
         if (!isLeavingScheduled()) return
-        logger.info { "Bot leave canceled." }
         leavingTask.get().dispose()
+        logger.info { "Bot leave canceled in guild: $guildName." }
     }
 
     fun isLeavingScheduled(): Boolean {
@@ -182,7 +182,7 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
                 return@on JoinCommand().joinVoiceChannel(messageChannelMono, member, guildId)
                     .timeout(removeDelay).then(it.message.get().delete())
                     .then(mono {
-                        logger.info { "Selected value while using search: $value" }
+                        logger.info { "Selected value while using search: $value in guild: $guildName." }
                         addHandler(DefaultAudioLoadResultHandler(guildId, author, value), value)
                     })
             }

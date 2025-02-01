@@ -15,16 +15,11 @@ import reactor.core.publisher.Mono
 import util.monoOptional
 import java.util.*
 
-class JoinCommand : Command {
+class JoinCommand : Command() {
 
     val logger = KotlinLogging.logger {}
 
-    override fun execute(event: MessageCreateEvent): Mono<Void> {
-        if (event.guildId.isEmpty) {
-            return mono { null }
-        }
-
-        val guildId = event.guildId.get()
+    override fun execute(event: MessageCreateEvent, guildId: Snowflake): Mono<Void> {
         val messageChannelMono = event.message.channel
         val member = event.member
 

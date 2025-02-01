@@ -70,10 +70,11 @@ class MessageCreatedHandler {
         val first = content.split(" ")[0]
         val foundPrefix = first[0].toString()
         val commandName = first.substring(1).lowercase()
+        val userName = event.member.map { it.nickname.orElse(it.username) }.orElse("Unknown")
 
         if (isCommand(foundPrefix, commandName)) {
-            logger.info { "Executing $commandName command." }
-            return commands[commandName]?.execute(event) ?: mono { null }
+            logger.info { "Executing $commandName command by $userName." }
+            return commands[commandName]?.executeForGuild(event) ?: mono { null }
         }
 
         return mono { null }

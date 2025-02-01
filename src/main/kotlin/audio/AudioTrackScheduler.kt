@@ -38,7 +38,8 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
     }
 
     override fun onTrackStart(player: AudioPlayer?, track: AudioTrack?) {
-        logger.info { "Now playing ${track!!.info.title} from ${track.info.uri}." }
+        val guildName = GuildManager.audio(guildId).getGuildName()
+        logger.info { "Now playing ${track!!.info.title} from ${track.info.uri} in guild $guildName." }
         GuildManager.audio(guildId).sendMessage(onTrackStartMessage(track!!))
     }
 
@@ -170,7 +171,7 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
     private fun play(songRequest: SongRequest, force: Boolean): Boolean {
         val track = songRequest.audioTrack
 
-        val oldSongRequest = currentSongRequest?: songRequest
+        val oldSongRequest = currentSongRequest ?: songRequest
         currentSongRequest = songRequest
 
         val started = player.startTrack(track.makeClone(), !force)

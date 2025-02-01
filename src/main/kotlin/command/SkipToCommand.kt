@@ -2,16 +2,16 @@ package command
 
 import audio.GuildAudio
 import audio.GuildManager
+import discord4j.common.util.Snowflake
 import discord4j.core.event.domain.message.MessageCreateEvent
 import reactor.core.publisher.Mono
-import util.monoOptional
-import util.sendQueueEmptyMessage
+import util.Message
+import util.sendSwitchMessage
 
-class SkipToCommand : Command {
-    override fun execute(event: MessageCreateEvent): Mono<Void> {
-        return monoOptional(event.guildId)
-            .flatMap { GuildManager.audioMono(it) }
-            .switchIfEmpty(sendQueueEmptyMessage(event))
+class SkipToCommand : Command() {
+    override fun execute(event: MessageCreateEvent, guildId: Snowflake): Mono<Void> {
+        return GuildManager.audioMono(guildId)
+            .switchIfEmpty(sendSwitchMessage(event, Message.QUEUE_EMPTY))
             .map { skipSongs(it, event) }
             .onErrorComplete()
             .then()

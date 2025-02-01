@@ -1,20 +1,16 @@
 package command
 
 import audio.GuildManager
+import discord4j.common.util.Snowflake
 import discord4j.core.event.domain.message.MessageCreateEvent
 import discord4j.core.spec.EmbedCreateSpec
 import kotlinx.coroutines.reactor.mono
 import reactor.core.publisher.Mono
 import util.simpleMessageEmbed
 
-class RepeatCommand : Command {
+class RepeatCommand : Command() {
 
-    override fun execute(event: MessageCreateEvent): Mono<Void> {
-        if (event.guildId.isEmpty) {
-            return mono { null }
-        }
-
-        val guildId = event.guildId.get()
+    override fun execute(event: MessageCreateEvent, guildId: Snowflake): Mono<Void> {
         if (GuildManager.audioExists(guildId).not()) {
             return mono { null }
         }

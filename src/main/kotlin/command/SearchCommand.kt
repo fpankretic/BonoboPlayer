@@ -2,18 +2,16 @@ package command
 
 import audio.GuildManager
 import audio.load.SearchAudioLoadResultHandler
+import discord4j.common.util.Snowflake
 import discord4j.core.event.domain.message.MessageCreateEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import reactor.core.publisher.Mono
-import util.monoOptional
 
-class SearchCommand : Command {
+class SearchCommand : Command() {
     private val logger = KotlinLogging.logger {}
 
-    override fun execute(event: MessageCreateEvent): Mono<Void> {
-        return monoOptional(event.guildId)
-            .map { search(event) }
-            .then()
+    override fun execute(event: MessageCreateEvent, guildId: Snowflake): Mono<Void> {
+        return Mono.fromCallable { search(event) }.then()
     }
 
     override fun help(): String {

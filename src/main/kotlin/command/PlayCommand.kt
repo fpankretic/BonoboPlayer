@@ -5,8 +5,6 @@ import audio.GuildManager
 import audio.load.DefaultAudioLoadResultHandler
 import discord4j.common.util.Snowflake
 import discord4j.core.event.domain.message.MessageCreateEvent
-import discord4j.core.`object`.entity.Member
-import discord4j.core.`object`.entity.channel.VoiceChannel
 import env.EnvironmentManager
 import env.EnvironmentValue.PREFIX
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -14,34 +12,29 @@ import kotlinx.coroutines.reactor.mono
 import reactor.core.publisher.Mono
 import util.monoOptional
 import java.net.URI
-import java.util.*
 
-open class PlayCommand : Command {
+open class PlayCommand : Command() {
 
     private val logger = KotlinLogging.logger {}
 
-    override fun execute(event: MessageCreateEvent): Mono<Void> {
-        if (event.guildId.isEmpty) {
-            return mono { null }
-        }
-        val guildId = event.guildId.get()
-
-        return isUserJoined(event.member).flatMap {
-            cancelLeave(guildId)
-                .then(executeJoinCommand(event, guildId))
-                .then(event.message.channel)
-                .map { GuildManager.createAudio(event.client, guildId, it.id) }
-                .map { play(it, event) }
-                .onErrorStop()
-                .then()
-        }
+    override fun execute(event: MessageCreateEvent, guildId: Snowflake): Mono<Void> {
+        return monoOptional(event.member)
+            .flatMap {
+                cancelLeave(guildId)
+                    .then(executeJoinCommand(event, guildId))
+                    .then(event.message.channel)
+                    .map { GuildManager.createAudio(event.client, guildId, it.id) }
+                    .map { play(event, it, guildId) }
+                    .onErrorStop()
+                    .then()
+            }
     }
 
     override fun help(): String {
         return "Plays a song."
     }
 
-    protected open fun play(guildAudio: GuildAudio, event: MessageCreateEvent) {
+    protected open fun play(event: MessageCreateEvent, guildAudio: GuildAudio, guildId: Snowflake) {
         val query = event.message.content.substringAfter(" ").trim()
         if (query.isEmpty() || query.startsWith("${EnvironmentManager.get(PREFIX)}p")) {
             return
@@ -51,7 +44,7 @@ open class PlayCommand : Command {
         logger.debug { "Parsed query \"$track\"." }
 
         guildAudio.addHandler(
-            DefaultAudioLoadResultHandler(event.guildId.get(), event.message.author.get(), track),
+            DefaultAudioLoadResultHandler(guildId, event.message.author.get(), track),
             track
         )
     }
@@ -70,16 +63,10 @@ open class PlayCommand : Command {
 
     private fun executeJoinCommand(event: MessageCreateEvent, guildId: Snowflake): Mono<Void> {
         if (GuildManager.audioExists(guildId).not()) {
-            return JoinCommand().execute(event).onErrorStop()
+            return JoinCommand().execute(event, guildId).onErrorStop()
         }
         logger.debug { "Skipping join command!" }
         return mono { null }
-    }
-
-    private fun isUserJoined(member: Optional<Member>): Mono<VoiceChannel> {
-        return monoOptional(member)
-            .flatMap { it.voiceState }
-            .flatMap { it.channel }
     }
 
     private fun cancelLeave(guildId: Snowflake): Mono<GuildAudio> {
