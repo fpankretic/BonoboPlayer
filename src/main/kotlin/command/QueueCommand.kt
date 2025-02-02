@@ -5,10 +5,9 @@ import discord4j.common.util.Snowflake
 import discord4j.core.event.domain.message.MessageCreateEvent
 import discord4j.core.spec.EmbedCreateFields
 import discord4j.core.spec.EmbedCreateSpec
-import env.EnvironmentManager
-import env.EnvironmentValue.PREFIX
 import reactor.core.publisher.Mono
 import util.*
+import util.EnvironmentValue.PREFIX
 import kotlin.math.max
 
 class QueueCommand : Command() {
@@ -41,7 +40,7 @@ class QueueCommand : Command() {
             .mapIndexed { index, track -> "${index + 1}. ${trackAsHyperLink(track)}" }
             .joinToString("\n")
 
-        val prefix = EnvironmentManager.get(PREFIX)
+        val prefix = EnvironmentManager.valueOf(PREFIX)
         val pageNumberMessage = "${bold("Page")}: $pageNumber / $lastPage. Choose a page with `${prefix}queue <page>`."
 
         val songField = EmbedCreateFields.Field.of("", songList, false)

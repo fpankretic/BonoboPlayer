@@ -2,24 +2,24 @@ package handler
 
 import command.*
 import discord4j.core.event.domain.message.MessageCreateEvent
-import env.EnvironmentManager
-import env.EnvironmentValue.*
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.reactor.mono
 import reactor.core.publisher.Mono
+import util.EnvironmentManager
+import util.EnvironmentValue.*
 
 class MessageCreatedHandler {
 
     private val logger = KotlinLogging.logger {}
-    private val prefix = EnvironmentManager.get(PREFIX)
+    private val prefix = EnvironmentManager.valueOf(PREFIX)
 
     companion object {
         private val longCommands: MutableMap<String, Command> = mutableMapOf()
         private val shortCommands: MutableMap<String, Command> = mutableMapOf()
         private val commands: MutableMap<String, Command> = mutableMapOf()
 
-        private val filteredGuilds = EnvironmentManager.get(FILTERED_GUILDS).split(",").toSet()
-        private val allowedChannels = EnvironmentManager.get(ALLOWED_CHANNELS).split(",").toSet()
+        private val filteredGuilds = EnvironmentManager.valueOf(FILTERED_GUILDS).split(",").toSet()
+        private val allowedChannels = EnvironmentManager.valueOf(ALLOWED_CHANNELS).split(",").toSet()
 
         init {
             // commands

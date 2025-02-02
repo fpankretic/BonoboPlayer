@@ -2,9 +2,9 @@ package server
 
 import com.sun.net.httpserver.HttpServer
 import discord4j.core.GatewayDiscordClient
-import env.EnvironmentManager
-import env.EnvironmentValue.PORT
 import io.github.oshai.kotlinlogging.KotlinLogging
+import util.EnvironmentManager
+import util.EnvironmentValue.PORT
 import util.simpleMessageEmbed
 import java.net.InetSocketAddress
 import java.nio.charset.StandardCharsets
@@ -12,8 +12,8 @@ import java.nio.charset.StandardCharsets
 private val logger = KotlinLogging.logger {}
 
 fun startWebServer(client: GatewayDiscordClient) {
-    val port = EnvironmentManager.get(PORT).toIntOrNull()
-    if (port == null) {
+    val port = EnvironmentManager.valueOf(PORT).toIntOrNull()
+    if (port == null || port < 1 || port > 65535) {
         logger.error { "Invalid port number. Web server not started." }
         return
     }

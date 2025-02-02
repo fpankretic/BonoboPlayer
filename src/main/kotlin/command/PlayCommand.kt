@@ -5,11 +5,11 @@ import audio.GuildManager
 import audio.load.DefaultAudioLoadResultHandler
 import discord4j.common.util.Snowflake
 import discord4j.core.event.domain.message.MessageCreateEvent
-import env.EnvironmentManager
-import env.EnvironmentValue.PREFIX
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.reactor.mono
 import reactor.core.publisher.Mono
+import util.EnvironmentManager
+import util.EnvironmentValue.PREFIX
 import util.monoOptional
 import java.net.URI
 
@@ -36,7 +36,7 @@ open class PlayCommand : Command() {
 
     protected open fun play(event: MessageCreateEvent, guildAudio: GuildAudio, guildId: Snowflake) {
         val query = event.message.content.substringAfter(" ").trim()
-        if (query.isEmpty() || query.startsWith("${EnvironmentManager.get(PREFIX)}p")) {
+        if (query.isEmpty() || query.startsWith("${EnvironmentManager.valueOf(PREFIX)}p")) {
             return
         }
 
