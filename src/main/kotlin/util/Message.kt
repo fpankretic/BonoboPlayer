@@ -6,4 +6,5 @@ enum class Message(val message: String) {
     NO_SONGS("No songs currently playing."),
     INACTIVITY("Left the voice channel due to inactivity."),
     WRONG_GUILD("You must be in the same guild as me to use this command."),
+    INVALID_ARGUMENTS("Invalid arguments provided."),
 }

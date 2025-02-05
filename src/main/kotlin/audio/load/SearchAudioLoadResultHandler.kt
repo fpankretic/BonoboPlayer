@@ -8,14 +8,14 @@ import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import discord4j.common.util.Snowflake
 import io.github.oshai.kotlinlogging.KotlinLogging
-import util.chooseSongSelect
+import util.bold
+import util.chooseSongButtons
 import util.defaultEmbedBuilder
 import util.simpleMessageEmbed
-import java.util.*
 import kotlin.math.min
 
 class SearchAudioLoadResultHandler(
-    guildId: Snowflake
+    private val guildId: Snowflake
 ) : AudioLoadResultHandler {
 
     private val logger = KotlinLogging.logger {}
@@ -37,17 +37,17 @@ class SearchAudioLoadResultHandler(
         val numberOfElements = min(5, filteredTracks.size)
 
         val resultString = filteredTracks
-            .mapIndexed { index, audioTrack -> "${index + 1}. ${audioTrack.info.title}" }
+            .mapIndexed { index, audioTrack -> "${bold((index + 1).toString())}. ${audioTrack.info.title}" }
             .take(numberOfElements)
             .joinToString("\n")
 
-        val customId = UUID.randomUUID().toString().lowercase()
+        val customId = guildId.toString()
         guildAudio.sendMessageWithComponentAndTimeout(
             defaultEmbedBuilder()
                 .title(playlist.name)
                 .description(resultString)
                 .build(),
-            chooseSongSelect(filteredTracks.subList(0, numberOfElements), customId),
+            chooseSongButtons(filteredTracks.subList(0, numberOfElements), customId),
             customId
         )
     }
