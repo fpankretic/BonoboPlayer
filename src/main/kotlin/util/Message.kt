@@ -7,4 +7,5 @@ enum class Message(val message: String) {
     INACTIVITY("Left the voice channel due to inactivity."),
     WRONG_GUILD("You must be in the same guild as me to use this command."),
     INVALID_ARGUMENTS("Invalid arguments provided."),
+    NOT_IN_VOICE_CHANNEL("You must be in a voice channel to use this command."),
 }
