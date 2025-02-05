@@ -3,10 +3,11 @@ package util
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import discord4j.core.`object`.component.ActionRow
-import discord4j.core.`object`.component.SelectMenu
-import discord4j.core.`object`.component.SelectMenu.Option
+import discord4j.core.`object`.component.Button
 import discord4j.core.spec.EmbedCreateSpec
 import discord4j.rest.util.Color
+
+const val CANCEL_TEXT: String = "Cancel"
 
 fun defaultEmbedBuilder(): EmbedCreateSpec.Builder {
     return EmbedCreateSpec.builder()
@@ -31,12 +32,12 @@ fun bold(string: String): String {
     return "**$string**"
 }
 
-fun chooseSongSelect(tracks: List<AudioTrack>, customId: String): ActionRow {
-    val select = SelectMenu.of(
-        customId,
-        tracks.mapIndexed { index, audioTrack -> Option.of((index + 1).toString(), audioTrack.info.uri) }
-    )
-    return ActionRow.of(select)
+fun chooseSongButtons(tracks: List<AudioTrack>, customId: String): Array<ActionRow> {
+    val selectButtons = tracks.mapIndexed { index, audioTrack ->
+        Button.primary("$customId-${audioTrack.info.uri}", "${index + 1}")
+    }
+    val cancelButton = Button.danger("$customId-$CANCEL_TEXT", "Cancel")
+    return arrayOf(ActionRow.of(selectButtons), ActionRow.of(cancelButton))
 }
 
 private fun textAsHyperLink(text: String, url: String): String {

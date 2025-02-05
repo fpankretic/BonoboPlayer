@@ -11,20 +11,20 @@ class SearchCommand : Command() {
     private val logger = KotlinLogging.logger {}
 
     override fun execute(event: MessageCreateEvent, guildId: Snowflake): Mono<Void> {
-        return Mono.fromCallable { search(event) }.then()
+        search(event, guildId)
+        return Mono.empty()
     }
 
     override fun help(): String {
         return "Searches for a song."
     }
 
-    private fun search(event: MessageCreateEvent) {
+    private fun search(event: MessageCreateEvent, guildId: Snowflake) {
         val query = "ytsearch: ${event.message.content.substringAfter(" ").trim()}"
         logger.debug { "Parsed query \"$query\"." }
 
-        val guildAudio = GuildManager.createAudio(event.client, event.guildId.get(), event.message.channelId)
-        JoinCommand().joinVoiceChannel(event.message.channel, event.member, event.guildId.get()).subscribe()
-        guildAudio.addHandler(SearchAudioLoadResultHandler(event.guildId.get()), query)
+        JoinCommand().joinVoiceChannel(event.message.channel, event.member, event.guildId.get()).block()
+        GuildManager.audio(guildId).addHandler(SearchAudioLoadResultHandler(event.guildId.get()), query)
     }
 
 }

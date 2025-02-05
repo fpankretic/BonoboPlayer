@@ -45,6 +45,7 @@ class MessageCreatedHandler {
 
             // Hidden short commands
             shortCommands["p"] = longCommands["play"]!!
+            shortCommands["sr"] = longCommands["search"]!!
             shortCommands["l"] = longCommands["list"]!!
             shortCommands["q"] = longCommands["queue"]!!
             shortCommands["s"] = longCommands["skip"]!!

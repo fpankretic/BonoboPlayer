@@ -14,6 +14,8 @@ class SkipCommand : Command() {
     override fun execute(event: MessageCreateEvent, guildId: Snowflake): Mono<Void> {
         return GuildManager.audioMono(guildId)
             .switchIfEmpty(sendSwitchMessage(event, Message.QUEUE_EMPTY))
+            .filter { correctArguments(event) }
+            .switchIfEmpty(sendSwitchMessage(event, Message.INVALID_ARGUMENTS))
             .map { skipSong(it) }
             .onErrorComplete()
             .then()
@@ -29,6 +31,10 @@ class SkipCommand : Command() {
             guildAudio.sendMessage(simpleMessageEmbed(Message.QUEUE_EMPTY.message))
             guildAudio.scheduleLeave()
         }
+    }
+
+    private fun correctArguments(event: MessageCreateEvent): Boolean {
+        return event.message.content.split(" ").size == 1
     }
 
 }
