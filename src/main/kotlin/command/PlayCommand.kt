@@ -10,7 +10,9 @@ import kotlinx.coroutines.reactor.mono
 import reactor.core.publisher.Mono
 import util.EnvironmentManager
 import util.EnvironmentValue.PREFIX
+import util.Message
 import util.monoOptional
+import util.sendSwitchMessage
 import java.net.URI
 
 open class PlayCommand : Command() {
@@ -19,6 +21,9 @@ open class PlayCommand : Command() {
 
     override fun execute(event: MessageCreateEvent, guildId: Snowflake): Mono<Void> {
         return monoOptional(event.member)
+            .flatMap { it.voiceState }
+            .flatMap { it.channel }
+            .switchIfEmpty(sendSwitchMessage(event, Message.NOT_IN_VOICE_CHANNEL))
             .flatMap {
                 cancelLeave(guildId)
                     .then(executeJoinCommand(event, guildId))
