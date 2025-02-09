@@ -12,6 +12,7 @@ import util.simpleMessageEmbed
 class RemoveCommand : Command() {
     override fun execute(event: MessageCreateEvent, guildId: Snowflake): Mono<Void> {
         return GuildManager.audioMono(guildId)
+            .filter { it.isQueueEmpty().not() }
             .switchIfEmpty(sendSwitchMessage(event, Message.QUEUE_EMPTY))
             .map { skipSong(it, event) }
             .onErrorComplete()

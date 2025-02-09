@@ -175,6 +175,10 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
         return scheduler.shuffleQueue()
     }
 
+    fun moveSong(from: Int, to: Int): Boolean {
+        return scheduler.moveSong(from, to)
+    }
+
     private fun setButtonsComponentsTimeout(customId: String) {
         val task = client.on(ButtonInteractionEvent::class.java) {
             if (it.customId.startsWith(customId)) {
