@@ -34,6 +34,7 @@ class MessageCreatedHandler {
             longCommands["skip"] = SkipCommand()
             longCommands["skipto"] = SkipToCommand()
             longCommands["remove"] = RemoveCommand()
+            longCommands["move"] = MoveCommand()
             longCommands["np"] = NowPlayingCommand()
             longCommands["pause"] = PauseCommand()
             longCommands["resume"] = ResumeCommand()
@@ -51,6 +52,7 @@ class MessageCreatedHandler {
             shortCommands["s"] = longCommands["skip"]!!
             shortCommands["st"] = longCommands["skipto"]!!
             shortCommands["r"] = longCommands["remove"]!!
+            shortCommands["m"] = longCommands["move"]!!
             shortCommands["sh"] = longCommands["shuffle"]!!
             shortCommands["h"] = longCommands["help"]!!
 
