@@ -13,6 +13,7 @@ class ShuffleCommand : Command() {
 
     override fun execute(event: MessageCreateEvent, guildId: Snowflake): Mono<Void> {
         return GuildManager.audioMono(guildId)
+            .filter { it.isQueueEmpty().not() }
             .switchIfEmpty(sendSwitchMessage(event, Message.QUEUE_EMPTY))
             .map { shuffle(it) }
             .then()
@@ -23,11 +24,9 @@ class ShuffleCommand : Command() {
     }
 
     private fun shuffle(guildAudio: GuildAudio) {
-        val shuffled = guildAudio.shuffleQueue()
-        if (shuffled) {
+        if (guildAudio.shuffleQueue()) {
             guildAudio.sendMessage(simpleMessageEmbed(Message.QUEUE_SHUFFLED.message))
         }
-
     }
 
 }

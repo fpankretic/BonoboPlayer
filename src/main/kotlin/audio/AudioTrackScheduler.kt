@@ -163,6 +163,16 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
         return true
     }
 
+    fun moveSong(from: Int, to: Int): Boolean {
+        if (from < 1 || from > queue.size || to < 1 || to > queue.size || from == to) {
+            return false
+        }
+
+        val songRequest = queue.removeAt(from - 1)
+        queue.add(to - 1, songRequest)
+        return true
+    }
+
     private fun clearQueueAndTrack() {
         queue.clear()
         player.playTrack(null)
