@@ -5,8 +5,7 @@ import discord4j.common.util.Snowflake
 import discord4j.core.event.domain.message.MessageCreateEvent
 import reactor.core.publisher.Mono
 
-class ClearCommand : Command() {
-
+object ClearCommand : Command {
     override fun execute(event: MessageCreateEvent, guildId: Snowflake): Mono<Void> {
         return GuildManager.audioMono(guildId)
             .map { it.clearQueue() }

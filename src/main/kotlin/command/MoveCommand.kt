@@ -9,7 +9,7 @@ import util.monoOptional
 import util.sendSwitchMessage
 import util.simpleMessageEmbed
 
-class MoveCommand : Command() {
+object MoveCommand : Command {
     override fun execute(event: MessageCreateEvent, guildId: Snowflake): Mono<Void> {
         return monoOptional(event.member)
             .flatMap { it.voiceState }

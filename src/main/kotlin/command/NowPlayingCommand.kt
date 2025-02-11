@@ -10,8 +10,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import reactor.core.publisher.Mono
 import util.*
 
-class NowPlayingCommand : Command() {
-
+object NowPlayingCommand : Command {
     private val logger = KotlinLogging.logger {}
 
     override fun execute(event: MessageCreateEvent, guildId: Snowflake): Mono<Void> {
@@ -61,5 +60,4 @@ class NowPlayingCommand : Command() {
         val index = ((position / duration.toDouble()) * 100 / 6.25).toInt()
         return "`" + "▬".repeat(index) + "\uD83D\uDD18" + "▬".repeat(15 - index) + "`"
     }
-
 }

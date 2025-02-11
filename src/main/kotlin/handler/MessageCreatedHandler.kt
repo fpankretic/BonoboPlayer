@@ -8,58 +8,55 @@ import reactor.core.publisher.Mono
 import util.EnvironmentManager
 import util.EnvironmentValue.*
 
-class MessageCreatedHandler {
-
+object MessageCreatedHandler {
     private val logger = KotlinLogging.logger {}
     private val prefix = EnvironmentManager.valueOf(PREFIX)
 
-    companion object {
-        private val longCommands: MutableMap<String, Command> = mutableMapOf()
-        private val shortCommands: MutableMap<String, Command> = mutableMapOf()
-        private val commands: MutableMap<String, Command> = mutableMapOf()
+    private val longCommands: MutableMap<String, Command> = mutableMapOf()
+    private val shortCommands: MutableMap<String, Command> = mutableMapOf()
+    private val commands: MutableMap<String, Command> = mutableMapOf()
 
-        private val filteredGuilds = EnvironmentManager.valueOf(FILTERED_GUILDS).split(",").toSet()
-        private val allowedChannels = EnvironmentManager.valueOf(ALLOWED_CHANNELS).split(",").toSet()
+    private val filteredGuilds = EnvironmentManager.valueOf(FILTERED_GUILDS).split(",").toSet()
+    private val allowedChannels = EnvironmentManager.valueOf(ALLOWED_CHANNELS).split(",").toSet()
 
-        init {
-            // commands
-            longCommands["play"] = PlayCommand()
-            longCommands["yt"] = YoutubeCommand()
-            longCommands["ytm"] = YoutubeMusicCommand()
-            longCommands["sp"] = SpotifyCommand()
-            longCommands["search"] = SearchCommand()
-            longCommands["list"] = ListCommand()
-            longCommands["queue"] = QueueCommand()
-            longCommands["clear"] = ClearCommand()
-            longCommands["skip"] = SkipCommand()
-            longCommands["skipto"] = SkipToCommand()
-            longCommands["remove"] = RemoveCommand()
-            longCommands["move"] = MoveCommand()
-            longCommands["np"] = NowPlayingCommand()
-            longCommands["pause"] = PauseCommand()
-            longCommands["resume"] = ResumeCommand()
-            longCommands["repeat"] = RepeatCommand()
-            longCommands["shuffle"] = ShuffleCommand()
-            longCommands["join"] = JoinCommand()
-            longCommands["leave"] = LeaveCommand()
-            longCommands["help"] = HelpCommand(longCommands, shortCommands)
+    init {
+        // commands
+        longCommands["play"] = PlayCommand
+        longCommands["yt"] = YoutubeCommand
+        longCommands["ytm"] = YoutubeMusicCommand
+        longCommands["sp"] = SpotifyCommand
+        longCommands["search"] = SearchCommand
+        longCommands["list"] = ListCommand
+        longCommands["queue"] = QueueCommand
+        longCommands["clear"] = ClearCommand
+        longCommands["skip"] = SkipCommand
+        longCommands["skipto"] = SkipToCommand
+        longCommands["remove"] = RemoveCommand
+        longCommands["move"] = MoveCommand
+        longCommands["np"] = NowPlayingCommand
+        longCommands["pause"] = PauseCommand
+        longCommands["resume"] = ResumeCommand
+        longCommands["repeat"] = RepeatCommand
+        longCommands["shuffle"] = ShuffleCommand
+        longCommands["join"] = JoinCommand
+        longCommands["leave"] = LeaveCommand
+        longCommands["help"] = HelpCommand(longCommands, shortCommands)
 
-            // Hidden short commands
-            shortCommands["p"] = longCommands["play"]!!
-            shortCommands["sr"] = longCommands["search"]!!
-            shortCommands["l"] = longCommands["list"]!!
-            shortCommands["q"] = longCommands["queue"]!!
-            shortCommands["s"] = longCommands["skip"]!!
-            shortCommands["st"] = longCommands["skipto"]!!
-            shortCommands["r"] = longCommands["remove"]!!
-            shortCommands["m"] = longCommands["move"]!!
-            shortCommands["sh"] = longCommands["shuffle"]!!
-            shortCommands["h"] = longCommands["help"]!!
+        // Hidden short commands
+        shortCommands["p"] = longCommands["play"]!!
+        shortCommands["sr"] = longCommands["search"]!!
+        shortCommands["l"] = longCommands["list"]!!
+        shortCommands["q"] = longCommands["queue"]!!
+        shortCommands["s"] = longCommands["skip"]!!
+        shortCommands["st"] = longCommands["skipto"]!!
+        shortCommands["r"] = longCommands["remove"]!!
+        shortCommands["m"] = longCommands["move"]!!
+        shortCommands["sh"] = longCommands["shuffle"]!!
+        shortCommands["h"] = longCommands["help"]!!
 
-            // All commands
-            commands.putAll(longCommands)
-            commands.putAll(shortCommands)
-        }
+        // All commands
+        commands.putAll(longCommands)
+        commands.putAll(shortCommands)
     }
 
     fun handle(event: MessageCreateEvent): Mono<Void> {

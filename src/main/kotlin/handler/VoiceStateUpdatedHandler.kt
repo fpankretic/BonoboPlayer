@@ -9,8 +9,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.reactor.mono
 import reactor.core.publisher.Mono
 
-class VoiceStateUpdatedHandler {
-
+object VoiceStateUpdatedHandler {
     private val logger = KotlinLogging.logger {}
 
     fun handle(event: VoiceStateUpdateEvent): Mono<Void> {

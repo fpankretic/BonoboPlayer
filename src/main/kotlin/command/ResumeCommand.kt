@@ -6,8 +6,7 @@ import discord4j.common.util.Snowflake
 import discord4j.core.event.domain.message.MessageCreateEvent
 import reactor.core.publisher.Mono
 
-class ResumeCommand : Command() {
-
+object ResumeCommand : Command {
     override fun execute(event: MessageCreateEvent, guildId: Snowflake): Mono<Void> {
         return GuildManager.audioMono(guildId)
             .map { resume(it) }
@@ -25,5 +24,4 @@ class ResumeCommand : Command() {
             player.isPaused = false
         }
     }
-
 }

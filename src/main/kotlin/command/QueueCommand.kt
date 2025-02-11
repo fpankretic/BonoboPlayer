@@ -10,8 +10,7 @@ import util.*
 import util.EnvironmentValue.PREFIX
 import kotlin.math.max
 
-class QueueCommand : Command() {
-
+object QueueCommand : Command {
     override fun execute(event: MessageCreateEvent, guildId: Snowflake): Mono<Void> {
         val pageNumber = pageNumberFromMessage(event.message.content)
 
@@ -62,5 +61,4 @@ class QueueCommand : Command() {
             }
         }
     }
-
 }

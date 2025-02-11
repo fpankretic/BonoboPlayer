@@ -30,7 +30,6 @@ import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 
 class GuildAudio(private val client: GatewayDiscordClient, private val guildId: Snowflake) {
-
     private val logger = KotlinLogging.logger {}
 
     private val leaveDelay = Duration.ofMinutes(5)
@@ -226,5 +225,4 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
             .description(Message.INACTIVITY.message)
             .build()
     }
-
 }
