@@ -8,6 +8,7 @@ import discord4j.core.`object`.VoiceState
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.reactor.mono
 import reactor.core.publisher.Mono
+import reactor.core.scheduler.Schedulers
 
 class VoiceStateUpdatedHandler {
 
@@ -17,7 +18,7 @@ class VoiceStateUpdatedHandler {
         val guildId = event.current.guildId
         val userId = event.current.userId
 
-        if (userId.equals(event.client.selfId)) {
+        if (userId.equals(event.client.selfId) && event.isMoveEvent.not()) {
             if (event.isLeaveEvent) {
                 GuildManager.destroyAudio(guildId)
                 return mono { event.client.voiceConnectionRegistry }
@@ -25,10 +26,18 @@ class VoiceStateUpdatedHandler {
                     .flatMap { it.disconnect() }
                     .onErrorComplete()
             }
+
+            // TODO: Implement the following:
+            // If bot is moved to another channel that is empty, it should leave
+            // If bot is moved to another channel that is not empty, it should stay
+            // If somebody joins the channel, bot should stay -> IMPLEMENTED
+            // In theory, event.isMoveEvent.not() should be enough to handle the above cases
+
             return mono { null }
         }
 
         return mono { GuildManager.audio(guildId) }
+            .publishOn(Schedulers.boundedElastic())
             .filter { isMovementEvent(event) }
             .flatMap { updateBot(it, guildId, event) }
             .onErrorComplete()
