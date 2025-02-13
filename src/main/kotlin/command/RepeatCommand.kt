@@ -8,7 +8,7 @@ import kotlinx.coroutines.reactor.mono
 import reactor.core.publisher.Mono
 import util.simpleMessageEmbed
 
-object RepeatCommand : Command {g
+object RepeatCommand : Command {
     override fun execute(event: MessageCreateEvent, guildId: Snowflake): Mono<Void> {
         if (GuildManager.audioExists(guildId).not()) {
             return mono { null }
