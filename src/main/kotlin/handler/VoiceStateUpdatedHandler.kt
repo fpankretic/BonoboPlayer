@@ -27,12 +27,6 @@ class VoiceStateUpdatedHandler {
                     .onErrorComplete()
             }
 
-            // TODO: Implement the following:
-            // If bot is moved to another channel that is empty, it should leave
-            // If bot is moved to another channel that is not empty, it should stay
-            // If somebody joins the channel, bot should stay -> IMPLEMENTED
-            // In theory, event.isMoveEvent.not() should be enough to handle the above cases
-
             return mono { null }
         }
 
