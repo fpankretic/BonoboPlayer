@@ -17,7 +17,7 @@ class VoiceStateUpdatedHandler {
         val guildId = event.current.guildId
         val userId = event.current.userId
 
-        if (userId.equals(event.client.selfId)) {
+        if (userId.equals(event.client.selfId) && event.isMoveEvent.not()) {
             if (event.isLeaveEvent) {
                 GuildManager.destroyAudio(guildId)
                 return mono { event.client.voiceConnectionRegistry }
@@ -25,6 +25,7 @@ class VoiceStateUpdatedHandler {
                     .flatMap { it.disconnect() }
                     .onErrorComplete()
             }
+
             return mono { null }
         }
 
