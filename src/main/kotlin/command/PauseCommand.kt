@@ -7,8 +7,7 @@ import discord4j.core.event.domain.message.MessageCreateEvent
 import kotlinx.coroutines.reactor.mono
 import reactor.core.publisher.Mono
 
-class PauseCommand : Command() {
-
+object PauseCommand : Command {
     override fun execute(event: MessageCreateEvent, guildId: Snowflake): Mono<Void> {
         return GuildManager.audioMono(guildId)
             .flatMap { pauseOrResume(it, event, guildId) }
@@ -25,11 +24,10 @@ class PauseCommand : Command() {
 
         return if (player.isPaused) {
             guildAudio.cancelLeave()
-            ResumeCommand().execute(event, guildId)
+            ResumeCommand.execute(event, guildId)
         } else {
             player.isPaused = true
             mono { null }
         }
     }
-
 }

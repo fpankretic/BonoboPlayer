@@ -15,7 +15,7 @@ import reactor.core.publisher.Mono
 import util.monoOptional
 import java.util.*
 
-class JoinCommand : Command() {
+object JoinCommand : Command {
 
     val logger = KotlinLogging.logger {}
 

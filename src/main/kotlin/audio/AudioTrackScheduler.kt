@@ -21,7 +21,6 @@ data class SongRequest(val audioTrack: AudioTrack, val requestedBy: RequestedBy)
 enum class QueueType { NORMAL, REPEAT }
 
 class AudioTrackScheduler private constructor() : AudioEventAdapter() {
-
     private val logger = KotlinLogging.logger {}
 
     private lateinit var player: AudioPlayer
@@ -224,5 +223,4 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
     private fun exceptionOccurredMessage(track: AudioTrack): EmbedCreateSpec {
         return simpleMessageEmbed("An error occurred while playing ${track.info.title}.")
     }
-
 }

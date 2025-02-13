@@ -9,7 +9,7 @@ import util.Message
 import util.sendSwitchMessage
 import util.simpleMessageEmbed
 
-class RemoveCommand : Command() {
+object RemoveCommand : Command {
     override fun execute(event: MessageCreateEvent, guildId: Snowflake): Mono<Void> {
         return GuildManager.audioMono(guildId)
             .filter { it.isQueueEmpty().not() }
@@ -30,5 +30,4 @@ class RemoveCommand : Command() {
             guildAudio.sendMessage(simpleMessageEmbed(Message.QUEUE_EMPTY.message))
         }
     }
-
 }

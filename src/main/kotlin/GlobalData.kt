@@ -12,66 +12,64 @@ import util.EnvironmentManager
 import util.EnvironmentValue.*
 import com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeAudioSourceManager as YoutubeAudioSourceManagerDeprecated
 
-class GlobalData {
-    companion object {
-        val PLAYER_MANAGER: AudioPlayerManager = DefaultAudioPlayerManager()
+object GlobalData {
+    val PLAYER_MANAGER: AudioPlayerManager = DefaultAudioPlayerManager()
 
-        init {
-            PLAYER_MANAGER.configuration.setFrameBufferFactory { bufferDuration, format, stopping ->
-                NonAllocatingAudioFrameBuffer(bufferDuration, format, stopping)
-            }
-            PLAYER_MANAGER.configuration.isFilterHotSwapEnabled = true
+    init {
+        PLAYER_MANAGER.configuration.setFrameBufferFactory { bufferDuration, format, stopping ->
+            NonAllocatingAudioFrameBuffer(bufferDuration, format, stopping)
+        }
+        PLAYER_MANAGER.configuration.isFilterHotSwapEnabled = true
 
-            // Setup Youtube source
-            val clients = arrayOf(
-                MusicWithThumbnail(),
-                WebWithThumbnail(),
-                WebEmbeddedWithThumbnail(),
-                MWebWithThumbnail(),
-                TvHtml5EmbeddedWithThumbnail()
-            )
-            val youtubeSource = YoutubeAudioSourceManager(*clients)
+        // Setup Youtube source
+        val clients = arrayOf(
+            MusicWithThumbnail(),
+            WebWithThumbnail(),
+            WebEmbeddedWithThumbnail(),
+            MWebWithThumbnail(),
+            TvHtml5EmbeddedWithThumbnail()
+        )
+        val youtubeSource = YoutubeAudioSourceManager(*clients)
 
-            // Set PoToken and VisitorData
-            if (EnvironmentManager.valueOf(PO_TOKEN).isEmpty() || EnvironmentManager.valueOf(VISITOR_DATA).isEmpty()) {
-                val poToken = EnvironmentManager.valueOf(PO_TOKEN)
-                val visitorData = EnvironmentManager.valueOf(VISITOR_DATA)
-                WebWithThumbnail.setPoTokenAndVisitorData(poToken, visitorData)
-                WebEmbeddedWithThumbnail.setPoTokenAndVisitorData(poToken, visitorData)
-                MWebWithThumbnail.setPoTokenAndVisitorData(poToken, visitorData)
-            }
+        // Set PoToken and VisitorData
+        if (EnvironmentManager.valueOf(PO_TOKEN).isEmpty() || EnvironmentManager.valueOf(VISITOR_DATA).isEmpty()) {
+            val poToken = EnvironmentManager.valueOf(PO_TOKEN)
+            val visitorData = EnvironmentManager.valueOf(VISITOR_DATA)
+            WebWithThumbnail.setPoTokenAndVisitorData(poToken, visitorData)
+            WebEmbeddedWithThumbnail.setPoTokenAndVisitorData(poToken, visitorData)
+            MWebWithThumbnail.setPoTokenAndVisitorData(poToken, visitorData)
+        }
 
-            // Set refresh token
-            if (EnvironmentManager.valueOf(REFRESH_TOKEN).isNotEmpty()) {
-                youtubeSource.useOauth2(EnvironmentManager.valueOf(REFRESH_TOKEN), true)
-            }
+        // Set refresh token
+        if (EnvironmentManager.valueOf(REFRESH_TOKEN).isNotEmpty()) {
+            youtubeSource.useOauth2(EnvironmentManager.valueOf(REFRESH_TOKEN), true)
+        }
 
-            // Set Spotify source
-            val spotifySource = SpotifySourceManager(
-                null,
-                EnvironmentManager.valueOf(SPOTIFY_CLIENT_ID),
-                EnvironmentManager.valueOf(SPOTIFY_CLIENT_SECRET),
-                "HR",
-                PLAYER_MANAGER
-            )
+        // Set Spotify source
+        val spotifySource = SpotifySourceManager(
+            null,
+            EnvironmentManager.valueOf(SPOTIFY_CLIENT_ID),
+            EnvironmentManager.valueOf(SPOTIFY_CLIENT_SECRET),
+            "HR",
+            PLAYER_MANAGER
+        )
 
-            // Register sources
-            PLAYER_MANAGER.registerSourceManagers(youtubeSource)
-            PLAYER_MANAGER.registerSourceManager(spotifySource)
+        // Register sources
+        PLAYER_MANAGER.registerSourceManagers(youtubeSource)
+        PLAYER_MANAGER.registerSourceManager(spotifySource)
 
-            AudioSourceManagers.registerRemoteSources(PLAYER_MANAGER, YoutubeAudioSourceManagerDeprecated::class.java)
-            // AudioSourceManagers.registerLocalSource(PLAYER_MANAGER) TODO: Implement local source
+        AudioSourceManagers.registerRemoteSources(PLAYER_MANAGER, YoutubeAudioSourceManagerDeprecated::class.java)
+        // AudioSourceManagers.registerLocalSource(PLAYER_MANAGER) TODO: Implement local source
 
-            // Setup IPv6 rotator
-            if (EnvironmentManager.valueOf(IPV6_ENABLED).toBoolean()) {
-                val ipv6Block = Ipv6Block(EnvironmentManager.valueOf(IPV6_CIDR))
-                val routePlanner = NanoIpRoutePlanner(listOf(ipv6Block), true)
-                val rotator = YoutubeIpRotatorSetup(routePlanner)
+        // Setup IPv6 rotator
+        if (EnvironmentManager.valueOf(IPV6_ENABLED).toBoolean()) {
+            val ipv6Block = Ipv6Block(EnvironmentManager.valueOf(IPV6_CIDR))
+            val routePlanner = NanoIpRoutePlanner(listOf(ipv6Block), true)
+            val rotator = YoutubeIpRotatorSetup(routePlanner)
 
-                rotator.forConfiguration(youtubeSource.httpInterfaceManager, false)
-                    .withMainDelegateFilter(null)
-                    .setup()
-            }
+            rotator.forConfiguration(youtubeSource.httpInterfaceManager, false)
+                .withMainDelegateFilter(null)
+                .setup()
         }
     }
 }

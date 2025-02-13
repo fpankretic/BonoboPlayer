@@ -10,7 +10,7 @@ import util.Message
 import util.monoOptional
 import util.sendSwitchMessage
 
-class SearchCommand : Command() {
+object SearchCommand : Command {
     private val logger = KotlinLogging.logger {}
 
     override fun execute(event: MessageCreateEvent, guildId: Snowflake): Mono<Void> {
@@ -31,8 +31,7 @@ class SearchCommand : Command() {
         val query = "ytsearch: ${event.message.content.substringAfter(" ").trim()}"
         logger.debug { "Parsed query \"$query\"." }
 
-        JoinCommand().joinVoiceChannel(event.message.channel, event.member, event.guildId.get()).block()
+        JoinCommand.joinVoiceChannel(event.message.channel, event.member, event.guildId.get()).block()
         GuildManager.audio(guildId).addHandler(SearchAudioLoadResultHandler(event.guildId.get()), query)
     }
-
 }

@@ -9,7 +9,7 @@ import util.defaultEmbedBuilder
 class HelpCommand(
     private val longCommands: MutableMap<String, Command>,
     private val shortCommands: MutableMap<String, Command>
-) : Command() {
+) : Command {
 
     override fun execute(event: MessageCreateEvent, guildId: Snowflake): Mono<Void> {
         val messages = longCommands

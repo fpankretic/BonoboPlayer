@@ -9,8 +9,7 @@ import util.Message
 import util.monoOptional
 import util.sendSwitchMessage
 
-class LeaveCommand : Command() {
-
+object LeaveCommand : Command {
     override fun execute(event: MessageCreateEvent, guildId: Snowflake): Mono<Void> {
         return monoOptional(event.member)
             .flatMap { it.voiceState }
@@ -29,5 +28,4 @@ class LeaveCommand : Command() {
     override fun help(): String {
         return "Leaves the voice channel."
     }
-
 }

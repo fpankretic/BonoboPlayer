@@ -12,6 +12,7 @@ import util.EnvironmentValue.IPV6_ENABLED
 fun main() {
     val logger = KotlinLogging.logger {}
 
+    // Enable IPv6 if specified
     if (EnvironmentManager.valueOf(IPV6_ENABLED).toBoolean()) {
         System.setProperty("java.net.preferIPv6Addresses", "true")
         System.setProperty("java.net.preferIPv4Stack", "false")
@@ -27,11 +28,8 @@ fun main() {
     // Initialize the player manager
     GlobalData.PLAYER_MANAGER
 
-    val messageCreatedHandler = MessageCreatedHandler()
-    val voiceStateUpdatedHandler = VoiceStateUpdatedHandler()
-
-    gateway.on(MessageCreateEvent::class.java) { messageCreatedHandler.handle(it) }.subscribe()
-    gateway.on(VoiceStateUpdateEvent::class.java) { voiceStateUpdatedHandler.handle(it) }.subscribe()
+    gateway.on(MessageCreateEvent::class.java) { MessageCreatedHandler.handle(it) }.subscribe()
+    gateway.on(VoiceStateUpdateEvent::class.java) { VoiceStateUpdatedHandler.handle(it) }.subscribe()
 
     gateway.onDisconnect().block()
 }

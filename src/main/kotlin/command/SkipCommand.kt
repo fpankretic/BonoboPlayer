@@ -9,8 +9,7 @@ import util.Message
 import util.sendSwitchMessage
 import util.simpleMessageEmbed
 
-class SkipCommand : Command() {
-
+object SkipCommand : Command {
     override fun execute(event: MessageCreateEvent, guildId: Snowflake): Mono<Void> {
         return GuildManager.audioMono(guildId)
             .switchIfEmpty(sendSwitchMessage(event, Message.QUEUE_EMPTY))
@@ -36,5 +35,4 @@ class SkipCommand : Command() {
     private fun correctArguments(event: MessageCreateEvent): Boolean {
         return event.message.content.split(" ").size == 1
     }
-
 }

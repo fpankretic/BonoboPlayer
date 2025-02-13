@@ -8,7 +8,7 @@ import reactor.core.publisher.Mono
 import util.Message
 import util.sendSwitchMessage
 
-class SkipToCommand : Command() {
+object SkipToCommand : Command {
     override fun execute(event: MessageCreateEvent, guildId: Snowflake): Mono<Void> {
         return GuildManager.audioMono(guildId)
             .switchIfEmpty(sendSwitchMessage(event, Message.QUEUE_EMPTY))
@@ -24,5 +24,4 @@ class SkipToCommand : Command() {
     private fun skipSongs(guildAudio: GuildAudio, event: MessageCreateEvent) {
         event.message.content.split(" ")[1].toInt().let { it != 0 && guildAudio.skipTo(it) }
     }
-
 }

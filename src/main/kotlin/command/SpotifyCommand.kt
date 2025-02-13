@@ -1,7 +1,6 @@
 package command
 
-class SpotifyCommand : PlayCommand() {
-
+object SpotifyCommand : PlayCommandBase() {
     override fun help(): String {
         return "Searches for a song on Spotify."
     }

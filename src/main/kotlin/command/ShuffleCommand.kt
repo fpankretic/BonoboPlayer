@@ -9,8 +9,7 @@ import util.Message
 import util.sendSwitchMessage
 import util.simpleMessageEmbed
 
-class ShuffleCommand : Command() {
-
+object ShuffleCommand : Command {
     override fun execute(event: MessageCreateEvent, guildId: Snowflake): Mono<Void> {
         return GuildManager.audioMono(guildId)
             .filter { it.isQueueEmpty().not() }
@@ -28,5 +27,4 @@ class ShuffleCommand : Command() {
             guildAudio.sendMessage(simpleMessageEmbed(Message.QUEUE_SHUFFLED.message))
         }
     }
-
 }
