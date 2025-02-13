@@ -8,7 +8,6 @@ import discord4j.core.`object`.VoiceState
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.reactor.mono
 import reactor.core.publisher.Mono
-import reactor.core.scheduler.Schedulers
 
 class VoiceStateUpdatedHandler {
 
@@ -31,7 +30,6 @@ class VoiceStateUpdatedHandler {
         }
 
         return mono { GuildManager.audio(guildId) }
-            .publishOn(Schedulers.boundedElastic())
             .filter { isMovementEvent(event) }
             .flatMap { updateBot(it, guildId, event) }
             .onErrorComplete()
