@@ -76,7 +76,7 @@ class DefaultAudioLoadResultHandler(
         guildAudio.removeHandler(this)
         when {
             retried -> handleSecondLoadFail(exception)
-            track.contains("spsearch") -> handleSpotifyLoadFail()
+            track.contains("ytmsearch") -> handleFirstLoadFail()
             else -> handleGenericLoadFail()
         }
     }
@@ -87,10 +87,13 @@ class DefaultAudioLoadResultHandler(
             logger.error { exception.stackTraceToString() }
         }
         guildAudio.sendMessage(simpleMessageEmbed("Failed to load track."))
+        if (guildAudio.isQueueEmpty() && guildAudio.isSongLoaded().not()) {
+            guildAudio.scheduleLeave()
+        }
     }
 
-    private fun handleSpotifyLoadFail() {
-        val newTrack = track.replace("spsearch", "ytsearch")
+    private fun handleFirstLoadFail() {
+        val newTrack = track.replace("ytmsearch", "ytsearch")
         logger.info { "Retrying to load track ${newTrack.replace("ytsearch: ", "")} with youtube." }
         guildAudio.addHandler(DefaultAudioLoadResultHandler(guildId, author, newTrack, true), newTrack)
     }

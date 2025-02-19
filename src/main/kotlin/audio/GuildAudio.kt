@@ -121,8 +121,8 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
         return scheduler.requestedBy()
     }
 
-    fun clearQueue() {
-        scheduler.clearQueue()
+    fun clearQueue(): Boolean {
+        return scheduler.clearQueue()
     }
 
     fun skipTo(position: Int): Boolean {

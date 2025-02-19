@@ -124,8 +124,13 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
         return true
     }
 
-    fun clearQueue() {
+    fun clearQueue(): Boolean {
+        if (queue.isEmpty()) {
+            return false
+        }
+
         queue.clear()
+        return true
     }
 
     fun currentSong(): Optional<AudioTrack> {
