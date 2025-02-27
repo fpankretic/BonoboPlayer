@@ -16,8 +16,8 @@ object MemberJoinHandler {
     private val defaultRoleId = EnvironmentManager.valueOf(DEFAULT_ROLE_ID)
 
     fun handle(event: MemberJoinEvent): Mono<Void> {
-        logger.info { "Member joined: ${event.member.username}" }
-        logger.info { "Guild ID: ${event.guildId.asString()}" }
+        logger.debug { "Member joined: ${event.member.username}" }
+        logger.debug { "Guild ID: ${event.guildId.asString()}" }
 
         if (event.guildId.asString() !in enabledGuilds || defaultRoleId.isEmpty()) {
             return mono { null }
