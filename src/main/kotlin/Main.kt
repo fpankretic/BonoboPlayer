@@ -1,6 +1,9 @@
 import discord4j.core.DiscordClient
 import discord4j.core.event.domain.VoiceStateUpdateEvent
+import discord4j.core.event.domain.guild.MemberJoinEvent
 import discord4j.core.event.domain.message.MessageCreateEvent
+import discord4j.gateway.intent.IntentSet
+import handler.MemberJoinHandler
 import handler.MessageCreatedHandler
 import handler.VoiceStateUpdatedHandler
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -20,7 +23,7 @@ fun main() {
     }
 
     val client = DiscordClient.create(EnvironmentManager.valueOf(EnvironmentValue.DISCORD_API_TOKEN))
-    val gateway = client.login().block() ?: return
+    val gateway = client.gateway().setEnabledIntents(IntentSet.all()).login().block()!!
 
     // Start web server for updates
     startWebServer(gateway)
@@ -30,6 +33,7 @@ fun main() {
 
     gateway.on(MessageCreateEvent::class.java) { MessageCreatedHandler.handle(it) }.subscribe()
     gateway.on(VoiceStateUpdateEvent::class.java) { VoiceStateUpdatedHandler.handle(it) }.subscribe()
+    gateway.on(MemberJoinEvent::class.java) { MemberJoinHandler.handle(it) }.subscribe()
 
     gateway.onDisconnect().block()
 }
