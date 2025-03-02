@@ -20,7 +20,36 @@ data class RequestedBy(val user: String, val avatarUrl: String, val time: Instan
 data class SongRequest(val audioTrack: AudioTrack, val requestedBy: RequestedBy)
 enum class QueueType { NORMAL, REPEAT }
 
-class AudioTrackScheduler private constructor() : AudioEventAdapter() {
+interface TrackScheduler {
+    // Lifecycle methods
+    fun destroy()
+
+    // Playing methods
+    fun play(songRequest: SongRequest): Boolean
+    fun next(): Boolean
+
+    // Metadata methods
+    fun currentSong(): Optional<AudioTrack>
+    fun requestedBy(): RequestedBy?
+
+    // Modification methods
+    fun skipInQueue(position: Int): Boolean
+    fun skipTo(position: Int): Boolean
+    fun moveSong(from: Int, to: Int): Boolean
+
+    // Queue methods
+    fun getQueueCopy(): List<AudioTrack>
+    fun clearQueue()
+    fun changeQueueRepeatStatus()
+    fun shuffleQueue(): Boolean
+
+    // Status methods
+    fun isQueueEmpty(): Boolean
+    fun isSongLoaded(): Boolean
+    fun isRepeating(): Boolean
+}
+
+class AudioTrackScheduler private constructor() : AudioEventAdapter(), TrackScheduler {
     private val logger = KotlinLogging.logger {}
 
     private lateinit var player: AudioPlayer
@@ -71,23 +100,19 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
         logger.error { "Track ${track!!.info.title} got stuck, skipping." }
     }
 
-    fun play(songRequest: SongRequest): Boolean {
+    override fun play(songRequest: SongRequest): Boolean {
         return play(songRequest, false)
     }
 
-    fun getQueueCopy(): List<AudioTrack> {
+    override fun getQueueCopy(): List<AudioTrack> {
         return Collections.unmodifiableList(queue.map { it.audioTrack })
     }
 
-    fun getQueueSize(): Int {
-        return queue.size
-    }
-
-    fun isQueueEmpty(): Boolean {
+    override fun isQueueEmpty(): Boolean {
         return queue.isEmpty()
     }
 
-    fun next(): Boolean {
+    override fun next(): Boolean {
         if (queue.isEmpty()) {
             clearQueueAndTrack()
             return false
@@ -96,8 +121,8 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
         return play(queue.removeAt(0), true)
     }
 
-    fun skipInQueue(position: Int): Boolean {
-        if (queue.size < position) {
+    override fun skipInQueue(position: Int): Boolean {
+        if (queue.size < position || position < 0) {
             return false
         }
 
@@ -108,7 +133,7 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
         return true
     }
 
-    fun skipTo(position: Int): Boolean {
+    override fun skipTo(position: Int): Boolean {
         if (position < 1 || position > queue.size) {
             return false
         }
@@ -124,24 +149,28 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
         return true
     }
 
-    fun clearQueue() {
+    override fun clearQueue() {
         queue.clear()
     }
 
-    fun currentSong(): Optional<AudioTrack> {
+    override fun currentSong(): Optional<AudioTrack> {
         return Optional.ofNullable(player.playingTrack)
     }
 
-    fun requestedBy(): RequestedBy? {
+    override fun isSongLoaded(): Boolean {
+        return player.playingTrack != null
+    }
+
+    override fun requestedBy(): RequestedBy? {
         return currentSongRequest?.requestedBy
     }
 
-    fun destroy() {
+    override fun destroy() {
         player.destroy()
         clearQueueAndTrack()
     }
 
-    fun changeQueueStatus() {
+    override fun changeQueueRepeatStatus() {
         if (queueType.get() == QueueType.NORMAL) {
             queueType.set(QueueType.REPEAT)
         } else {
@@ -149,11 +178,11 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
         }
     }
 
-    fun repeating(): Boolean {
+    override fun isRepeating(): Boolean {
         return queueType.get() == QueueType.REPEAT
     }
 
-    fun shuffleQueue(): Boolean {
+    override fun shuffleQueue(): Boolean {
         if (queue.size < 2) {
             return false
         }
@@ -162,7 +191,7 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
         return true
     }
 
-    fun moveSong(from: Int, to: Int): Boolean {
+    override fun moveSong(from: Int, to: Int): Boolean {
         if (from < 1 || from > queue.size || to < 1 || to > queue.size || from == to) {
             return false
         }
