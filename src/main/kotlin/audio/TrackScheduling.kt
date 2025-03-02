@@ -30,5 +30,4 @@ interface TrackScheduling {
     fun isQueueEmpty(): Boolean
     fun isSongLoaded(): Boolean
     fun isRepeating(): Boolean
-
 }
