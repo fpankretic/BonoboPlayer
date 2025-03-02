@@ -20,50 +20,16 @@ data class RequestedBy(val user: String, val avatarUrl: String, val time: Instan
 data class SongRequest(val audioTrack: AudioTrack, val requestedBy: RequestedBy)
 enum class QueueType { NORMAL, REPEAT }
 
-interface TrackScheduler {
-    // Lifecycle methods
-    fun destroy()
-
-    // Playing methods
-    fun play(songRequest: SongRequest): Boolean
-    fun next(): Boolean
-
-    // Metadata methods
-    fun currentSong(): Optional<AudioTrack>
-    fun requestedBy(): RequestedBy?
-
-    // Modification methods
-    fun skipInQueue(position: Int): Boolean
-    fun skipTo(position: Int): Boolean
-    fun moveSong(from: Int, to: Int): Boolean
-
-    // Queue methods
-    fun getQueueCopy(): List<AudioTrack>
-    fun clearQueue()
-    fun changeQueueRepeatStatus()
-    fun shuffleQueue(): Boolean
-
-    // Status methods
-    fun isQueueEmpty(): Boolean
-    fun isSongLoaded(): Boolean
-    fun isRepeating(): Boolean
-}
-
-class AudioTrackScheduler private constructor() : AudioEventAdapter(), TrackScheduler {
+class AudioTrackScheduler(
+    private var player: AudioPlayer,
+    private var guildId: Snowflake
+): AudioEventAdapter(), TrackScheduling {
     private val logger = KotlinLogging.logger {}
-
-    private lateinit var player: AudioPlayer
-    private lateinit var guildId: Snowflake
-
-    private val queue: MutableList<SongRequest> = Collections.synchronizedList(mutableListOf())
-    private val queueType: AtomicReference<QueueType> = AtomicReference(QueueType.NORMAL)
 
     private var currentSongRequest: SongRequest? = null
 
-    constructor(player: AudioPlayer, guildId: Snowflake) : this() {
-        this.player = player
-        this.guildId = guildId;
-    }
+    private val queue = Collections.synchronizedList(mutableListOf<SongRequest>())
+    private val queueType = AtomicReference(QueueType.NORMAL)
 
     override fun onTrackStart(player: AudioPlayer?, track: AudioTrack?) {
         val guildName = GuildManager.audio(guildId).guildName
@@ -100,17 +66,11 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter(), TrackSche
         logger.error { "Track ${track!!.info.title} got stuck, skipping." }
     }
 
-    override fun play(songRequest: SongRequest): Boolean {
-        return play(songRequest, false)
-    }
+    override fun play(songRequest: SongRequest) = play(songRequest, false)
 
-    override fun getQueueCopy(): List<AudioTrack> {
-        return Collections.unmodifiableList(queue.map { it.audioTrack })
-    }
+    override fun getQueueCopy(): List<AudioTrack> = Collections.unmodifiableList(queue.map { it.audioTrack })
 
-    override fun isQueueEmpty(): Boolean {
-        return queue.isEmpty()
-    }
+    override fun isQueueEmpty() = queue.isEmpty()
 
     override fun next(): Boolean {
         if (queue.isEmpty()) {
@@ -122,7 +82,7 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter(), TrackSche
     }
 
     override fun skipInQueue(position: Int): Boolean {
-        if (queue.size < position || position < 0) {
+        if (position !in 1..queue.size) {
             return false
         }
 
@@ -134,11 +94,11 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter(), TrackSche
     }
 
     override fun skipTo(position: Int): Boolean {
-        if (position < 1 || position > queue.size) {
+        if (position !in 1..queue.size) {
             return false
         }
 
-        for (i in 1 until position) {
+        repeat(position - 1) {
             val track = queue.removeAt(0).audioTrack
             logger.info { "Removed ${track.info.title} from queue." }
         }
@@ -149,21 +109,13 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter(), TrackSche
         return true
     }
 
-    override fun clearQueue() {
-        queue.clear()
-    }
+    override fun clearQueue() = queue.clear()
 
-    override fun currentSong(): Optional<AudioTrack> {
-        return Optional.ofNullable(player.playingTrack)
-    }
+    override fun currentSong() = Optional.ofNullable(player.playingTrack)
 
-    override fun isSongLoaded(): Boolean {
-        return player.playingTrack != null
-    }
+    override fun isSongLoaded() = player.playingTrack != null
 
-    override fun requestedBy(): RequestedBy? {
-        return currentSongRequest?.requestedBy
-    }
+    override fun requestedBy() = currentSongRequest?.requestedBy
 
     override fun destroy() {
         player.destroy()
@@ -178,9 +130,7 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter(), TrackSche
         }
     }
 
-    override fun isRepeating(): Boolean {
-        return queueType.get() == QueueType.REPEAT
-    }
+    override fun isRepeating() = queueType.get() == QueueType.REPEAT
 
     override fun shuffleQueue(): Boolean {
         if (queue.size < 2) {
@@ -192,7 +142,7 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter(), TrackSche
     }
 
     override fun moveSong(from: Int, to: Int): Boolean {
-        if (from < 1 || from > queue.size || to < 1 || to > queue.size || from == to) {
+        if (from !in 1..queue.size || to !in 1..queue.size || from == to) {
             return false
         }
 
@@ -249,7 +199,6 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter(), TrackSche
             .build()
     }
 
-    private fun exceptionOccurredMessage(track: AudioTrack): EmbedCreateSpec {
-        return simpleMessageEmbed("An error occurred while playing ${track.info.title}.")
-    }
+    private fun exceptionOccurredMessage(track: AudioTrack) =
+        simpleMessageEmbed("An error occurred while playing ${track.info.title}.")
 }

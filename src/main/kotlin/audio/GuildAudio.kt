@@ -32,21 +32,21 @@ class GuildAudio(
     private val guildId: Snowflake,
     val player: AudioPlayer = GlobalData.PLAYER_MANAGER.createPlayer(),
     private val scheduler: AudioTrackScheduler = AudioTrackScheduler(player, guildId)
-) : TrackScheduler by scheduler {
+) : TrackScheduling by scheduler {
     private val logger = KotlinLogging.logger {}
 
     private val leaveDelay = Duration.ofMinutes(5)
     private val menuDelay = Duration.ofMinutes(1)
     private val removeDelay = Duration.ofSeconds(1)
 
-    val guildName: String = client.getGuildById(guildId).block()?.name ?: "Unknown"
+    val guildName = client.getGuildById(guildId).block()?.name ?: "Unknown"
 
-    private var destroyed: Boolean = false
-    private var messageChannelId: AtomicLong = AtomicLong()
-    private val leavingTask: AtomicReference<Disposable> = AtomicReference()
-    private val menusTasks: HashMap<String, AtomicReference<Disposable>> = hashMapOf()
-    private val loadResultHandlers: ConcurrentHashMap<AudioLoadResultHandler, Future<Void>> = ConcurrentHashMap()
-    private val equalizer: EqualizerFactory = EqualizerFactory()
+    private var destroyed = false
+    private val messageChannelId = AtomicLong()
+    private val leavingTask = AtomicReference<Disposable>()
+    private val menusTasks = hashMapOf<String, AtomicReference<Disposable>>()
+    private val loadResultHandlers = ConcurrentHashMap<AudioLoadResultHandler, Future<Void>>()
+    private val equalizer = EqualizerFactory()
 
     init {
         player.addListener(scheduler)
@@ -61,11 +61,10 @@ class GuildAudio(
         leavingTask.set(
             Mono.delay(leaveDelay, Schedulers.boundedElastic())
                 .filter { isLeavingScheduled() }
-                .map { client.voiceConnectionRegistry }
-                .flatMap { it.getVoiceConnection(guildId) }
+                .flatMap { client.voiceConnectionRegistry.getVoiceConnection(guildId) }
                 .flatMap { it.disconnect() }
                 .then(mono { sendMessage(leaveMessage()) })
-                .map { GuildManager.destroyAudio(guildId) }
+                .then(mono { GuildManager.destroyAudio(guildId) })
                 .subscribe()
         )
         logger.info { "Bot leave scheduled in guild: $guildName." }
@@ -77,9 +76,7 @@ class GuildAudio(
         logger.info { "Bot leave canceled in guild: $guildName." }
     }
 
-    fun isLeavingScheduled(): Boolean {
-        return leavingTask.get()?.isDisposed?.not() ?: false
-    }
+    fun isLeavingScheduled(): Boolean = leavingTask.get()?.isDisposed?.not() ?: false
 
     fun setMessageChannelId(messageChannelId: Snowflake) {
         this.messageChannelId.set(messageChannelId.asLong())
@@ -98,17 +95,10 @@ class GuildAudio(
         setButtonsComponentsTimeout(customId)
     }
 
-    override fun play(songRequest: SongRequest): Boolean {
-        val songRequestCopy = SongRequest(songRequest.audioTrack.makeClone(), songRequest.requestedBy)
-        return scheduler.play(songRequestCopy)
-    }
+    override fun play(songRequest: SongRequest) =
+        scheduler.play(SongRequest(songRequest.audioTrack.makeClone(), songRequest.requestedBy))
 
-    override fun skipInQueue(position: Int): Boolean {
-        if (position == 0) {
-            return next()
-        }
-        return scheduler.skipInQueue(position)
-    }
+    override fun skipInQueue(position: Int) = if (position == 0) next() else scheduler.skipInQueue(position)
 
     fun addHandler(loadResultHandler: AudioLoadResultHandler, query: String) {
         logger.debug { "GuildId: ${guildId.asLong()} Adding audio load result handler: ${loadResultHandler.hashCode()}" }
@@ -163,13 +153,8 @@ class GuildAudio(
         getMessageChannel().flatMap { it.createMessage(embedBuilder.build()) }.subscribe()
     }
 
-    private fun getMessageChannel(): Mono<MessageChannel> {
-        return client.getChannelById(Snowflake.of(messageChannelId.get())).map { it as MessageChannel }
-    }
+    private fun getMessageChannel() =
+        client.getChannelById(Snowflake.of(messageChannelId.get())).map { it as MessageChannel }
 
-    private fun leaveMessage(): EmbedCreateSpec {
-        return defaultEmbedBuilder()
-            .description(Message.INACTIVITY.message)
-            .build()
-    }
+    private fun leaveMessage() = defaultEmbedBuilder().description(Message.INACTIVITY.message).build()
 }
