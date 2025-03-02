@@ -8,9 +8,17 @@ import discord4j.core.`object`.VoiceState
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.reactor.mono
 import reactor.core.publisher.Mono
+import reactor.core.scheduler.Schedulers
+import util.EnvironmentManager
+import util.EnvironmentValue.JOIN_MUTE_GUILDS
+import util.EnvironmentValue.JOIN_MUTE_IDS
+import kotlin.math.log
 
 object VoiceStateUpdatedHandler {
     private val logger = KotlinLogging.logger {}
+
+    private val joinMuteIds = EnvironmentManager.valueOf(JOIN_MUTE_IDS).split(",").toSet()
+    private val joinMuteGuilds = EnvironmentManager.valueOf(JOIN_MUTE_GUILDS).split(",").toSet()
 
     fun handle(event: VoiceStateUpdateEvent): Mono<Void> {
         val guildId = event.current.guildId
@@ -26,6 +34,14 @@ object VoiceStateUpdatedHandler {
             }
 
             return mono { null }
+        }
+
+        if (isMuteEvent(event)) {
+            logger.debug { "Executing mute event" }
+            event.current.member
+                .subscribeOn(Schedulers.boundedElastic())
+                .flatMap { it.edit().withMute(true) }
+                .subscribe()
         }
 
         return mono { GuildManager.audio(guildId) }
@@ -72,5 +88,12 @@ object VoiceStateUpdatedHandler {
 
     private fun isMovementEvent(event: VoiceStateUpdateEvent): Boolean {
         return event.isJoinEvent || event.isLeaveEvent || event.isMoveEvent
+    }
+
+    private fun isMuteEvent(event: VoiceStateUpdateEvent): Boolean {
+        val isJoinEvent = event.isJoinEvent
+        val isMuteGuild = joinMuteGuilds.contains(event.current.guildId.asString())
+        val isMuteUser = joinMuteIds.contains(event.current.userId.asString())
+        return isJoinEvent && isMuteGuild && isMuteUser
     }
 }

@@ -27,4 +27,6 @@ enum class EnvironmentValue {
     ALLOWED_CHANNELS,
     ADD_DEFAULT_ROLE_GUILDS,
     DEFAULT_ROLE_ID,
+    JOIN_MUTE_IDS,
+    JOIN_MUTE_GUILDS
 }

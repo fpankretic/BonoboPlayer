@@ -1,4 +1,5 @@
 import discord4j.core.DiscordClient
+import discord4j.core.GatewayDiscordClient
 import discord4j.core.event.domain.VoiceStateUpdateEvent
 import discord4j.core.event.domain.guild.MemberJoinEvent
 import discord4j.core.event.domain.message.MessageCreateEvent
@@ -10,17 +11,13 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import server.startWebServer
 import util.EnvironmentManager
 import util.EnvironmentValue
-import util.EnvironmentValue.IPV6_ENABLED
+import util.EnvironmentValue.*
+
+val logger = KotlinLogging.logger {}
 
 fun main() {
-    val logger = KotlinLogging.logger {}
-
     // Enable IPv6 if specified
-    if (EnvironmentManager.valueOf(IPV6_ENABLED).toBoolean()) {
-        System.setProperty("java.net.preferIPv6Addresses", "true")
-        System.setProperty("java.net.preferIPv4Stack", "false")
-        logger.info { "Bot is in IPv6 mode." }
-    }
+    enableIPv6()
 
     val client = DiscordClient.create(EnvironmentManager.valueOf(EnvironmentValue.DISCORD_API_TOKEN))
     val gateway = client.gateway().setEnabledIntents(IntentSet.all()).login().block()!!
@@ -33,7 +30,23 @@ fun main() {
 
     gateway.on(MessageCreateEvent::class.java) { MessageCreatedHandler.handle(it) }.subscribe()
     gateway.on(VoiceStateUpdateEvent::class.java) { VoiceStateUpdatedHandler.handle(it) }.subscribe()
-    gateway.on(MemberJoinEvent::class.java) { MemberJoinHandler.handle(it) }.subscribe()
+    enableMemberJoinHandler(gateway)
 
     gateway.onDisconnect().block()
+}
+
+fun enableIPv6() {
+    if (EnvironmentManager.valueOf(IPV6_ENABLED).toBoolean()) {
+        System.setProperty("java.net.preferIPv6Addresses", "true")
+        System.setProperty("java.net.preferIPv4Stack", "false")
+        logger.info { "Bot is in IPv6 mode." }
+    }
+}
+
+fun enableMemberJoinHandler(gateway: GatewayDiscordClient) {
+    val defaultRoleGuilds = EnvironmentManager.valueOf(ADD_DEFAULT_ROLE_GUILDS).split(",").toSet()
+    val defaultRoleId = EnvironmentManager.valueOf(DEFAULT_ROLE_ID)
+    if (defaultRoleGuilds.isNotEmpty() && defaultRoleId.isNotEmpty()) {
+        gateway.on(MemberJoinEvent::class.java) { MemberJoinHandler.handle(it) }.subscribe()
+    }
 }
