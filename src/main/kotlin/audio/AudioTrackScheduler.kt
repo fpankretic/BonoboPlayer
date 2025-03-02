@@ -20,21 +20,16 @@ data class RequestedBy(val user: String, val avatarUrl: String, val time: Instan
 data class SongRequest(val audioTrack: AudioTrack, val requestedBy: RequestedBy)
 enum class QueueType { NORMAL, REPEAT }
 
-class AudioTrackScheduler private constructor() : AudioEventAdapter() {
+class AudioTrackScheduler(
+    private var player: AudioPlayer,
+    private var guildId: Snowflake
+): AudioEventAdapter(), TrackScheduling {
     private val logger = KotlinLogging.logger {}
-
-    private lateinit var player: AudioPlayer
-    private lateinit var guildId: Snowflake
-
-    private val queue: MutableList<SongRequest> = Collections.synchronizedList(mutableListOf())
-    private val queueType: AtomicReference<QueueType> = AtomicReference(QueueType.NORMAL)
 
     private var currentSongRequest: SongRequest? = null
 
-    constructor(player: AudioPlayer, guildId: Snowflake) : this() {
-        this.player = player
-        this.guildId = guildId;
-    }
+    private val queue = Collections.synchronizedList(mutableListOf<SongRequest>())
+    private val queueType = AtomicReference(QueueType.NORMAL)
 
     override fun onTrackStart(player: AudioPlayer?, track: AudioTrack?) {
         val guildName = GuildManager.audio(guildId).guildName
@@ -71,23 +66,13 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
         logger.error { "Track ${track!!.info.title} got stuck, skipping." }
     }
 
-    fun play(songRequest: SongRequest): Boolean {
-        return play(songRequest, false)
-    }
+    override fun play(songRequest: SongRequest) = play(songRequest, false)
 
-    fun getQueueCopy(): List<AudioTrack> {
-        return Collections.unmodifiableList(queue.map { it.audioTrack })
-    }
+    override fun getQueueCopy(): List<AudioTrack> = Collections.unmodifiableList(queue.map { it.audioTrack })
 
-    fun getQueueSize(): Int {
-        return queue.size
-    }
+    override fun isQueueEmpty() = queue.isEmpty()
 
-    fun isQueueEmpty(): Boolean {
-        return queue.isEmpty()
-    }
-
-    fun next(): Boolean {
+    override fun next(): Boolean {
         if (queue.isEmpty()) {
             clearQueueAndTrack()
             return false
@@ -96,8 +81,8 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
         return play(queue.removeAt(0), true)
     }
 
-    fun skipInQueue(position: Int): Boolean {
-        if (queue.size < position) {
+    override fun skipInQueue(position: Int): Boolean {
+        if (position !in 1..queue.size) {
             return false
         }
 
@@ -108,12 +93,12 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
         return true
     }
 
-    fun skipTo(position: Int): Boolean {
-        if (position < 1 || position > queue.size) {
+    override fun skipTo(position: Int): Boolean {
+        if (position !in 1..queue.size) {
             return false
         }
 
-        for (i in 1 until position) {
+        repeat(position - 1) {
             val track = queue.removeAt(0).audioTrack
             logger.info { "Removed ${track.info.title} from queue." }
         }
@@ -124,24 +109,20 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
         return true
     }
 
-    fun clearQueue() {
-        queue.clear()
-    }
+    override fun clearQueue() = queue.clear()
 
-    fun currentSong(): Optional<AudioTrack> {
-        return Optional.ofNullable(player.playingTrack)
-    }
+    override fun currentSong() = Optional.ofNullable(player.playingTrack)
 
-    fun requestedBy(): RequestedBy? {
-        return currentSongRequest?.requestedBy
-    }
+    override fun isSongLoaded() = player.playingTrack != null
 
-    fun destroy() {
+    override fun requestedBy() = currentSongRequest?.requestedBy
+
+    override fun destroy() {
         player.destroy()
         clearQueueAndTrack()
     }
 
-    fun changeQueueStatus() {
+    override fun changeQueueRepeatStatus() {
         if (queueType.get() == QueueType.NORMAL) {
             queueType.set(QueueType.REPEAT)
         } else {
@@ -149,11 +130,9 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
         }
     }
 
-    fun repeating(): Boolean {
-        return queueType.get() == QueueType.REPEAT
-    }
+    override fun isRepeating() = queueType.get() == QueueType.REPEAT
 
-    fun shuffleQueue(): Boolean {
+    override fun shuffleQueue(): Boolean {
         if (queue.size < 2) {
             return false
         }
@@ -162,8 +141,8 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
         return true
     }
 
-    fun moveSong(from: Int, to: Int): Boolean {
-        if (from < 1 || from > queue.size || to < 1 || to > queue.size || from == to) {
+    override fun moveSong(from: Int, to: Int): Boolean {
+        if (from !in 1..queue.size || to !in 1..queue.size || from == to) {
             return false
         }
 
@@ -220,7 +199,6 @@ class AudioTrackScheduler private constructor() : AudioEventAdapter() {
             .build()
     }
 
-    private fun exceptionOccurredMessage(track: AudioTrack): EmbedCreateSpec {
-        return simpleMessageEmbed("An error occurred while playing ${track.info.title}.")
-    }
+    private fun exceptionOccurredMessage(track: AudioTrack) =
+        simpleMessageEmbed("An error occurred while playing ${track.info.title}.")
 }
