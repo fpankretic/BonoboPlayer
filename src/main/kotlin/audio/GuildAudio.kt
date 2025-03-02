@@ -5,7 +5,6 @@ import audio.load.DefaultAudioLoadResultHandler
 import com.sedmelluq.discord.lavaplayer.filter.equalizer.EqualizerFactory
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import discord4j.common.util.Snowflake
 import discord4j.core.GatewayDiscordClient
 import discord4j.core.event.domain.interaction.ButtonInteractionEvent
@@ -22,30 +21,32 @@ import util.CANCEL_TEXT
 import util.Message
 import util.defaultEmbedBuilder
 import java.time.Duration
-import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Future
 import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 
-class GuildAudio(private val client: GatewayDiscordClient, private val guildId: Snowflake) {
+class GuildAudio(
+    private val client: GatewayDiscordClient,
+    private val guildId: Snowflake,
+    val player: AudioPlayer = GlobalData.PLAYER_MANAGER.createPlayer(),
+    private val scheduler: AudioTrackScheduler = AudioTrackScheduler(player, guildId)
+) : TrackScheduling by scheduler {
     private val logger = KotlinLogging.logger {}
 
     private val leaveDelay = Duration.ofMinutes(5)
     private val menuDelay = Duration.ofMinutes(1)
     private val removeDelay = Duration.ofSeconds(1)
 
-    val player: AudioPlayer = GlobalData.PLAYER_MANAGER.createPlayer()
-    val guildName: String = client.getGuildById(guildId).block()?.name ?: "Unknown"
+    val guildName = client.getGuildById(guildId).block()?.name ?: "Unknown"
 
-    private val scheduler: AudioTrackScheduler = AudioTrackScheduler(player, guildId)
-    private var destroyed: Boolean = false
-    private var messageChannelId: AtomicLong = AtomicLong()
-    private val leavingTask: AtomicReference<Disposable> = AtomicReference()
-    private val menusTasks: HashMap<String, AtomicReference<Disposable>> = hashMapOf()
-    private val loadResultHandlers: ConcurrentHashMap<AudioLoadResultHandler, Future<Void>> = ConcurrentHashMap()
-    private val equalizer: EqualizerFactory = EqualizerFactory()
+    private var destroyed = false
+    private val messageChannelId = AtomicLong()
+    private val leavingTask = AtomicReference<Disposable>()
+    private val menusTasks = hashMapOf<String, AtomicReference<Disposable>>()
+    private val loadResultHandlers = ConcurrentHashMap<AudioLoadResultHandler, Future<Void>>()
+    private val equalizer = EqualizerFactory()
 
     init {
         player.addListener(scheduler)
@@ -60,11 +61,10 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
         leavingTask.set(
             Mono.delay(leaveDelay, Schedulers.boundedElastic())
                 .filter { isLeavingScheduled() }
-                .map { client.voiceConnectionRegistry }
-                .flatMap { it.getVoiceConnection(guildId) }
+                .flatMap { client.voiceConnectionRegistry.getVoiceConnection(guildId) }
                 .flatMap { it.disconnect() }
                 .then(mono { sendMessage(leaveMessage()) })
-                .map { GuildManager.destroyAudio(guildId) }
+                .then(mono { GuildManager.destroyAudio(guildId) })
                 .subscribe()
         )
         logger.info { "Bot leave scheduled in guild: $guildName." }
@@ -76,9 +76,7 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
         logger.info { "Bot leave canceled in guild: $guildName." }
     }
 
-    fun isLeavingScheduled(): Boolean {
-        return leavingTask.get()?.isDisposed?.not() ?: false
-    }
+    fun isLeavingScheduled(): Boolean = leavingTask.get()?.isDisposed?.not() ?: false
 
     fun setMessageChannelId(messageChannelId: Snowflake) {
         this.messageChannelId.set(messageChannelId.asLong())
@@ -97,51 +95,10 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
         setButtonsComponentsTimeout(customId)
     }
 
-    fun play(songRequest: SongRequest) {
+    override fun play(songRequest: SongRequest) =
         scheduler.play(SongRequest(songRequest.audioTrack.makeClone(), songRequest.requestedBy))
-    }
 
-    fun isSongLoaded(): Boolean {
-        return scheduler.currentSong().isPresent
-    }
-
-    fun getQueueCopy(): List<AudioTrack> {
-        return scheduler.getQueueCopy()
-    }
-
-    fun isQueueEmpty(): Boolean {
-        return scheduler.isQueueEmpty()
-    }
-
-    fun currentSong(): Optional<AudioTrack> {
-        return scheduler.currentSong()
-    }
-
-    fun requestedBy(): RequestedBy? {
-        return scheduler.requestedBy()
-    }
-
-    fun clearQueue() {
-        scheduler.clearQueue()
-    }
-
-    fun skipTo(position: Int): Boolean {
-        if (position < 1 || position > scheduler.getQueueSize()) {
-            return false
-        }
-
-        return scheduler.skipTo(position)
-    }
-
-    fun skipInQueue(position: Int): Boolean {
-        if (position == 0) {
-            return next()
-        } else if (position < 0 || position > scheduler.getQueueSize()) {
-            return false
-        }
-
-        return scheduler.skipInQueue(position)
-    }
+    override fun skipInQueue(position: Int) = if (position == 0) next() else scheduler.skipInQueue(position)
 
     fun addHandler(loadResultHandler: AudioLoadResultHandler, query: String) {
         logger.debug { "GuildId: ${guildId.asLong()} Adding audio load result handler: ${loadResultHandler.hashCode()}" }
@@ -154,28 +111,12 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
         loadResultHandlers.remove(loadResultHandler)
     }
 
-    fun destroy() {
+    override fun destroy() {
         cancelLeave()
         loadResultHandlers.forEach { it.value.cancel(true) }
         loadResultHandlers.clear()
         scheduler.destroy()
         destroyed = true
-    }
-
-    fun changeQueueStatus() {
-        scheduler.changeQueueStatus()
-    }
-
-    fun isRepeating(): Boolean {
-        return scheduler.repeating()
-    }
-
-    fun shuffleQueue(): Boolean {
-        return scheduler.shuffleQueue()
-    }
-
-    fun moveSong(from: Int, to: Int): Boolean {
-        return scheduler.moveSong(from, to)
     }
 
     private fun setButtonsComponentsTimeout(customId: String) {
@@ -212,17 +153,8 @@ class GuildAudio(private val client: GatewayDiscordClient, private val guildId: 
         getMessageChannel().flatMap { it.createMessage(embedBuilder.build()) }.subscribe()
     }
 
-    private fun next(): Boolean {
-        return scheduler.next()
-    }
+    private fun getMessageChannel() =
+        client.getChannelById(Snowflake.of(messageChannelId.get())).map { it as MessageChannel }
 
-    private fun getMessageChannel(): Mono<MessageChannel> {
-        return client.getChannelById(Snowflake.of(messageChannelId.get())).map { it as MessageChannel }
-    }
-
-    private fun leaveMessage(): EmbedCreateSpec {
-        return defaultEmbedBuilder()
-            .description(Message.INACTIVITY.message)
-            .build()
-    }
+    private fun leaveMessage() = defaultEmbedBuilder().description(Message.INACTIVITY.message).build()
 }
