@@ -13,7 +13,7 @@ REFRESH_TOKEN=""                                        # Leave empty for automa
 
 To get `PO_TOKEN` and `VISITOR_DATA` you can check out this [link](https://github.com/iv-org/youtube-trusted-session-generator).
 
-Now you can run the project with the following command:
+Now you can run the project with the following commands:
 
 ```bash
 mvn clean package
