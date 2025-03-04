@@ -43,6 +43,8 @@ object GlobalData {
         // Set refresh token
         if (EnvironmentManager.valueOf(REFRESH_TOKEN).isNotEmpty()) {
             youtubeSource.useOauth2(EnvironmentManager.valueOf(REFRESH_TOKEN), true)
+        } else {
+            youtubeSource.useOauth2(null, false)
         }
 
         // Set Spotify source
