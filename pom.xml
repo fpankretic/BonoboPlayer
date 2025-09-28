@@ -21,7 +21,7 @@
 
         <discord4j.version>3.2.6</discord4j.version>
         <lavaplayer.version>2.2.2</lavaplayer.version>
-        <youtube-source.version>1.12.0</youtube-source.version>
+        <youtube-source.version>1.13.5</youtube-source.version>
         <lavasrc.version>4.4.1</lavasrc.version>
     </properties>
 
