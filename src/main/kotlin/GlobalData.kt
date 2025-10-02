@@ -7,6 +7,7 @@ import com.sedmelluq.lava.extensions.youtuberotator.YoutubeIpRotatorSetup
 import com.sedmelluq.lava.extensions.youtuberotator.planner.NanoIpRoutePlanner
 import com.sedmelluq.lava.extensions.youtuberotator.tools.ip.Ipv6Block
 import dev.lavalink.youtube.YoutubeAudioSourceManager
+import dev.lavalink.youtube.YoutubeSourceOptions
 import dev.lavalink.youtube.clients.*
 import util.EnvironmentManager
 import util.EnvironmentValue.*
@@ -29,7 +30,9 @@ object GlobalData {
             MWebWithThumbnail(),
             TvHtml5EmbeddedWithThumbnail()
         )
-        val youtubeSource = YoutubeAudioSourceManager(*clients)
+        val youtubeSourceOptions = YoutubeSourceOptions()
+            .setRemoteCipherUrl("http://localhost:12000", "")
+        val youtubeSource = YoutubeAudioSourceManager(youtubeSourceOptions, *clients)
 
         // Set PoToken and VisitorData
         if (EnvironmentManager.valueOf(PO_TOKEN).isEmpty() || EnvironmentManager.valueOf(VISITOR_DATA).isEmpty()) {
