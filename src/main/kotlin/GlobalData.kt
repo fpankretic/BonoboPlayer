@@ -9,11 +9,14 @@ import com.sedmelluq.lava.extensions.youtuberotator.tools.ip.Ipv6Block
 import dev.lavalink.youtube.YoutubeAudioSourceManager
 import dev.lavalink.youtube.YoutubeSourceOptions
 import dev.lavalink.youtube.clients.*
+import io.github.oshai.kotlinlogging.KotlinLogging
 import util.EnvironmentManager
 import util.EnvironmentValue.*
 import com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeAudioSourceManager as YoutubeAudioSourceManagerDeprecated
 
 object GlobalData {
+    private val logger = KotlinLogging.logger {}
+
     val PLAYER_MANAGER: AudioPlayerManager = DefaultAudioPlayerManager()
 
     init {
@@ -30,8 +33,10 @@ object GlobalData {
             MWebWithThumbnail(),
             TvHtml5EmbeddedWithThumbnail()
         )
-        val youtubeSourceOptions = YoutubeSourceOptions()
-            .setRemoteCipherUrl("http://localhost:12000", "")
+
+        var remoteCipherUrl = "http://127.0.0.1:12000"
+        logger.info { "Setting up RemoteCipherUrl to $remoteCipherUrl" }
+        val youtubeSourceOptions = YoutubeSourceOptions().setRemoteCipherUrl(remoteCipherUrl, "")
         val youtubeSource = YoutubeAudioSourceManager(youtubeSourceOptions, *clients)
 
         // Set PoToken and VisitorData
