@@ -15,8 +15,6 @@ import util.EnvironmentValue.*
 import com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeAudioSourceManager as YoutubeAudioSourceManagerDeprecated
 
 object GlobalData {
-    private val logger = KotlinLogging.logger {}
-
     val PLAYER_MANAGER: AudioPlayerManager = DefaultAudioPlayerManager()
 
     init {
@@ -34,8 +32,7 @@ object GlobalData {
             TvHtml5EmbeddedWithThumbnail()
         )
 
-        var remoteCipherUrl = "http://127.0.0.1:12000"
-        println("Setting up RemoteCipherUrl to $remoteCipherUrl")
+        var remoteCipherUrl = "http://localhost:12000"
         val youtubeSourceOptions = YoutubeSourceOptions().setRemoteCipherUrl(remoteCipherUrl, "")
         val youtubeSource = YoutubeAudioSourceManager(youtubeSourceOptions, *clients)
 
