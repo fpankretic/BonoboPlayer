@@ -35,7 +35,7 @@ object GlobalData {
         )
 
         var remoteCipherUrl = "http://127.0.0.1:12000"
-        logger.info { "Setting up RemoteCipherUrl to $remoteCipherUrl" }
+        println("Setting up RemoteCipherUrl to $remoteCipherUrl")
         val youtubeSourceOptions = YoutubeSourceOptions().setRemoteCipherUrl(remoteCipherUrl, "")
         val youtubeSource = YoutubeAudioSourceManager(youtubeSourceOptions, *clients)
 
