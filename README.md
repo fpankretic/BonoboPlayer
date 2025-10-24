@@ -19,4 +19,4 @@ Now you can run the project with the following commands:
 mvn clean package
 mvn -q exec:java -Dexec.mainClass="MainKt"
 ```
-s
+

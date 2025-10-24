@@ -7,6 +7,7 @@ import com.sedmelluq.lava.extensions.youtuberotator.YoutubeIpRotatorSetup
 import com.sedmelluq.lava.extensions.youtuberotator.planner.NanoIpRoutePlanner
 import com.sedmelluq.lava.extensions.youtuberotator.tools.ip.Ipv6Block
 import dev.lavalink.youtube.YoutubeAudioSourceManager
+import dev.lavalink.youtube.YoutubeSourceOptions
 import dev.lavalink.youtube.clients.*
 import util.EnvironmentManager
 import util.EnvironmentValue.*
@@ -16,9 +17,7 @@ object GlobalData {
     val PLAYER_MANAGER: AudioPlayerManager = DefaultAudioPlayerManager()
 
     init {
-        PLAYER_MANAGER.configuration.setFrameBufferFactory { bufferDuration, format, stopping ->
-            NonAllocatingAudioFrameBuffer(bufferDuration, format, stopping)
-        }
+        PLAYER_MANAGER.configuration.setFrameBufferFactory(::NonAllocatingAudioFrameBuffer)
         PLAYER_MANAGER.configuration.isFilterHotSwapEnabled = true
 
         // Setup Youtube source
@@ -29,7 +28,10 @@ object GlobalData {
             MWebWithThumbnail(),
             TvHtml5EmbeddedWithThumbnail()
         )
-        val youtubeSource = YoutubeAudioSourceManager(*clients)
+
+        var remoteCipherUrl = "http://localhost:12000"
+        val youtubeSourceOptions = YoutubeSourceOptions().setRemoteCipher(remoteCipherUrl, null, null)
+        val youtubeSource = YoutubeAudioSourceManager(youtubeSourceOptions, *clients)
 
         // Set PoToken and VisitorData
         if (EnvironmentManager.valueOf(PO_TOKEN).isEmpty() || EnvironmentManager.valueOf(VISITOR_DATA).isEmpty()) {

@@ -5,9 +5,9 @@ import audio.LavaPlayerAudioProvider
 import discord4j.common.util.Snowflake
 import discord4j.core.event.domain.message.MessageCreateEvent
 import discord4j.core.`object`.entity.Member
+import discord4j.core.`object`.entity.channel.AudioChannel
 import discord4j.core.`object`.entity.channel.MessageChannel
-import discord4j.core.`object`.entity.channel.VoiceChannel
-import discord4j.core.spec.VoiceChannelJoinSpec
+import discord4j.core.spec.AudioChannelJoinSpec
 import discord4j.voice.VoiceConnection
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.reactor.mono
@@ -59,13 +59,13 @@ object JoinCommand : Command {
     }
 
     private fun createVoiceConnection(
-        voiceChannel: VoiceChannel,
+        audioChannel: AudioChannel,
         messageChannel: MessageChannel,
         guildId: Snowflake
     ): Mono<VoiceConnection> {
-        val player = GuildManager.createAudio(voiceChannel.client, guildId, messageChannel.id).player
-        val spec = VoiceChannelJoinSpec.builder().provider(LavaPlayerAudioProvider(player)).build();
-        return voiceChannel.join(spec)
+        val player = GuildManager.createAudio(audioChannel.client, guildId, messageChannel.id).player
+        val spec = AudioChannelJoinSpec.builder().provider(LavaPlayerAudioProvider(player)).build();
+        return audioChannel.join(spec)
     }
 
 }

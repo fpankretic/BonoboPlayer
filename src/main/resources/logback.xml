@@ -6,6 +6,8 @@
     </appender>
 
     <logger name="discord4j.voice.DefaultVoiceGatewayClient" level="OFF"/>
+    <logger name="discord4j.voice.PacketTransformer" level="OFF"/>
+    <logger name="discord4j.voice.LocalVoiceReceiveTask" level="OFF"/>
 
     <root level="INFO">
         <appender-ref ref="STDOUT" />
