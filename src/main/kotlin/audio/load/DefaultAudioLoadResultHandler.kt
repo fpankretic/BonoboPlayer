@@ -51,9 +51,6 @@ class DefaultAudioLoadResultHandler(
         guildAudio.removeHandler(this)
 
         if (playlistMode.not() and playlist.tracks.isNotEmpty() or playlist.isSearchResult) {
-            if (playlistMode.not() and playlist.isSearchResult) {
-                guildAudio.sendMessage(getUsePlaylistMessage())
-            }
             trackLoaded(playlist.tracks[0])
             return
         }
@@ -129,13 +126,6 @@ class DefaultAudioLoadResultHandler(
             .description(bold(trackAsHyperLink(playlist)))
             .thumbnail(playlist.tracks[0].info.artworkUrl)
             .addField("Songs in playlist: ${playlist.tracks.size}", "", true)
-            .build()
-    }
-
-    private fun getUsePlaylistMessage(): EmbedCreateSpec {
-        return defaultEmbedBuilder()
-            .title("Use Playlist Mode")
-            .description("To add the whole playlist, use the playlist command.")
             .build()
     }
 }
