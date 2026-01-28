@@ -51,7 +51,7 @@ class DefaultAudioLoadResultHandler(
         guildAudio.removeHandler(this)
 
         if (playlistMode.not() and playlist.tracks.isNotEmpty() or playlist.isSearchResult) {
-            if (playlistMode.not()) {
+            if (playlistMode.not() and playlist.isSearchResult) {
                 guildAudio.sendMessage(getUsePlaylistMessage())
             }
             trackLoaded(playlist.tracks[0])
