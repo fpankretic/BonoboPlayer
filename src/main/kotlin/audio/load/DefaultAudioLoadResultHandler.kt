@@ -23,7 +23,8 @@ class DefaultAudioLoadResultHandler(
     private val author: User,
     private val track: String,
     private val retried: Boolean = false,
-    private val retriedSearch: Boolean = false
+    private val retriedSearch: Boolean = false,
+    private val playlistMode: Boolean = false
 ) : AudioLoadResultHandler {
 
     private val logger = KotlinLogging.logger {}
@@ -49,7 +50,10 @@ class DefaultAudioLoadResultHandler(
     override fun playlistLoaded(playlist: AudioPlaylist) {
         guildAudio.removeHandler(this)
 
-        if (playlist.isSearchResult) {
+        if (playlistMode.not() and playlist.tracks.isNotEmpty() or playlist.isSearchResult) {
+            if (playlistMode.not()) {
+                guildAudio.sendMessage(getUsePlaylistMessage())
+            }
             trackLoaded(playlist.tracks[0])
             return
         }
@@ -125,6 +129,13 @@ class DefaultAudioLoadResultHandler(
             .description(bold(trackAsHyperLink(playlist)))
             .thumbnail(playlist.tracks[0].info.artworkUrl)
             .addField("Songs in playlist: ${playlist.tracks.size}", "", true)
+            .build()
+    }
+
+    private fun getUsePlaylistMessage(): EmbedCreateSpec {
+        return defaultEmbedBuilder()
+            .title("Use Playlist Mode")
+            .description("To add the whole playlist, use the playlist command.")
             .build()
     }
 }
