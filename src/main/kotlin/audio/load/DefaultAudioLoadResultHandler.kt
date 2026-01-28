@@ -93,12 +93,12 @@ class DefaultAudioLoadResultHandler(
     private fun handleSpotifyLoadFail() {
         val newTrack = track.replace("spsearch", "ytsearch")
         logger.info { "Retrying to load track ${newTrack.replace("ytsearch: ", "")} with youtube." }
-        guildAudio.addHandler(DefaultAudioLoadResultHandler(guildId, author, newTrack, true), newTrack)
+        guildAudio.addHandler(DefaultAudioLoadResultHandler(guildId, author, newTrack, true, playlistMode=playlistMode), newTrack)
     }
 
     private fun handleGenericLoadFail() {
         logger.info { "Retrying to load track: $track." }
-        guildAudio.addHandler(DefaultAudioLoadResultHandler(guildId, author, track, true), track)
+        guildAudio.addHandler(DefaultAudioLoadResultHandler(guildId, author, track, true, playlistMode=playlistMode), track)
     }
 
     private fun handleNoMatchesFail() {
@@ -109,7 +109,7 @@ class DefaultAudioLoadResultHandler(
     private fun handleSearchFail() {
         val newTrack = track.replace("spsearch", "ytsearch")
         logger.info { "Searching again with $newTrack." }
-        guildAudio.addHandler(DefaultAudioLoadResultHandler(guildId, author, newTrack, retried, true), newTrack)
+        guildAudio.addHandler(DefaultAudioLoadResultHandler(guildId, author, newTrack, retried, true, playlistMode=playlistMode), newTrack)
     }
 
     private fun getTrackLoadedMessage(track: AudioTrack): EmbedCreateSpec {
