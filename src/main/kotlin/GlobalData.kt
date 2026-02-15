@@ -26,7 +26,9 @@ object GlobalData {
             WebWithThumbnail(),
             WebEmbeddedWithThumbnail(),
             MWebWithThumbnail(),
-            TvHtml5EmbeddedWithThumbnail()
+            TvHtml5EmbeddedWithThumbnail(),
+            AndroidMusicWithThumbnail(),
+            AndroidVrWithThumbnail()
         )
 
         var remoteCipherUrl = "http://localhost:12000"

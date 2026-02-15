@@ -23,7 +23,8 @@ class DefaultAudioLoadResultHandler(
     private val author: User,
     private val track: String,
     private val retried: Boolean = false,
-    private val retriedSearch: Boolean = false
+    private val retriedSearch: Boolean = false,
+    private val playlistMode: Boolean = false
 ) : AudioLoadResultHandler {
 
     private val logger = KotlinLogging.logger {}
@@ -49,7 +50,7 @@ class DefaultAudioLoadResultHandler(
     override fun playlistLoaded(playlist: AudioPlaylist) {
         guildAudio.removeHandler(this)
 
-        if (playlist.isSearchResult) {
+        if (playlistMode.not() and playlist.tracks.isNotEmpty() or playlist.isSearchResult) {
             trackLoaded(playlist.tracks[0])
             return
         }
@@ -92,12 +93,12 @@ class DefaultAudioLoadResultHandler(
     private fun handleSpotifyLoadFail() {
         val newTrack = track.replace("spsearch", "ytsearch")
         logger.info { "Retrying to load track ${newTrack.replace("ytsearch: ", "")} with youtube." }
-        guildAudio.addHandler(DefaultAudioLoadResultHandler(guildId, author, newTrack, true), newTrack)
+        guildAudio.addHandler(DefaultAudioLoadResultHandler(guildId, author, newTrack, true, playlistMode=playlistMode), newTrack)
     }
 
     private fun handleGenericLoadFail() {
         logger.info { "Retrying to load track: $track." }
-        guildAudio.addHandler(DefaultAudioLoadResultHandler(guildId, author, track, true), track)
+        guildAudio.addHandler(DefaultAudioLoadResultHandler(guildId, author, track, true, playlistMode=playlistMode), track)
     }
 
     private fun handleNoMatchesFail() {
@@ -108,7 +109,7 @@ class DefaultAudioLoadResultHandler(
     private fun handleSearchFail() {
         val newTrack = track.replace("spsearch", "ytsearch")
         logger.info { "Searching again with $newTrack." }
-        guildAudio.addHandler(DefaultAudioLoadResultHandler(guildId, author, newTrack, retried, true), newTrack)
+        guildAudio.addHandler(DefaultAudioLoadResultHandler(guildId, author, newTrack, retried, true, playlistMode=playlistMode), newTrack)
     }
 
     private fun getTrackLoadedMessage(track: AudioTrack): EmbedCreateSpec {

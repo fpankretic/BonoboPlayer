@@ -44,8 +44,13 @@ abstract class PlayCommandBase : Command {
         logger.debug { "Parsed query \"$track\"." }
 
         guildAudio.addHandler(
-            DefaultAudioLoadResultHandler(guildId, event.message.author.get(), track), track
+            DefaultAudioLoadResultHandler(guildId, event.message.author.get(), track, playlistMode = getPlaylistMode()),
+            track
         )
+    }
+
+    protected open fun getPlaylistMode(): Boolean {
+        return false
     }
 
     protected fun loadTrack(query: String): String {

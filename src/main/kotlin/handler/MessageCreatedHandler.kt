@@ -22,6 +22,7 @@ object MessageCreatedHandler {
     init {
         // commands
         longCommands["play"] = PlayCommand
+        longCommands["playlist"] = PlaylistCommand
         longCommands["yt"] = YoutubeCommand
         longCommands["ytm"] = YoutubeMusicCommand
         longCommands["sp"] = SpotifyCommand
@@ -44,6 +45,7 @@ object MessageCreatedHandler {
 
         // Hidden short commands
         shortCommands["p"] = longCommands["play"]!!
+        shortCommands["pl"] = longCommands["playlist"]!!
         shortCommands["sr"] = longCommands["search"]!!
         shortCommands["l"] = longCommands["list"]!!
         shortCommands["q"] = longCommands["queue"]!!
