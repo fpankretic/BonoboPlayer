@@ -15,9 +15,6 @@ object DraganaCommand : PlayCommandBase() {
     override fun help() = "Queues Dragana Mirković's greatest hits immediately."
 
     override fun play(event: MessageCreateEvent, guildAudio: GuildAudio, guildId: Snowflake) {
-        guildAudio.clearQueue()
-        guildAudio.player.playTrack(null)
-
         songs.forEach { song ->
             val query = "ytmsearch: $song"
             guildAudio.addHandler(
