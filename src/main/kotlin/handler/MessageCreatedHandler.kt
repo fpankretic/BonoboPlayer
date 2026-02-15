@@ -41,6 +41,7 @@ object MessageCreatedHandler {
         longCommands["join"] = JoinCommand
         longCommands["leave"] = LeaveCommand
         longCommands["help"] = HelpCommand(longCommands, shortCommands)
+        longCommands["dragana"] = DraganaCommand
 
         // Hidden short commands
         shortCommands["p"] = longCommands["play"]!!
