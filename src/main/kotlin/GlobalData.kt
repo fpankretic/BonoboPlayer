@@ -26,7 +26,7 @@ object GlobalData {
             WebWithThumbnail(),
             WebEmbeddedWithThumbnail(),
             MWebWithThumbnail(),
-            TvHtml5EmbeddedWithThumbnail(),
+            TvHtml5SimplyWithThumbnail(),
             AndroidMusicWithThumbnail(),
             AndroidVrWithThumbnail()
         )
